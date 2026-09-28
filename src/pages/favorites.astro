@@ -1,0 +1,11 @@
+---
+import App from '../layouts/App.astro';
+import Library from '../components/Library.astro';
+import { allItems } from '../lib/items';
+
+// Favorites live in this browser (localStorage); the page renders every item and shows the starred ones.
+const items = await allItems();
+---
+<App title="Favorites" nav="favorites">
+  <Library title="Favorites" items={items} mode="favorites" />
+</App>

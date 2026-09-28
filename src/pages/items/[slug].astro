@@ -1,0 +1,213 @@
+---
+import { render } from 'astro:content';
+import App from '../../layouts/App.astro';
+import Icon from '../../components/Icon.astro';
+import {
+  allItems, variantsOf, promptFor, itemUrl, posterUrl, demoUrl, isExternal, isPrivate, subtitle, type Item
+} from '../../lib/items';
+import { highlight } from '../../lib/highlight';
+import { typeOf } from '../../lib/taxonomy';
+import { url } from '../../lib/url';
+
+export async function getStaticPaths() {
+  const items = await allItems();
+  return items.map((item) => ({ params: { slug: item.id }, props: { item, items } }));
+}
+
+const { item, items } = Astro.props as { item: Item; items: Item[] };
+const d = item.data;
+const type = typeOf(d.type);
+const { Content } = await render(item);
+const variants = variantsOf(item);
+const panes = await Promise.all(
+  variants.map(async (v) => ({
+    ...v,
+    files: await Promise.all(v.files.map(async (f) => ({ ...f, html: await highlight(f.code, f.name) })))
+  }))
+);
+const prompt = promptFor(item, variants);
+const demo = demoUrl(item);
+const external = isExternal(item);
+const poster = posterUrl(item);
+const related = (
+  d.related.length
+    ? d.related.map((s) => items.find((i) => i.id === s))
+    : items.filter((i) => i.id !== item.id && i.data.type === d.type)
+).filter((i): i is Item => Boolean(i)).slice(0, 3);
+const registryUrl = d.registry && variants.some((v) => v.id === 'react') ? new URL(url(`r/${d.registry}.json`), Astro.site).href : undefined;
+const fmt = (dt: Date) => dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+const origin = { own: 'Own', adapted: 'Adapted', 'third-party': 'Third-party' }[d.origin];
+const license = d.license === 'PolyForm-Noncommercial-1.0.0' ? 'PolyForm Noncommercial 1.0.0' : d.license;
+---
+<App title={d.title} nav={`type:${d.type}`}>
+  <header class="sh-toolbar">
+    <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm sh-sidebar-toggle" type="button" data-action="sidebar-toggle" aria-label="Show sidebar"><Icon name="PanelLeft" /></button>
+    <a class="sh-btn sh-btn--ghost sh-btn--sm" href={url(`type/${d.type}/`)}><Icon name="ChevronLeft" /><span>{type.label}</span></a>
+    <div class="sh-toolbar__spacer"></div>
+    <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm sh-fav" type="button" data-fav={item.id} aria-pressed="false" aria-label="Add to Favorites"><Icon name="Star" /></button>
+    <button class="sh-btn sh-btn--sm sh-hide-narrow" type="button" data-copy-link data-toast="Link copied"><Icon name="Link" /><span class="sh-btn__label">Copy link</span></button>
+    {demo && <a class="sh-btn sh-btn--sm sh-btn--primary" href={demo} target="_blank" rel="noopener"><Icon name="ExternalLink" /><span>Open demo</span></a>}
+  </header>
+
+  <article class="sh-item" data-item={item.id}>
+    <div class="sh-item__head">
+      <div class="sh-item__row">
+        <h1 class="sh-item__title">{d.title}</h1>
+        <span class:list={['sh-badge', `sh-badge--${d.status}`]}>{d.status === 'stable' ? 'Stable' : 'Draft'}</span>
+        {isPrivate(item) && <span class="sh-badge"><Icon name="Lock" />Private</span>}
+        {d.tech.map((t) => <span class="sh-badge sh-badge--tech">{t}</span>)}
+      </div>
+      <p class="sh-item__summary">{d.summary}</p>
+    </div>
+
+    {(demo || poster) && (
+      <div
+        class="sh-stage sh-stage--item"
+        id="stage"
+        data-bg={d.demo.background === 'auto' ? undefined : d.demo.background}
+        data-grid={d.demo.grid ? 'on' : undefined}
+        data-device="desktop"
+      >
+        <div class="sh-stage__viewport">
+          {poster && (external || !demo) && <img class="sh-stage__poster" src={poster} alt="" decoding="async">}
+          {demo && (
+            <iframe
+              class="sh-stage__frame"
+              id="demo-frame"
+              src={demo}
+              title={`${d.title}, live demo`}
+              allow="fullscreen; clipboard-write; xr-spatial-tracking"
+            ></iframe>
+          )}
+        </div>
+        {demo && (
+          <div class="sh-stage__status" id="stage-status">
+            <span class="sh-spinner sh-spinner--lg" role="progressbar" aria-label="Loading demo"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+            Loading demo…
+          </div>
+        )}
+        {demo && (
+          <div class="sh-stage__bar" role="toolbar" aria-label="Preview">
+            <div class="sh-seg sh-seg--sm sh-seg--icons sh-seg--pill sh-seg--bare" role="group" aria-label="Stage width" data-device-switch>
+              <button class="sh-seg__opt" type="button" data-value="desktop" aria-pressed="true" aria-label="Desktop"><Icon name="Monitor" /></button>
+              <button class="sh-seg__opt" type="button" data-value="tablet" aria-pressed="false" aria-label="Tablet"><Icon name="Tablet" /></button>
+              <button class="sh-seg__opt" type="button" data-value="phone" aria-pressed="false" aria-label="Phone"><Icon name="Smartphone" /></button>
+            </div>
+            {!external && (
+              <>
+                <span class="sh-vsep"></span>
+                <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-action="stage-bg" aria-label="Background: Auto"><Icon name="Contrast" /></button>
+                <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-action="stage-grid" aria-label="Dot grid" aria-pressed={d.demo.grid ? 'true' : 'false'}><Icon name="Grid3x3" /></button>
+              </>
+            )}
+            <span class="sh-vsep"></span>
+            <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-action="stage-reload" aria-label="Replay"><Icon name="RotateCcw" /></button>
+            <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-action="stage-fullscreen" aria-label="Fullscreen"><Icon name="Maximize2" /></button>
+          </div>
+        )}
+      </div>
+    )}
+
+    <div class:list={['sh-item__cols', panes.length === 0 && 'sh-item__cols--single']}>
+      {panes.length > 0 && (
+        <section aria-labelledby="code-title">
+          <div class="sh-codehead">
+            <div class="sh-codehead__lead">
+              <h2 class="sh-h2" id="code-title" style="margin: 0">Code</h2>
+              {panes.length > 1 && (
+                <div class="sh-seg sh-seg--sm" role="group" aria-label="Variant" data-variant-switch>
+                  {panes.map((v, i) => (
+                    <button class="sh-seg__opt" type="button" data-value={v.id} aria-pressed={i === 0 ? 'true' : 'false'}>{v.label}</button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div class="sh-row">
+              <button class="sh-btn sh-btn--sm sh-btn--plain" type="button" data-copy-prompt data-toast="Prompt copied"><Icon name="MessageSquareCode" /><span class="sh-btn__label">Copy prompt</span></button>
+            </div>
+          </div>
+          <div class="sh-code" id="code">
+            {panes.map((v, vi) => (
+              <div class="sh-code__variant" data-variant={v.id} hidden={vi !== 0}>
+                <div class="sh-code__head">
+                  <div class="sh-code__files" role="tablist" aria-label={`${v.label} files`}>
+                    {v.files.map((f, fi) => (
+                      <button class="sh-code__file" type="button" role="tab" aria-selected={fi === 0 ? 'true' : 'false'} data-file={fi}>{f.name}</button>
+                    ))}
+                  </div>
+                  <div class="sh-code__actions">
+                    <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-action="download" aria-label="Download this file"><Icon name="Download" /></button>
+                    <button class="sh-btn sh-btn--sm" type="button" data-copy-code data-toast="Code copied"><Icon name="Copy" /><span class="sh-btn__label">Copy</span></button>
+                  </div>
+                </div>
+                {v.files.map((f, fi) => (
+                  <div class="sh-code__body" role="tabpanel" data-pane={fi} data-name={f.name} hidden={fi !== 0}>
+                    <Fragment set:html={f.html} />
+                    <template data-raw>{f.code}</template>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+          {registryUrl && (
+            <div class="sh-cmd">
+              <span class="sh-cmd__sign">$</span>
+              <span class="sh-cmd__text">npx shadcn@latest add {registryUrl}</span>
+              <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-copy={`npx shadcn@latest add ${registryUrl}`} data-toast="Command copied" aria-label="Copy command"><Icon name="Copy" /></button>
+            </div>
+          )}
+          {d.depends.length > 0 && (
+            <div class="sh-cmd">
+              <span class="sh-cmd__sign">$</span>
+              <span class="sh-cmd__text">npm i {d.depends.join(' ')}</span>
+              <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-copy={`npm i ${d.depends.join(' ')}`} data-toast="Command copied" aria-label="Copy command"><Icon name="Copy" /></button>
+            </div>
+          )}
+        </section>
+      )}
+
+      <aside class="sh-item__aside">
+        {item.body?.trim() && (
+          <section>
+            <h2 class="sh-h2">Notes</h2>
+            <div class="sh-prose"><Content /></div>
+          </section>
+        )}
+        <section>
+          <h2 class="sh-h2">Details</h2>
+          <dl class="sh-details">
+            <dt>Type</dt><dd><a class="sh-link" href={url(`type/${d.type}/`)}>{type.one}</a></dd>
+            {variants.length > 0 && (<><dt>Variants</dt><dd>{variants.map((v) => v.label).join(' · ')}</dd></>)}
+            <dt>Depends on</dt><dd>{d.depends.length ? d.depends.join(', ') : 'Nothing'}</dd>
+            {d.registry && (<><dt>Registry</dt><dd><code>{d.registry}</code></dd></>)}
+            <dt>Origin</dt><dd>{origin}{d.source ? ` · ${d.source}` : ''}</dd>
+            {d.priorArt && (<><dt>Prior art</dt><dd>{d.priorArt}</dd></>)}
+            {d.repo && (<><dt>Repository</dt><dd><a class="sh-link" href={d.repo} target="_blank" rel="noopener">{d.repo.replace('https://github.com/', '')}</a></dd></>)}
+            <dt>Added</dt><dd>{fmt(d.added)}</dd>
+            {d.updated && (<><dt>Updated</dt><dd>{fmt(d.updated)}</dd></>)}
+            <dt>License</dt><dd>{license}</dd>
+          </dl>
+          {d.tags.length > 0 && (
+            <div class="sh-tags">
+              {d.tags.map((t) => <a class="sh-badge sh-badge--tech" href={url(`?q=${encodeURIComponent(t)}`)}>{t}</a>)}
+            </div>
+          )}
+        </section>
+        {related.length > 0 && (
+          <section>
+            <h2 class="sh-h2">Related</h2>
+            <div class="sh-related">
+              {related.map((r) => (
+                <a class="sh-related__row" href={itemUrl(r)}>
+                  <span class="sh-related__thumb">{posterUrl(r) && <img src={posterUrl(r)} alt="" loading="lazy" decoding="async">}</span>
+                  <span class="sh-related__text"><span class="sh-card__title">{r.data.title}</span><span class="sh-card__sub">{subtitle(r)}</span></span>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+      </aside>
+    </div>
+  </article>
+  <template id="prompt-text">{prompt}</template>
+</App>

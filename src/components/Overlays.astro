@@ -1,0 +1,45 @@
+---
+import Icon from './Icon.astro';
+---
+<div class="sh-overlay" id="palette" hidden>
+  <div class="sh-palette" role="dialog" aria-modal="true" aria-label="Search and commands">
+    <div class="sh-palette__field">
+      <Icon name="Search" class="sh-i--md" />
+      <input class="sh-palette__input" id="palette-input" type="text" placeholder="Search items, types and actions" aria-label="Search items, types and actions" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="palette-list">
+      <kbd class="sh-kbd">Esc</kbd>
+    </div>
+    <div class="sh-palette__list" id="palette-list" role="listbox" aria-label="Results"></div>
+    <div class="sh-palette__foot">
+      <span><span class="sh-keys"><kbd class="sh-kbd">↑</kbd><kbd class="sh-kbd">↓</kbd></span>Navigate</span>
+      <span><kbd class="sh-kbd">↵</kbd>Open</span>
+      <span><kbd class="sh-kbd">Esc</kbd>Close</span>
+    </div>
+  </div>
+</div>
+
+<div class="sh-overlay sh-overlay--sheet" id="quicklook" hidden>
+  <div class="sh-sheet" role="dialog" aria-modal="true" aria-labelledby="ql-title">
+    <div class="sh-sheet__head">
+      <div>
+        <div class="sh-sheet__title" id="ql-title"></div>
+        <div class="sh-sheet__sub" id="ql-sub"></div>
+      </div>
+      <div class="sh-sheet__actions">
+        <a class="sh-btn sh-btn--sm" id="ql-demo" target="_blank" rel="noopener"><Icon name="ExternalLink" /><span>Open demo</span></a>
+        <a class="sh-btn sh-btn--sm sh-btn--primary" id="ql-open"><span>Open</span><Icon name="ChevronRight" /></a>
+        <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-action="ql-close" aria-label="Close"><Icon name="X" /></button>
+      </div>
+    </div>
+    <div class="sh-stage" id="ql-stage">
+      <div class="sh-stage__viewport" id="ql-viewport">
+        <img class="sh-stage__poster" id="ql-poster" alt="" hidden>
+      </div>
+      <div class="sh-stage__status" id="ql-status" hidden>
+        <span class="sh-spinner sh-spinner--lg" role="progressbar" aria-label="Loading demo"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        Loading demo…
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sh-toast-layer" role="status" aria-live="polite"><div class="sh-toast" id="toast" hidden></div></div>

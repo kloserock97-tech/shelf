@@ -1,0 +1,11 @@
+---
+import App from '../layouts/App.astro';
+import Library from '../components/Library.astro';
+import { allItems } from '../lib/items';
+
+// The history of opened items lives in this browser; the page shows them in the order they were opened.
+const items = await allItems();
+---
+<App title="Recent" nav="recent">
+  <Library title="Recent" items={items} mode="recent" />
+</App>

@@ -1,0 +1,13 @@
+---
+import App from '../layouts/App.astro';
+import Icon from '../components/Icon.astro';
+import { url } from '../lib/url';
+---
+<App title="Not found">
+  <div class="sh-empty">
+    <Icon name="Shapes" stroke={1.5} class="sh-empty__icon" />
+    <h1 class="sh-empty__title">This shelf is empty</h1>
+    <p class="sh-empty__text">The page moved or never existed. Everything that is on the shelf is in the library.</p>
+    <a class="sh-btn sh-btn--primary" href={url('')}>Open the library</a>
+  </div>
+</App>

@@ -1,0 +1,11 @@
+---
+import { icon } from '../lib/icons';
+
+interface Props {
+  name: string;
+  class?: string;
+  stroke?: number;
+}
+const { name, class: className, stroke } = Astro.props;
+---
+<span class:list={['sh-i', className]} set:html={icon(name, stroke)}></span>

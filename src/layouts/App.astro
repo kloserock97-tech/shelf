@@ -1,0 +1,54 @@
+---
+import '@fontsource-variable/onest';
+import '@fontsource-variable/jetbrains-mono';
+import '../styles/tokens.css';
+import '../styles/shelf.css';
+import '../styles/code.css';
+import Sidebar from '../components/Sidebar.astro';
+import Overlays from '../components/Overlays.astro';
+import { allItems, indexEntry } from '../lib/items';
+import { url } from '../lib/url';
+
+interface Props {
+  title?: string;
+  nav?: string;
+}
+const { title, nav = '' } = Astro.props;
+const items = await allItems();
+const index = JSON.stringify(items.map(indexEntry)).replace(/</g, '\\u003c');
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="color-scheme" content="light dark">
+    <title>{title ? `${title} · Shelf` : 'Shelf'}</title>
+    <link rel="icon" href={url('favicon.svg')} type="image/svg+xml">
+    <script is:inline>
+      (function () {
+        var d = document.documentElement;
+        try {
+          var t = localStorage.getItem('shelf:theme');
+          if (t === 'light' || t === 'dark') d.dataset.theme = t;
+          if (localStorage.getItem('shelf:sidebar') === 'hidden') d.classList.add('sidebar-hidden');
+          var z = localStorage.getItem('shelf:zoom');
+          if (z) d.style.setProperty('--card-min-width', z + 'px');
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body data-base={url('')}>
+    <div class="sh-app">
+      <Sidebar nav={nav} items={items} />
+      <main class="sh-main" id="main"><slot /></main>
+    </div>
+    <div class="sh-sidebar-scrim" data-action="sidebar-close"></div>
+    <Overlays />
+    <script type="application/json" id="shelf-index" set:html={index}></script>
+    <script>
+      import '../scripts/app';
+    </script>
+  </body>
+</html>

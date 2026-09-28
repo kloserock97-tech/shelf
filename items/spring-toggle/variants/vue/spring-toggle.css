@@ -1,0 +1,39 @@
+.toggle {
+  --w: 44px;
+  --h: 26px;
+  --inset: 3px;
+  position: relative;
+  width: var(--w);
+  height: var(--h);
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: #8c8c91;
+  cursor: pointer;
+  transition: background-color 160ms ease;
+}
+.toggle__knob {
+  position: absolute;
+  top: var(--inset);
+  left: var(--inset);
+  width: calc(var(--h) - var(--inset) * 2);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+  /* spring, 1.5% overshoot */
+  transition: transform 400ms linear(0, 0.049 4%, 0.163 8%, 0.341 13%, 0.55 19%, 0.745 26%, 0.891 34%, 0.976 43%, 1.01 53%, 1.014 65%, 1.007 80%, 1);
+}
+.toggle[aria-checked="true"] {
+  background: #0073e6;
+}
+.toggle[aria-checked="true"] .toggle__knob {
+  transform: translateX(calc(var(--w) - var(--h)));
+}
+.toggle:focus-visible {
+  outline: 2px solid #0073e6;
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .toggle__knob { transition-duration: 1ms; }
+}

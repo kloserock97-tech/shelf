@@ -1,0 +1,30 @@
+/* Shiki output inside .sh-code. Colours come from the shelf-light / shelf-dark themes (src/lib/highlight.ts),
+   which are built from the code-* tokens; both are emitted as --shiki-light / --shiki-dark. */
+.sh-code .shiki {
+  margin: 0;
+  padding: var(--space-3) 0;
+  background: transparent !important;
+  font: 400 13px/20px var(--font-mono);
+  font-variant-ligatures: none;
+  tab-size: 2;
+  color: var(--code-text);
+}
+.sh-code .shiki code { display: block; min-width: max-content; counter-reset: ln; }
+.sh-code .shiki .line { display: inline-block; min-width: 100%; padding-right: var(--space-5); }
+.sh-code .shiki .line::before {
+  counter-increment: ln;
+  content: counter(ln);
+  display: inline-block;
+  width: 3ch;
+  margin: 0 2ch 0 1.5ch;
+  text-align: right;
+  color: var(--code-gutter);
+  user-select: none;
+}
+.sh-code .shiki span[style] { color: var(--shiki-light); }
+.sh-code__wrap .shiki { white-space: pre-wrap; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .sh-code .shiki span[style] { color: var(--shiki-dark); }
+}
+:root[data-theme="dark"] .sh-code .shiki span[style] { color: var(--shiki-dark); }

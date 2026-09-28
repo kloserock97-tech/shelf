@@ -1,0 +1,38 @@
+---
+import Icon from './Icon.astro';
+import { typeOf } from '../lib/taxonomy';
+import { type Item, itemUrl, posterUrl, loopUrl, subtitle, isPrivate } from '../lib/items';
+
+interface Props {
+  item: Item;
+}
+const { item } = Astro.props;
+const d = item.data;
+const href = itemUrl(item);
+const poster = posterUrl(item);
+const loop = loopUrl(item);
+const priv = isPrivate(item);
+---
+<article class="sh-card" data-slug={item.id} data-tech={d.tech.join('|')} data-status={d.status} data-added={d.added.toISOString().slice(0, 10)} data-title={d.title}>
+  <a class="sh-card__thumb" href={href} aria-label={d.title} data-loop={loop}>
+    {poster ? (
+      <img class="sh-card__media" src={poster} alt="" loading="lazy" decoding="async">
+    ) : (
+      <span class="sh-card__fallback"><Icon name={typeOf(d.type).icon} stroke={1.25} /></span>
+    )}
+    {(d.status === 'draft' || priv) && (
+      <span class="sh-card__badges">
+        {d.status === 'draft' && <span class="sh-badge sh-badge--glass sh-badge--draft">Draft</span>}
+        {priv && <span class="sh-badge sh-badge--glass"><Icon name="Lock" />Private</span>}
+      </span>
+    )}
+    <span class="sh-card__hint sh-badge sh-badge--glass">Quick Look <kbd class="sh-kbd">Space</kbd></span>
+  </a>
+  <div class="sh-card__meta">
+    <div class="sh-card__text">
+      <a class="sh-card__title" href={href} tabindex="-1">{d.title}</a>
+      <div class="sh-card__sub">{subtitle(item)}</div>
+    </div>
+    <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm sh-card__fav sh-fav" type="button" aria-label={`Add ${d.title} to Favorites`} aria-pressed="false" data-fav={item.id}><Icon name="Star" /></button>
+  </div>
+</article>

@@ -1,0 +1,10 @@
+---
+import App from '../layouts/App.astro';
+import Library from '../components/Library.astro';
+import { allItems } from '../lib/items';
+
+const items = await allItems();
+---
+<App nav="all">
+  <Library title="All items" items={items} />
+</App>

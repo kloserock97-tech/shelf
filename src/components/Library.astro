@@ -1,0 +1,67 @@
+---
+import Icon from './Icon.astro';
+import ItemCard from './ItemCard.astro';
+import type { Item } from '../lib/items';
+
+interface Props {
+  title: string;
+  items: Item[];
+  mode?: 'all' | 'type' | 'favorites' | 'recent';
+}
+const { title, items, mode = 'all' } = Astro.props;
+const techCount = new Map<string, number>();
+for (const it of items) for (const t of it.data.tech) techCount.set(t, (techCount.get(t) ?? 0) + 1);
+const techs = [...techCount.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 8);
+const filterable = mode === 'all' || mode === 'type';
+---
+<header class="sh-toolbar">
+  <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm sh-sidebar-toggle" type="button" data-action="sidebar-toggle" aria-label="Show sidebar"><Icon name="PanelLeft" /></button>
+  <h1 class="sh-toolbar__title">{title} <span class="sh-toolbar__count" data-count="visible">{mode === 'all' || mode === 'type' ? items.length : ''}</span></h1>
+  {filterable && techs.length > 1 && (
+    <div class="sh-chips sh-chips--scroll" role="group" aria-label="Filter by technology" data-filter="tech">
+      <button class="sh-chip" type="button" aria-pressed="true" data-value="">All</button>
+      {techs.map(([t, n]) => (
+        <button class="sh-chip" type="button" aria-pressed="false" data-value={t}>{t} <span class="sh-chip__count">{n}</span></button>
+      ))}
+    </div>
+  )}
+  <div class="sh-toolbar__spacer"></div>
+  <div class="sh-zoom" title="Grid size">
+    <Icon name="LayoutGrid" class="sh-i--xs" />
+    <input class="sh-slider" type="range" min="0" max="2" step="1" value="1" aria-label="Grid size" data-zoom>
+    <Icon name="LayoutGrid" class="sh-i--md" />
+  </div>
+  {mode !== 'recent' && (
+    <>
+      <span class="sh-vsep"></span>
+      <div class="sh-seg sh-seg--sm" role="group" aria-label="Sort" data-sort>
+        <button class="sh-seg__opt" type="button" data-value="new" aria-pressed="true">Newest</button>
+        <button class="sh-seg__opt" type="button" data-value="name" aria-pressed="false">A–Z</button>
+      </div>
+    </>
+  )}
+</header>
+<div class="sh-grid" id="grid" data-mode={mode}>
+  {items.map((item) => <ItemCard item={item} />)}
+</div>
+<div class="sh-empty" data-empty="favorites" hidden>
+  <Icon name="Star" stroke={1.5} class="sh-empty__icon" />
+  <p class="sh-empty__title">No favorites yet</p>
+  <p class="sh-empty__text">Star an item on its card, or press F on its page.</p>
+</div>
+<div class="sh-empty" data-empty="recent" hidden>
+  <Icon name="Clock" stroke={1.5} class="sh-empty__icon" />
+  <p class="sh-empty__title">Nothing opened yet</p>
+  <p class="sh-empty__text">Items you open show up here, the latest first.</p>
+</div>
+<div class="sh-empty" data-empty="search" hidden>
+  <Icon name="Search" stroke={1.5} class="sh-empty__icon" />
+  <p class="sh-empty__title">No results for “<span data-empty-query></span>”</p>
+  <p class="sh-empty__text">Try a technique or a project: grass, curl noise, spring, loader.</p>
+  <button class="sh-btn" type="button" data-action="clear-filters">Clear filters</button>
+</div>
+<div class="sh-empty" data-empty="none" hidden>
+  <Icon name="Shapes" stroke={1.5} class="sh-empty__icon" />
+  <p class="sh-empty__title">Nothing on this shelf yet</p>
+  <p class="sh-empty__text">Ask Claude to bring an item over from a project, or run npm run new.</p>
+</div>
