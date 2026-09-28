@@ -1,7 +1,8 @@
 // Shelf in the browser: theme, copy, favourites, the grid, Quick Look, the ⌘K palette and the item page.
 import MiniSearch from 'minisearch';
-import { Check, Contrast, Copy, Keyboard, MessageSquareCode, PanelLeft, TriangleAlert } from 'lucide-static';
+import { Check, Contrast, Copy, Keyboard, Languages, MessageSquareCode, PanelLeft, TriangleAlert } from 'lucide-static';
 import { cleanSvg } from '../lib/svg';
+import { t, langOf, type Key } from '../lib/i18n';
 
 interface Entry {
   slug: string; title: string; type: string; typeLabel: string; tech: string[]; tags: string[]; status: string;
@@ -13,6 +14,8 @@ const $ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = docu
 const $$ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document) => Array.from(root.querySelectorAll(sel)) as T[];
 const html = document.documentElement;
 const BASE = document.body.dataset.base ?? '/';
+const L = langOf(html.lang);
+const tr = (k: Key, vars?: Record<string, string | number>) => t(L, k, vars);
 const store = {
   get: (k: string) => { try { return localStorage.getItem(k); } catch { return null; } },
   set: (k: string, v: string | null) => { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch { /* storage may be blocked */ } }
@@ -35,14 +38,12 @@ function toast(text: string, ok = true) {
   if (!toastEl) return;
   toastEl.innerHTML = `<span class="sh-i">${ok ? CHECK : ALERT}</span><span></span>`;
   (toastEl.lastElementChild as HTMLElement).textContent = text;
+  toastEl.classList.remove('is-leaving');
   toastEl.hidden = false;
-  toastEl.classList.remove('is-in', 'is-out');
-  void toastEl.offsetWidth;
-  toastEl.classList.add('is-in');
   clearTimeout(toastTimer);
   toastTimer = window.setTimeout(() => {
-    toastEl.classList.add('is-out');
-    toastTimer = window.setTimeout(() => (toastEl.hidden = true), 180);
+    toastEl.classList.add('is-leaving');
+    toastTimer = window.setTimeout(() => (toastEl.hidden = true), 200);
   }, 1400);
 }
 
@@ -71,7 +72,7 @@ function flash(btn: HTMLElement) {
     btn.dataset.orig = label?.textContent ?? '';
     btn.dataset.origIcon = ic?.innerHTML ?? '';
   }
-  if (label) label.textContent = 'Copied';
+  if (label) label.textContent = tr('copied');
   if (ic) ic.innerHTML = CHECK;
   btn.classList.add('is-done');
   clearTimeout(Number(btn.dataset.timer || 0));
@@ -86,7 +87,7 @@ async function copyFrom(btn: HTMLElement | null, text: string, message: string) 
     if (btn) flash(btn);
     toast(message);
   } else {
-    toast('Couldn’t copy. Select the text and press ' + (isMac ? '⌘C' : 'Ctrl+C'), false);
+    toast(tr('copyFail', { keys: isMac ? '⌘C' : 'Ctrl+C' }), false);
   }
 }
 
@@ -101,7 +102,10 @@ function applyTheme(t: string | null) {
 function setTheme(t: string | null, announce = true) {
   store.set('shelf:theme', t);
   applyTheme(t);
-  if (announce) toast(`Appearance: ${t ? t[0].toUpperCase() + t.slice(1) : 'System'}`);
+  if (announce) {
+    const v = tr(t === 'light' ? 'themeLight' : t === 'dark' ? 'themeDark' : 'themeSystem');
+    toast(tr('appearanceToast', { v: L === 'ru' ? v.toLowerCase() : v }));
+  }
 }
 function cycleTheme() {
   const cur = store.get('shelf:theme');
@@ -119,7 +123,7 @@ const fmtKbd = (spec: string) => spec.replace('mod+', isMac ? '⌘' : 'Ctrl ');
 function setRail(on: boolean) {
   html.classList.toggle('sidebar-rail', on);
   store.set('shelf:sidebar', on ? 'rail' : null);
-  const label = on ? 'Expand sidebar' : 'Collapse sidebar';
+  const label = tr(on ? 'expandSidebar' : 'collapseSidebar');
   $('.sh-sb__toggle')?.setAttribute('aria-label', label);
   $$('[data-sidebar-label]').forEach((el) => (el.textContent = label));
   hideTip();
@@ -127,7 +131,7 @@ function setRail(on: boolean) {
 let sheetReturn: HTMLElement | null = null;
 function setSheet(open: boolean) {
   html.classList.toggle('sidebar-open', open);
-  $('.sh-sb__toggle')?.setAttribute('aria-label', open ? 'Close sidebar' : 'Collapse sidebar');
+  $('.sh-sb__toggle')?.setAttribute('aria-label', tr(open ? 'closeSidebar' : 'collapseSidebar'));
   lockScroll(open);
   if (open) {
     sheetReturn = document.activeElement as HTMLElement | null;
@@ -164,10 +168,13 @@ function toggleSection(heading: HTMLElement) {
 // Tooltips name the icons while the sidebar is a rail; the collapse button always has one.
 const tip = $('#tip');
 let tipTimer = 0;
+let tipClosedAt = -1e9;
 function showTip(el: HTMLElement, delay: number) {
   if (!tip || !el.dataset.tip) return;
   if (!isRail() && !el.classList.contains('sh-sb__toggle')) return;
   clearTimeout(tipTimer);
+  const warm = !tip.hidden || performance.now() - tipClosedAt < 600;
+  tip.toggleAttribute('data-instant', warm);
   tipTimer = window.setTimeout(() => {
     const kbd = el.dataset.tipKbd ? `<kbd class="sh-kbd">${esc(fmtKbd(el.dataset.tipKbd))}</kbd>` : '';
     tip.innerHTML = `<span></span>${kbd}`;
@@ -176,14 +183,11 @@ function showTip(el: HTMLElement, delay: number) {
     tip.style.left = `${Math.round(r.right + 10)}px`;
     tip.style.top = `${Math.round(r.top + r.height / 2)}px`;
     tip.hidden = false;
-    tip.classList.remove('is-in');
-    void tip.offsetWidth;
-    tip.classList.add('is-in');
-  }, delay);
+  }, warm ? 0 : delay);
 }
 function hideTip() {
   clearTimeout(tipTimer);
-  if (tip) tip.hidden = true;
+  if (tip && !tip.hidden) { tip.hidden = true; tipClosedAt = performance.now(); }
 }
 
 // Drag the right edge to resize, drag far left to fold into the rail, click it to toggle, double-click to reset.
@@ -224,7 +228,27 @@ function initEdge() {
   edge.addEventListener('dblclick', () => {
     html.style.removeProperty('--sidebar-width');
     store.set('shelf:sidebar-width', null);
+    syncEdge();
   });
+  const widthNow = () => parseInt(getComputedStyle(html).getPropertyValue('--sidebar-width'), 10) || 248;
+  const syncEdge = () => edge.setAttribute('aria-valuenow', String(isRail() ? 64 : widthNow()));
+  const setWidth = (w: number) => {
+    const px = Math.max(SB_MIN, Math.min(SB_MAX, Math.round(w)));
+    html.style.setProperty('--sidebar-width', `${px}px`);
+    store.set('shelf:sidebar-width', px !== 248 ? String(px) : null);
+  };
+  edge.addEventListener('keydown', (e) => {
+    const step = e.shiftKey ? 32 : 16;
+    if (e.key === 'ArrowLeft') { if (!isRail() && widthNow() <= SB_MIN) setRail(true); else if (!isRail()) setWidth(widthNow() - step); }
+    else if (e.key === 'ArrowRight') { if (isRail()) setRail(false); else setWidth(widthNow() + step); }
+    else if (e.key === 'Home') { if (isRail()) setRail(false); setWidth(SB_MIN); }
+    else if (e.key === 'End') { if (isRail()) setRail(false); setWidth(SB_MAX); }
+    else if (e.key === 'Enter' || e.key === ' ') toggleSidebar();
+    else return;
+    e.preventDefault();
+    syncEdge();
+  });
+  syncEdge();
 }
 
 // Profile menu: appearance, sidebar, shortcuts, source.
@@ -278,9 +302,6 @@ function openShortcuts() {
   if (!shortcuts) return;
   closeMenu(false);
   shortcuts.hidden = false;
-  shortcuts.classList.remove('is-in');
-  void shortcuts.offsetWidth;
-  shortcuts.classList.add('is-in');
   lockScroll(true);
   $<HTMLElement>('[data-action="shortcuts-close"]', shortcuts)?.focus();
 }
@@ -288,6 +309,13 @@ function closeShortcuts() {
   if (!shortcuts || shortcuts.hidden) return;
   shortcuts.hidden = true;
   lockScroll(false);
+}
+
+/* ---------- language ---------- */
+function switchLang(to: 'en' | 'ru') {
+  store.set('shelf:lang', to);
+  const alt = html.dataset.alt;
+  if (to !== L && alt) location.href = alt + location.search + location.hash;
 }
 
 /* ---------- segmented control ---------- */
@@ -321,8 +349,8 @@ function renderFavs() {
   $$('[data-fav]').forEach((b) => {
     const on = favs.has(b.dataset.fav!);
     b.setAttribute('aria-pressed', String(on));
-    const title = BY_SLUG.get(b.dataset.fav!)?.title;
-    b.setAttribute('aria-label', `${on ? 'Remove' : 'Add'} ${title ?? 'this item'} ${on ? 'from' : 'to'} Favorites`);
+    const title = BY_SLUG.get(b.dataset.fav!)?.title ?? tr('thisItem');
+    b.setAttribute('aria-label', tr(on ? 'favRemove' : 'favAdd', { title }));
   });
   const count = $('[data-count="favorites"]');
   if (count) count.textContent = favs.size ? String(favs.size) : '';
@@ -332,7 +360,7 @@ function toggleFav(slug: string) {
   if (on) favs.add(slug); else favs.delete(slug);
   store.set('shelf:favorites', JSON.stringify([...favs]));
   renderFavs();
-  toast(on ? 'Added to Favorites' : 'Removed from Favorites');
+  toast(tr(on ? 'favAdded' : 'favRemoved'));
   gridApi?.apply();
 }
 
@@ -459,14 +487,15 @@ function initGrid(grid: HTMLElement) {
         : (a, b) => (b.dataset.added ?? '').localeCompare(a.dataset.added ?? '') || (a.dataset.title ?? '').localeCompare(b.dataset.title ?? ''));
     }
     const keep = new Set(list);
-    cards.forEach((c) => { c.hidden = !keep.has(c); if (c.hidden) c.removeAttribute('aria-selected'); });
+    cards.forEach((c) => { c.hidden = !keep.has(c); if (c.hidden) c.removeAttribute('data-selected'); });
     list.forEach((c) => grid.append(c));
     visible = list;
     if (countEl) countEl.textContent = String(list.length);
     const empty = list.length ? '' : q || tech ? 'search' : mode === 'favorites' ? 'favorites' : 'none';
     $$('[data-empty]').forEach((el) => (el.hidden = el.dataset.empty !== empty));
-    const qEl = $('[data-empty-query]');
-    if (qEl) qEl.textContent = q || tech;
+    const titleEl = $('[data-empty-title]');
+    if (titleEl) titleEl.textContent = (titleEl.dataset.emptyTitle ?? '').replace('{q}', q || tech);
+    $('[data-hero]')?.toggleAttribute('hidden', Boolean(q || tech));
     grid.hidden = list.length === 0;
   }
 
@@ -494,7 +523,7 @@ function selectCard(i: number) {
   const list = gridApi?.visible() ?? [];
   if (!list.length) return;
   selected = Math.max(0, Math.min(list.length - 1, i));
-  list.forEach((c, j) => c.toggleAttribute('aria-selected', j === selected));
+  list.forEach((c, j) => c.toggleAttribute('data-selected', j === selected));
   $('.sh-card__thumb', list[selected])?.focus({ preventScroll: false });
 }
 function columns(list: HTMLElement[]) {
@@ -515,14 +544,13 @@ const ql = $('#quicklook');
 let qlSlug = '';
 let qlReturn: HTMLElement | null = null;
 function lockScroll(on: boolean) { document.documentElement.style.overflow = on ? 'hidden' : ''; }
-function openQuickLook(slug: string) {
+function openQuickLook(slug: string, fromKeyboard = false) {
   if (!ql || !BY_SLUG.has(slug)) return;
   qlReturn = document.activeElement as HTMLElement | null;
   showQuickLook(slug);
   ql.hidden = false;
   ql.classList.remove('is-in');
-  void ql.offsetWidth;
-  ql.classList.add('is-in');
+  if (!fromKeyboard) { void ql.offsetWidth; ql.classList.add('is-in'); }
   lockScroll(true);
   history.replaceState(history.state, '', `${location.pathname}${location.search}#${encodeURIComponent(slug)}`);
   $<HTMLElement>('#ql-open')?.focus();
@@ -555,8 +583,8 @@ function showQuickLook(slug: string) {
   if (e.demo) {
     const frame = document.createElement('iframe');
     frame.className = 'sh-stage__frame';
-    frame.title = `${e.title}, live demo`;
-    frame.allow = 'fullscreen; clipboard-write; xr-spatial-tracking';
+    frame.title = tr('liveDemo', { title: e.title });
+    frame.allow = 'fullscreen; clipboard-write; xr-spatial-tracking; autoplay';
     frame.addEventListener('load', () => { frame.classList.add('is-ready'); status.hidden = true; });
     frame.src = e.demo;
     viewport.append(frame);
@@ -602,14 +630,15 @@ function highlightMatch(text: string, q: string) {
 }
 function paletteActions(): { label: string; icon: string; key?: string; run: () => void }[] {
   const actions: { label: string; icon: string; key?: string; run: () => void }[] = [
-    { label: 'Change appearance', icon: 'contrast', run: cycleTheme },
-    { label: isRail() ? 'Expand sidebar' : 'Collapse sidebar', icon: 'panel', key: fmtKbd('mod+B'), run: toggleSidebar },
-    { label: 'Keyboard shortcuts', icon: 'keyboard', key: '?', run: openShortcuts }
+    { label: tr('actAppearance'), icon: 'contrast', run: cycleTheme },
+    { label: tr('actLanguage'), icon: 'lang', run: () => switchLang(L === 'en' ? 'ru' : 'en') },
+    { label: tr(isRail() ? 'expandSidebar' : 'collapseSidebar'), icon: 'panel', key: fmtKbd('mod+B'), run: toggleSidebar },
+    { label: tr('shortcuts'), icon: 'keyboard', key: '?', run: openShortcuts }
   ];
   if (itemApi) {
     actions.unshift(
-      { label: 'Copy code', icon: 'copy', key: 'C', run: () => itemApi?.copyCode() },
-      { label: 'Copy prompt', icon: 'prompt', key: 'P', run: () => itemApi?.copyPrompt() }
+      { label: tr('copyCode'), icon: 'copy', key: 'C', run: () => itemApi?.copyCode() },
+      { label: tr('copyPrompt'), icon: 'prompt', key: 'P', run: () => itemApi?.copyPrompt() }
     );
   }
   return actions;
@@ -619,7 +648,8 @@ const PAL_ICON: Record<string, string> = {
   panel: cleanSvg(PanelLeft),
   copy: cleanSvg(Copy),
   prompt: cleanSvg(MessageSquareCode),
-  keyboard: cleanSvg(Keyboard)
+  keyboard: cleanSvg(Keyboard),
+  lang: cleanSvg(Languages)
 };
 function renderPalette() {
   if (!palList || !palInput) return;
@@ -629,7 +659,7 @@ function renderPalette() {
   const add = (markup: string, run: () => void) => { rows.push(markup); runs.push(run); };
 
   const items = q ? find(q).map((s) => BY_SLUG.get(s)!).slice(0, 8) : INDEX.slice(0, 6);
-  if (items.length) rows.push(`<div class="sh-palette__group">${q ? 'Items' : 'Jump to'}</div>`);
+  if (items.length) rows.push(`<div class="sh-palette__group">${tr(q ? 'palItems' : 'palNew')}</div>`);
   for (const e of items) {
     add(
       `<span class="sh-palette__thumb">${e.poster ? `<img src="${esc(e.poster)}" alt="" loading="lazy">` : ''}</span>` +
@@ -642,12 +672,12 @@ function renderPalette() {
     .map((a) => ({ label: a.querySelector('.sh-sb__label')?.textContent?.trim() ?? '', href: a.href, icon: a.querySelector('.sh-i')?.innerHTML ?? '' }));
   const matchedPlaces = places.filter((p) => !q || p.label.toLowerCase().includes(q.toLowerCase()));
   if (matchedPlaces.length && q) {
-    rows.push('<div class="sh-palette__group">Go to</div>');
+    rows.push(`<div class="sh-palette__group">${tr('palGoTo')}</div>`);
     for (const p of matchedPlaces) add(`<span class="sh-palette__icon"><span class="sh-i">${p.icon}</span></span><span class="sh-palette__text"><span class="sh-palette__title">${highlightMatch(p.label, q)}</span></span>`, () => { location.href = p.href; });
   }
   const actions = paletteActions().filter((a) => !q || a.label.toLowerCase().includes(q.toLowerCase()));
   if (actions.length) {
-    rows.push('<div class="sh-palette__group">Actions</div>');
+    rows.push(`<div class="sh-palette__group">${tr('palActions')}</div>`);
     for (const a of actions) {
       add(
         `<span class="sh-palette__icon"><span class="sh-i">${PAL_ICON[a.icon] ?? ''}</span></span><span class="sh-palette__text"><span class="sh-palette__title">${highlightMatch(a.label, q)}</span></span>` +
@@ -656,7 +686,7 @@ function renderPalette() {
       );
     }
   }
-  if (!runs.length) rows.push(`<div class="sh-palette__empty">No results for “${esc(q)}”</div>`);
+  if (!runs.length) rows.push(`<div class="sh-palette__empty">${esc(tr('palEmpty', { q }))}</div>`);
 
   let n = 0;
   palList.innerHTML = rows.map((r) => (r.startsWith('<div') ? r : `<div class="sh-palette__item" role="option" id="pal-${n++}">${r}</div>`)).join('');
@@ -677,9 +707,6 @@ function selectPal(i: number) {
 function openPalette(initial = '') {
   if (!pal || !palInput) return;
   pal.hidden = false;
-  pal.classList.remove('is-in');
-  void pal.offsetWidth;
-  pal.classList.add('is-in');
   palInput.value = initial;
   renderPalette();
   palInput.focus();
@@ -717,9 +744,9 @@ function initItem(article: HTMLElement) {
       const cur = stage.dataset.bg ?? 'auto';
       const next = bgs[(bgs.indexOf(cur) + 1) % bgs.length];
       if (next === 'auto') delete stage.dataset.bg; else stage.dataset.bg = next;
-      const label = next[0].toUpperCase() + next.slice(1);
-      bgBtn.setAttribute('aria-label', `Background: ${label}`);
-      toast(`Background: ${label}`);
+      const v = tr(next === 'light' ? 'bgLight' : next === 'dark' ? 'bgDark' : 'bgAuto');
+      bgBtn.setAttribute('aria-label', tr('background', { v }));
+      toast(tr('background', { v }));
     });
     const gridBtn = $('[data-action="stage-grid"]', stage);
     gridBtn?.addEventListener('click', () => {
@@ -736,7 +763,7 @@ function initItem(article: HTMLElement) {
       requestAnimationFrame(() => { frame.src = src; });
     });
     $('[data-action="stage-fullscreen"]', stage)?.addEventListener('click', () => {
-      stage.requestFullscreen?.().catch(() => toast('Fullscreen is not available here', false));
+      stage.requestFullscreen?.().catch(() => toast(tr('noFullscreen'), false));
     });
   }
 
@@ -756,10 +783,22 @@ function initItem(article: HTMLElement) {
   for (const v of variants) {
     const tabs = $$<HTMLButtonElement>('.sh-code__file', v);
     const panes = $$('.sh-code__body', v);
-    tabs.forEach((t, i) => t.addEventListener('click', () => {
-      tabs.forEach((x, j) => x.setAttribute('aria-selected', String(i === j)));
+    const pick = (i: number, focus = false) => {
+      tabs.forEach((x, j) => { x.setAttribute('aria-selected', String(i === j)); x.tabIndex = i === j ? 0 : -1; });
       panes.forEach((p, j) => (p.hidden = i !== j));
-    }));
+      if (focus) tabs[i].focus();
+    };
+    tabs.forEach((tab, i) => {
+      tab.addEventListener('click', () => pick(i));
+      tab.addEventListener('keydown', (e) => {
+        const n = tabs.length;
+        const to = e.key === 'ArrowRight' ? (i + 1) % n : e.key === 'ArrowLeft' ? (i - 1 + n) % n : e.key === 'Home' ? 0 : e.key === 'End' ? n - 1 : -1;
+        if (to < 0) return;
+        e.preventDefault();
+        e.stopPropagation();
+        pick(to, true);
+      });
+    });
   }
   const currentPane = () => {
     const v = variants.find((x) => !x.hidden);
@@ -768,11 +807,11 @@ function initItem(article: HTMLElement) {
   const rawOf = (pane: HTMLElement) => ($<HTMLTemplateElement>('template[data-raw]', pane)?.content.textContent ?? '');
   const copyCode = (btn?: HTMLElement | null) => {
     const pane = currentPane();
-    if (pane) copyFrom(btn ?? null, rawOf(pane), `${pane.dataset.name} copied`);
+    if (pane) copyFrom(btn ?? null, rawOf(pane), tr('fileCopied', { file: pane.dataset.name ?? '' }));
   };
   const copyPrompt = (btn?: HTMLElement | null) => {
     const text = $<HTMLTemplateElement>('#prompt-text')?.content.textContent ?? '';
-    copyFrom(btn ?? null, text, 'Prompt copied');
+    copyFrom(btn ?? null, text, tr('promptCopied'));
   };
   $$('[data-copy-code]').forEach((b) => b.addEventListener('click', () => copyCode(b)));
   $$('[data-copy-prompt]').forEach((b) => b.addEventListener('click', () => copyPrompt(b)));
@@ -788,7 +827,7 @@ function initItem(article: HTMLElement) {
     a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }));
-  $$('[data-copy-link]').forEach((b) => b.addEventListener('click', () => copyFrom(b, location.href.split('#')[0], 'Link copied')));
+  $$('[data-copy-link]').forEach((b) => b.addEventListener('click', () => copyFrom(b, location.href.split('#')[0], tr('linkCopied'))));
 
   itemApi = {
     slug,
@@ -805,7 +844,9 @@ document.addEventListener('click', (e) => {
   const fav = t.closest<HTMLElement>('[data-fav]');
   if (fav) { e.preventDefault(); toggleFav(fav.dataset.fav!); return; }
   const copy = t.closest<HTMLElement>('[data-copy]');
-  if (copy) { copyFrom(copy, copy.dataset.copy ?? '', copy.dataset.toast ?? 'Copied'); return; }
+  if (copy) { copyFrom(copy, copy.dataset.copy ?? '', copy.dataset.toast ?? tr('copied')); return; }
+  const look = t.closest<HTMLElement>('[data-quicklook]');
+  if (look) { openQuickLook(look.dataset.quicklook!); return; }
   const target = t.closest<HTMLElement>('[data-action]');
   const action = target?.dataset.action;
   if (action === 'theme') cycleTheme();
@@ -841,6 +882,7 @@ if (sidebar) {
   $('.sh-sb__body', sidebar)?.addEventListener('scroll', hideTip, { passive: true });
 }
 $$('[data-mod-kbd]').forEach((k) => (k.textContent = isMac ? `⌘${k.dataset.modKbd}` : `Ctrl ${k.dataset.modKbd}`));
+wireSeg($('[data-lang-switch]'), (v) => switchLang(v === 'ru' ? 'ru' : 'en'));
 themeSeg = wireSeg($('[data-theme-switch]'), (v) => setTheme(v === 'system' ? null : v));
 applyTheme(store.get('shelf:theme'));
 styleSeg = wireSeg($('[data-sidebar-style]'), (v) => setSidebarStyle(v));
@@ -925,7 +967,7 @@ document.addEventListener('keydown', (e) => {
     else if (e.key === 'ArrowLeft') { e.preventDefault(); selectCard(i < 0 ? 0 : i - 1); }
     else if (e.key === 'ArrowDown') { e.preventDefault(); selectCard(i < 0 ? 0 : i + cols); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); selectCard(i < 0 ? 0 : i - cols); }
-    else if (e.key === ' ' && cur) { e.preventDefault(); openQuickLook(cur.dataset.slug!); }
+    else if (e.key === ' ' && cur) { e.preventDefault(); openQuickLook(cur.dataset.slug!, true); }
     else if (e.key.toLowerCase() === 'f' && cur) { e.preventDefault(); toggleFav(cur.dataset.slug!); }
     else if (e.key === '[' || e.key === ']') {
       const z = $<HTMLInputElement>('[data-zoom]');

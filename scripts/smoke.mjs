@@ -10,7 +10,7 @@ const out = path.join(ROOT, '.smoke');
 fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out, { recursive: true });
 
-const PAGES = ['', 'type/webgl/', 'favorites/', 'items/spring-toggle/', 'items/windcrest/', 'nope/'];
+const PAGES = ['', 'type/webgl/', 'favorites/', 'items/spring-toggle/', 'items/windcrest/', 'nope/', 'ru/', 'ru/type/webgl/', 'ru/items/spring-toggle/', 'ru/nope/'];
 const problems = [];
 const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] });
 
@@ -19,7 +19,7 @@ async function open(ctx, rel) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
   page.on('console', (m) => {
-    if (m.type() === 'error' && (m.location().url ?? '').startsWith(base) && !(rel === 'nope/' && /404/.test(m.text()))) errors.push(`console: ${m.text()}`);
+    if (m.type() === 'error' && (m.location().url ?? '').startsWith(base) && !(rel.endsWith('nope/') && /404/.test(m.text()))) errors.push(`console: ${m.text()}`);
   });
   const res = await page.goto(base + rel, { waitUntil: 'load' });
   await page.evaluate(() => document.fonts.ready);
@@ -36,7 +36,7 @@ for (const scheme of ['light', 'dark']) {
     await page.screenshot({ path: path.join(out, `${name}-${scheme}.png`) });
     if (errors.length) problems.push(`${rel || '/'} (${scheme}): ${errors.join(' | ')}`);
     if (wide) problems.push(`${rel || '/'} (${scheme}): scrolls sideways`);
-    if (rel === 'nope/' ? status !== 404 : status !== 200) problems.push(`${rel || '/'}: HTTP ${status}`);
+    if (rel.endsWith('nope/') ? status !== 404 : status !== 200) problems.push(`${rel || '/'}: HTTP ${status}`);
     await page.close();
   }
   await ctx.close();
@@ -117,7 +117,7 @@ const check = (ok, what) => { if (!ok) problems.push(`flow: ${what}`); return ok
   await page.locator('[data-theme-switch] .sh-seg__opt', { hasText: 'Dark' }).click();
   check((await page.evaluate(() => document.documentElement.dataset.theme)) === 'dark', 'the appearance switch does not set dark');
   await page.screenshot({ path: path.join(out, 'sidebar-menu-dark.png') });
-  await page.locator('[data-theme-switch] .sh-seg__opt', { hasText: 'System' }).click();
+  await page.locator('[data-theme-switch] .sh-seg__opt', { hasText: 'Auto' }).click();
   await page.keyboard.press('Escape');
   check(await page.locator('#profile-menu').isHidden(), 'Esc does not close the profile menu');
   // Sidebar style: attached (macOS 27) touches the window edges and survives a reload; floating sits 8px in.
@@ -156,6 +156,23 @@ const check = (ok, what) => { if (!ok) problems.push(`flow: ${what}`); return ok
     await page.locator('.sh-sb__edge').dblclick();
   }
   await page.close();
+}
+{
+  // Language: the Russian twin, the switch in the profile menu, the remembered choice; the skip link.
+  const lang = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  const { page } = await open(lang, 'ru/');
+  check((await page.evaluate(() => document.documentElement.lang)) === 'ru', 'the Russian library is not lang="ru"');
+  check((await page.locator('#sidebar .sh-sb__row[href]').first().textContent())?.includes('Все элементы'), 'the Russian sidebar is not in Russian');
+  await page.keyboard.press('Tab');
+  check(await page.locator('.sh-skip').evaluate((el) => el === document.activeElement), 'the first Tab does not land on the skip link');
+  await page.locator('[data-action="profile-menu"]').click();
+  await Promise.all([page.waitForURL((u) => !u.pathname.includes('/ru/')), page.locator('[data-lang-switch] .sh-seg__opt', { hasText: 'English' }).click()]);
+  check((await page.evaluate(() => document.documentElement.lang)) === 'en', 'the language switch does not open the English page');
+  await page.evaluate(() => localStorage.setItem('shelf:lang', 'ru'));
+  await page.goto(base + 'items/spring-toggle/', { waitUntil: 'load' });
+  check(page.url().includes('/ru/items/spring-toggle/'), `a remembered Russian choice does not redirect (${page.url()})`);
+  await page.evaluate(() => localStorage.removeItem('shelf:lang'));
+  await lang.close();
 }
 {
   const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, colorScheme: 'light', hasTouch: true, isMobile: true });

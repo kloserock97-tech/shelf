@@ -8,17 +8,27 @@ import Sidebar from '../components/Sidebar.astro';
 import Overlays from '../components/Overlays.astro';
 import { allItems, indexEntry } from '../lib/items';
 import { url } from '../lib/url';
+import { t, type Lang } from '../lib/i18n';
 
 interface Props {
   title?: string;
   nav?: string;
+  lang?: Lang;
+  page?: 'not-found';
 }
-const { title, nav = '' } = Astro.props;
+const { title, nav = '', lang = 'en', page } = Astro.props;
 const items = await allItems();
-const index = JSON.stringify(items.map(indexEntry)).replace(/</g, '\\u003c');
+const index = JSON.stringify(items.map((e) => indexEntry(e, lang))).replace(/</g, '\\u003c');
+
+// The same page in the other language: /shelf/<path> and /shelf/ru/<path>. The not-found page has no twin
+// at the same address (GitHub Pages serves one 404.html), so English points at /ru/404/ and Russian at the library.
+const base = url('');
+const here = Astro.url.pathname.startsWith(base) ? Astro.url.pathname.slice(base.length) : '';
+const rel = here.replace(/^ru\//, '');
+const alt = page === 'not-found' ? (lang === 'en' ? url('ru/404/') : url('')) : lang === 'en' ? url(`ru/${rel}`) : url(rel);
 ---
 <!doctype html>
-<html lang="en">
+<html lang={lang} data-alt={alt} data-page={page}>
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -26,9 +36,17 @@ const index = JSON.stringify(items.map(indexEntry)).replace(/</g, '\\u003c');
     <meta name="color-scheme" content="light dark">
     <title>{title ? `${title} · Shelf` : 'Shelf'}</title>
     <link rel="icon" href={url('favicon.svg')} type="image/svg+xml">
+    <link rel="alternate" hreflang={lang === 'en' ? 'ru' : 'en'} href={alt}>
     <script is:inline>
       (function () {
         var d = document.documentElement;
+        // A language chosen in the profile menu wins over the address: go to the twin page before anything paints.
+        try {
+          var want = localStorage.getItem("shelf:lang");
+          var lost = d.dataset.page === "not-found";
+          if (lost && d.lang === "en" && (want === "ru" || location.pathname.indexOf("/ru/") >= 0)) { location.replace(d.dataset.alt); return; }
+          if (!lost && (want === "en" || want === "ru") && want !== d.lang) { location.replace(d.dataset.alt + location.search + location.hash); return; }
+        } catch (e) {}
         d.classList.add("sb-noanim");
         try {
           var t = localStorage.getItem("shelf:theme");
@@ -41,17 +59,19 @@ const index = JSON.stringify(items.map(indexEntry)).replace(/</g, '\\u003c');
           if (z) d.style.setProperty("--card-min-width", z + "px");
           var s = JSON.parse(localStorage.getItem("shelf:sections") || "[]");
           if (Array.isArray(s)) s.forEach(function (id) { d.classList.add("sec-closed-" + id); });
+          if (!sessionStorage.getItem("shelf:intro")) { d.classList.add("sb-intro"); sessionStorage.setItem("shelf:intro", "1"); }
         } catch (e) {}
       })();
     </script>
   </head>
   <body data-base={url('')}>
+    <a class="sh-skip" href="#main">{t(lang, 'skip')}</a>
     <div class="sh-app">
-      <Sidebar nav={nav} items={items} />
-      <main class="sh-main" id="main"><slot /></main>
+      <Sidebar nav={nav} items={items} lang={lang} />
+      <main class="sh-main" id="main" tabindex="-1"><slot /></main>
     </div>
     <div class="sh-sidebar-scrim" data-action="sidebar-close"></div>
-    <Overlays />
+    <Overlays lang={lang} />
     <script type="application/json" id="shelf-index" set:html={index}></script>
     <script>
       import '../scripts/app';

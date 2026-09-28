@@ -2,8 +2,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { getCollection, type CollectionEntry } from 'astro:content';
-import { typeOf } from './taxonomy';
-import { url } from './url';
+import { typeOf, typeOne } from './taxonomy';
+import { url, lurl } from './url';
+import type { Lang } from './i18n';
 
 export type Item = CollectionEntry<'items'>;
 export interface VariantFile { name: string; code: string }
@@ -19,7 +20,7 @@ export async function allItems() {
   return list.sort((a, b) => +b.data.added - +a.data.added || a.data.title.localeCompare(b.data.title));
 }
 
-export const itemUrl = (e: Item) => url(`items/${e.id}/`);
+export const itemUrl = (e: Item, lang: Lang = 'en') => lurl(lang, `items/${e.id}/`);
 export const mediaUrl = (e: Item, file?: string) => (file ? url(`media/${e.id}/${file}`) : undefined);
 export const posterUrl = (e: Item) => mediaUrl(e, e.data.poster);
 export const loopUrl = (e: Item) => mediaUrl(e, e.data.loop);
@@ -29,7 +30,7 @@ export const demoUrl = (e: Item) => {
   return undefined;
 };
 export const isExternal = (e: Item) => Boolean(e.data.demo.url);
-export const subtitle = (e: Item) => [typeOf(e.data.type).one, ...e.data.tech.slice(0, 2)].join(' · ');
+export const subtitle = (e: Item, lang: Lang = 'en') => [typeOne(typeOf(e.data.type), lang), ...e.data.tech.slice(0, 2)].join(' · ');
 
 // Primary file first: markup, then components, then styles, then the rest.
 const RANK = ['.html', '.tsx', '.jsx', '.vue', '.svelte', '.ts', '.js', '.css'];
@@ -88,19 +89,19 @@ export function promptFor(e: Item, variants: Variant[]) {
   return lines.filter((l, i, a) => !(l === '' && a[i - 1] === '')).join('\n').trim();
 }
 
-export function indexEntry(e: Item) {
+export function indexEntry(e: Item, lang: Lang = 'en') {
   const d = e.data;
   return {
     slug: e.id,
     title: d.title,
     type: d.type,
-    typeLabel: typeOf(d.type).one,
+    typeLabel: typeOne(typeOf(d.type), lang),
     tech: d.tech,
     tags: d.tags,
     status: d.status,
     summary: d.summary,
     notes: notesText(e).slice(0, 1500),
-    url: itemUrl(e),
+    url: itemUrl(e, lang),
     poster: posterUrl(e) ?? null,
     loop: loopUrl(e) ?? null,
     demo: demoUrl(e) ?? null,

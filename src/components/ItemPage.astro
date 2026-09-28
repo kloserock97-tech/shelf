@@ -1,0 +1,216 @@
+---
+// One item: live stage, code in variants, notes and the passport. Rendered for /items/<slug>/ and /ru/items/<slug>/.
+import { render } from 'astro:content';
+import App from '../layouts/App.astro';
+import Icon from './Icon.astro';
+import {
+  variantsOf, promptFor, itemUrl, posterUrl, demoUrl, isExternal, isPrivate, subtitle, type Item
+} from '../lib/items';
+import { highlight } from '../lib/highlight';
+import { typeOf, typeLabel, typeOne } from '../lib/taxonomy';
+import { url, lurl } from '../lib/url';
+import { t, formatDate, type Lang } from '../lib/i18n';
+
+interface Props {
+  item: Item;
+  items: Item[];
+  lang: Lang;
+}
+const { item, items, lang } = Astro.props;
+const d = item.data;
+const type = typeOf(d.type);
+const { Content } = await render(item);
+const variants = variantsOf(item);
+const panes = await Promise.all(
+  variants.map(async (v) => ({
+    ...v,
+    files: await Promise.all(v.files.map(async (f) => ({ ...f, html: await highlight(f.code, f.name) })))
+  }))
+);
+const prompt = promptFor(item, variants);
+const demo = demoUrl(item);
+const external = isExternal(item);
+const poster = posterUrl(item);
+const related = (
+  d.related.length
+    ? d.related.map((s) => items.find((i) => i.id === s))
+    : items.filter((i) => i.id !== item.id && i.data.type === d.type)
+).filter((i): i is Item => Boolean(i)).slice(0, 3);
+const registryUrl = d.registry && variants.some((v) => v.id === 'react') ? new URL(url(`r/${d.registry}.json`), Astro.site).href : undefined;
+const origin = { own: t(lang, 'originOwn'), adapted: t(lang, 'originAdapted'), 'third-party': t(lang, 'originThird') }[d.origin];
+const license = d.license === 'PolyForm-Noncommercial-1.0.0' ? 'PolyForm Noncommercial 1.0.0' : d.license;
+// Summaries and notes are written in Russian: on English pages screen readers should read them as Russian.
+const contentLang = lang === 'ru' ? undefined : 'ru';
+---
+<App title={d.title} nav={`type:${d.type}`} lang={lang}>
+  <header class="sh-toolbar">
+    <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm sh-sidebar-toggle" type="button" data-action="sidebar-toggle" aria-label={t(lang, 'showSidebar')}><Icon name="PanelLeft" /></button>
+    <a class="sh-btn sh-btn--ghost sh-btn--sm" href={lurl(lang, `type/${d.type}/`)}><Icon name="ChevronLeft" /><span>{typeLabel(type, lang)}</span></a>
+    <div class="sh-toolbar__spacer"></div>
+    <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm sh-fav" type="button" data-fav={item.id} aria-pressed="false" aria-label={t(lang, 'favAdd', { title: d.title })}><Icon name="Star" /></button>
+    <button class="sh-btn sh-btn--sm sh-hide-narrow" type="button" data-copy-link data-toast={t(lang, 'linkCopied')}><Icon name="Link" /><span class="sh-btn__label">{t(lang, 'copyLink')}</span></button>
+    {demo && <a class="sh-btn sh-btn--sm sh-btn--primary" href={demo} target="_blank" rel="noopener"><Icon name="ExternalLink" /><span>{t(lang, 'openDemo')}</span></a>}
+  </header>
+
+  <article class="sh-item" data-item={item.id}>
+    <div class="sh-item__head">
+      <div class="sh-item__row">
+        <h1 class="sh-item__title">{d.title}</h1>
+        <span class:list={['sh-badge', `sh-badge--${d.status}`]}>{d.status === 'stable' ? t(lang, 'stable') : t(lang, 'draft')}</span>
+        {isPrivate(item) && <span class="sh-badge"><Icon name="Lock" />{t(lang, 'private')}</span>}
+        {d.tech.map((tech) => <span class="sh-badge sh-badge--tech">{tech}</span>)}
+      </div>
+      <p class="sh-item__summary" lang={contentLang}>{d.summary}</p>
+    </div>
+
+    {(demo || poster) && (
+      <div
+        class="sh-stage sh-stage--item"
+        id="stage"
+        data-bg={d.demo.background === 'auto' ? undefined : d.demo.background}
+        data-grid={d.demo.grid ? 'on' : undefined}
+        data-device="desktop"
+      >
+        <div class="sh-stage__viewport">
+          {poster && (external || !demo) && <img class="sh-stage__poster" src={poster} alt="" decoding="async">}
+          {demo && (
+            <iframe
+              class="sh-stage__frame"
+              id="demo-frame"
+              src={demo}
+              title={t(lang, 'liveDemo', { title: d.title })}
+              allow="fullscreen; clipboard-write; xr-spatial-tracking; autoplay"
+            ></iframe>
+          )}
+        </div>
+        {demo && (
+          <div class="sh-stage__status" id="stage-status">
+            <span class="sh-spinner sh-spinner--lg" role="progressbar" aria-label={t(lang, 'loadingDemo')}><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+            {t(lang, 'loadingDemo')}
+          </div>
+        )}
+        {demo && (
+          <div class="sh-stage__bar" role="toolbar" aria-label={t(lang, 'preview')}>
+            <div class="sh-seg sh-seg--sm sh-seg--icons sh-seg--pill sh-seg--bare" role="group" aria-label={t(lang, 'stageWidth')} data-device-switch>
+              <button class="sh-seg__opt" type="button" data-value="desktop" aria-pressed="true" aria-label={t(lang, 'desktop')}><Icon name="Monitor" /></button>
+              <button class="sh-seg__opt" type="button" data-value="tablet" aria-pressed="false" aria-label={t(lang, 'tablet')}><Icon name="Tablet" /></button>
+              <button class="sh-seg__opt" type="button" data-value="phone" aria-pressed="false" aria-label={t(lang, 'phone')}><Icon name="Smartphone" /></button>
+            </div>
+            {!external && (
+              <>
+                <span class="sh-vsep"></span>
+                <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-action="stage-bg" aria-label={t(lang, 'background', { v: t(lang, 'bgAuto') })}><Icon name="Contrast" /></button>
+                <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-action="stage-grid" aria-label={t(lang, 'dotGrid')} aria-pressed={d.demo.grid ? 'true' : 'false'}><Icon name="Grid3x3" /></button>
+              </>
+            )}
+            <span class="sh-vsep"></span>
+            <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-action="stage-reload" aria-label={t(lang, 'replay')}><Icon name="RotateCcw" /></button>
+            <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-action="stage-fullscreen" aria-label={t(lang, 'fullscreen')}><Icon name="Maximize2" /></button>
+          </div>
+        )}
+      </div>
+    )}
+
+    <div class:list={['sh-item__cols', panes.length === 0 && 'sh-item__cols--single']}>
+      {panes.length > 0 && (
+        <section aria-labelledby="code-title">
+          <div class="sh-codehead">
+            <div class="sh-codehead__lead">
+              <h2 class="sh-h2" id="code-title" style="margin: 0">{t(lang, 'code')}</h2>
+              {panes.length > 1 && (
+                <div class="sh-seg sh-seg--sm" role="group" aria-label={t(lang, 'variant')} data-variant-switch>
+                  {panes.map((v, i) => (
+                    <button class="sh-seg__opt" type="button" data-value={v.id} aria-pressed={i === 0 ? 'true' : 'false'}>{v.label}</button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div class="sh-row">
+              <button class="sh-btn sh-btn--sm sh-btn--plain" type="button" data-copy-prompt data-toast={t(lang, 'promptCopied')}><Icon name="MessageSquareCode" /><span class="sh-btn__label">{t(lang, 'copyPrompt')}</span></button>
+            </div>
+          </div>
+          <div class="sh-code" id="code">
+            {panes.map((v, vi) => (
+              <div class="sh-code__variant" data-variant={v.id} hidden={vi !== 0}>
+                <div class="sh-code__head">
+                  <div class="sh-code__files" role="tablist" aria-label={t(lang, 'variantFiles', { variant: v.label })}>
+                    {v.files.map((f, fi) => (
+                      <button class="sh-code__file" type="button" role="tab" id={`tab-${v.id}-${fi}`} aria-controls={`pane-${v.id}-${fi}`} aria-selected={fi === 0 ? 'true' : 'false'} tabindex={fi === 0 ? '0' : '-1'} data-file={fi}>{f.name}</button>
+                    ))}
+                  </div>
+                  <div class="sh-code__actions">
+                    <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-action="download" aria-label={t(lang, 'download')}><Icon name="Download" /></button>
+                    <button class="sh-btn sh-btn--sm" type="button" data-copy-code data-toast={t(lang, 'codeCopied')}><Icon name="Copy" /><span class="sh-btn__label">{t(lang, 'copy')}</span></button>
+                  </div>
+                </div>
+                {v.files.map((f, fi) => (
+                  <div class="sh-code__body" role="tabpanel" id={`pane-${v.id}-${fi}`} aria-labelledby={`tab-${v.id}-${fi}`} tabindex="0" data-pane={fi} data-name={f.name} hidden={fi !== 0}>
+                    <Fragment set:html={f.html} />
+                    <template data-raw>{f.code}</template>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+          {registryUrl && (
+            <div class="sh-cmd">
+              <span class="sh-cmd__sign" aria-hidden="true">$</span>
+              <span class="sh-cmd__text">npx shadcn@latest add {registryUrl}</span>
+              <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-copy={`npx shadcn@latest add ${registryUrl}`} data-toast={t(lang, 'commandCopied')} aria-label={t(lang, 'copyCommand')}><Icon name="Copy" /></button>
+            </div>
+          )}
+          {d.depends.length > 0 && (
+            <div class="sh-cmd">
+              <span class="sh-cmd__sign" aria-hidden="true">$</span>
+              <span class="sh-cmd__text">npm i {d.depends.join(' ')}</span>
+              <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-copy={`npm i ${d.depends.join(' ')}`} data-toast={t(lang, 'commandCopied')} aria-label={t(lang, 'copyCommand')}><Icon name="Copy" /></button>
+            </div>
+          )}
+        </section>
+      )}
+
+      <div class="sh-item__aside">
+        {item.body?.trim() && (
+          <section>
+            <h2 class="sh-h2">{t(lang, 'notes')}</h2>
+            <div class="sh-prose" lang={contentLang}><Content /></div>
+          </section>
+        )}
+        <section>
+          <h2 class="sh-h2">{t(lang, 'details')}</h2>
+          <dl class="sh-details">
+            <dt>{t(lang, 'type')}</dt><dd><a class="sh-link" href={lurl(lang, `type/${d.type}/`)}>{typeOne(type, lang)}</a></dd>
+            {variants.length > 0 && (<><dt>{t(lang, 'variants')}</dt><dd>{variants.map((v) => v.label).join(' · ')}</dd></>)}
+            <dt>{t(lang, 'dependsOn')}</dt><dd>{d.depends.length ? d.depends.join(', ') : t(lang, 'nothing')}</dd>
+            {d.registry && (<><dt>{t(lang, 'registry')}</dt><dd><code>{d.registry}</code></dd></>)}
+            <dt>{t(lang, 'origin')}</dt><dd>{origin}{d.source ? ` · ${d.source}` : ''}</dd>
+            {d.priorArt && (<><dt>{t(lang, 'priorArt')}</dt><dd>{d.priorArt}</dd></>)}
+            {d.repo && (<><dt>{t(lang, 'repository')}</dt><dd><a class="sh-link" href={d.repo} target="_blank" rel="noopener">{d.repo.replace('https://github.com/', '')}</a></dd></>)}
+            <dt>{t(lang, 'added')}</dt><dd>{formatDate(lang, d.added)}</dd>
+            {d.updated && (<><dt>{t(lang, 'updated')}</dt><dd>{formatDate(lang, d.updated)}</dd></>)}
+            <dt>{t(lang, 'license')}</dt><dd>{license}</dd>
+          </dl>
+          {d.tags.length > 0 && (
+            <div class="sh-tags">
+              {d.tags.map((tag) => <a class="sh-badge sh-badge--tech" href={lurl(lang, `?q=${encodeURIComponent(tag)}`)}>{tag}</a>)}
+            </div>
+          )}
+        </section>
+        {related.length > 0 && (
+          <section>
+            <h2 class="sh-h2">{t(lang, 'related')}</h2>
+            <div class="sh-related">
+              {related.map((r) => (
+                <a class="sh-related__row" href={itemUrl(r, lang)}>
+                  <span class="sh-related__thumb">{posterUrl(r) && <img src={posterUrl(r)} alt="" loading="lazy" decoding="async">}</span>
+                  <span class="sh-related__text"><span class="sh-card__title">{r.data.title}</span><span class="sh-card__sub">{subtitle(r, lang)}</span></span>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
+    </div>
+  </article>
+  <template id="prompt-text">{prompt}</template>
+</App>

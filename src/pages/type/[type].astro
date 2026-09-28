@@ -2,17 +2,18 @@
 import App from '../../layouts/App.astro';
 import Library from '../../components/Library.astro';
 import { allItems, type Item } from '../../lib/items';
-import { TYPES } from '../../lib/taxonomy';
+import { TYPES, typeLabel, type TypeDef } from '../../lib/taxonomy';
 
 export async function getStaticPaths() {
   const items = await allItems();
-  return TYPES.filter((t) => items.some((i) => i.data.type === t.id)).map((t) => ({
-    params: { type: t.id },
-    props: { label: t.label, id: t.id, items: items.filter((i) => i.data.type === t.id) }
+  return TYPES.filter((ty) => items.some((i) => i.data.type === ty.id)).map((ty) => ({
+    params: { type: ty.id },
+    props: { type: ty, items: items.filter((i) => i.data.type === ty.id) }
   }));
 }
-const { label, id, items } = Astro.props as { label: string; id: string; items: Item[] };
+const { type, items } = Astro.props as { type: TypeDef; items: Item[] };
+const label = typeLabel(type, 'en');
 ---
-<App title={label} nav={`type:${id}`}>
-  <Library title={label} items={items} mode="type" />
+<App title={label} nav={`type:${type.id}`} lang="en">
+  <Library title={label} items={items} mode="type" type={type} lang="en" />
 </App>

@@ -1,18 +1,24 @@
 ---
 import Icon from './Icon.astro';
+import { t, type Lang } from '../lib/i18n';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
 ---
 <div class="sh-overlay" id="palette" hidden>
-  <div class="sh-palette" role="dialog" aria-modal="true" aria-label="Search and commands">
+  <div class="sh-palette" role="dialog" aria-modal="true" aria-label={t(lang, 'paletteLabel')}>
     <div class="sh-palette__field">
       <Icon name="Search" class="sh-i--md" />
-      <input class="sh-palette__input" id="palette-input" type="text" placeholder="Search items, types and actions" aria-label="Search items, types and actions" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="palette-list">
+      <input class="sh-palette__input" id="palette-input" type="text" placeholder={t(lang, 'palettePlaceholder')} aria-label={t(lang, 'palettePlaceholder')} autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="palette-list">
       <kbd class="sh-kbd">Esc</kbd>
     </div>
-    <div class="sh-palette__list" id="palette-list" role="listbox" aria-label="Results"></div>
-    <div class="sh-palette__foot">
-      <span><span class="sh-keys"><kbd class="sh-kbd">↑</kbd><kbd class="sh-kbd">↓</kbd></span>Navigate</span>
-      <span><kbd class="sh-kbd">↵</kbd>Open</span>
-      <span><kbd class="sh-kbd">Esc</kbd>Close</span>
+    <div class="sh-palette__list" id="palette-list" role="listbox" aria-label={t(lang, 'results')}></div>
+    <div class="sh-palette__foot" aria-hidden="true">
+      <span><span class="sh-keys"><kbd class="sh-kbd">↑</kbd><kbd class="sh-kbd">↓</kbd></span>{t(lang, 'navigate')}</span>
+      <span><kbd class="sh-kbd">↵</kbd>{t(lang, 'open')}</span>
+      <span><kbd class="sh-kbd">Esc</kbd>{t(lang, 'close')}</span>
     </div>
   </div>
 </div>
@@ -25,9 +31,9 @@ import Icon from './Icon.astro';
         <div class="sh-sheet__sub" id="ql-sub"></div>
       </div>
       <div class="sh-sheet__actions">
-        <a class="sh-btn sh-btn--sm" id="ql-demo" target="_blank" rel="noopener"><Icon name="ExternalLink" /><span>Open demo</span></a>
-        <a class="sh-btn sh-btn--sm sh-btn--primary" id="ql-open"><span>Open</span><Icon name="ChevronRight" /></a>
-        <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-action="ql-close" aria-label="Close"><Icon name="X" /></button>
+        <a class="sh-btn sh-btn--sm" id="ql-demo" target="_blank" rel="noopener"><Icon name="ExternalLink" /><span>{t(lang, 'openDemo')}</span></a>
+        <a class="sh-btn sh-btn--sm sh-btn--primary" id="ql-open"><span>{t(lang, 'open')}</span><Icon name="ChevronRight" /></a>
+        <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-action="ql-close" aria-label={t(lang, 'close')}><Icon name="X" /></button>
       </div>
     </div>
     <div class="sh-stage" id="ql-stage">
@@ -35,8 +41,8 @@ import Icon from './Icon.astro';
         <img class="sh-stage__poster" id="ql-poster" alt="" hidden>
       </div>
       <div class="sh-stage__status" id="ql-status" hidden>
-        <span class="sh-spinner sh-spinner--lg" role="progressbar" aria-label="Loading demo"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-        Loading demo…
+        <span class="sh-spinner sh-spinner--lg" role="progressbar" aria-label={t(lang, 'loadingDemo')}><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+        {t(lang, 'loadingDemo')}
       </div>
     </div>
   </div>
@@ -45,26 +51,26 @@ import Icon from './Icon.astro';
 <div class="sh-overlay sh-overlay--sheet" id="shortcuts" hidden>
   <div class="sh-sheet sh-sheet--narrow" role="dialog" aria-modal="true" aria-labelledby="sc-title">
     <div class="sh-sheet__head">
-      <div class="sh-sheet__title" id="sc-title">Keyboard shortcuts</div>
-      <div class="sh-sheet__actions"><button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-action="shortcuts-close" aria-label="Close"><Icon name="X" /></button></div>
+      <h2 class="sh-sheet__title" id="sc-title">{t(lang, 'shortcuts')}</h2>
+      <div class="sh-sheet__actions"><button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-action="shortcuts-close" aria-label={t(lang, 'close')}><Icon name="X" /></button></div>
     </div>
     <dl class="sh-shortcuts">
-      <dt>Search everything</dt><dd><kbd class="sh-kbd" data-mod-kbd="K">⌘K</kbd></dd>
-      <dt>Filter this page</dt><dd><kbd class="sh-kbd">/</kbd></dd>
-      <dt>Collapse the sidebar</dt><dd><kbd class="sh-kbd" data-mod-kbd="B">⌘B</kbd></dd>
-      <dt>Move through the grid</dt><dd><kbd class="sh-kbd">←</kbd><kbd class="sh-kbd">↑</kbd><kbd class="sh-kbd">↓</kbd><kbd class="sh-kbd">→</kbd></dd>
-      <dt>Quick Look</dt><dd><kbd class="sh-kbd">Space</kbd></dd>
-      <dt>Open</dt><dd><kbd class="sh-kbd">↵</kbd></dd>
-      <dt>Add to Favorites</dt><dd><kbd class="sh-kbd">F</kbd></dd>
-      <dt>Grid size</dt><dd><kbd class="sh-kbd">[</kbd><kbd class="sh-kbd">]</kbd></dd>
-      <dt>Copy code</dt><dd><kbd class="sh-kbd">C</kbd></dd>
-      <dt>Copy prompt</dt><dd><kbd class="sh-kbd">P</kbd></dd>
-      <dt>Code variant</dt><dd><kbd class="sh-kbd">1</kbd><kbd class="sh-kbd">2</kbd><kbd class="sh-kbd">3</kbd></dd>
-      <dt>This list</dt><dd><kbd class="sh-kbd">?</kbd></dd>
+      <dt>{t(lang, 'scSearch')}</dt><dd><kbd class="sh-kbd" data-mod-kbd="K">⌘K</kbd></dd>
+      <dt>{t(lang, 'scFilter')}</dt><dd><kbd class="sh-kbd">/</kbd></dd>
+      <dt>{t(lang, 'scSidebar')}</dt><dd><kbd class="sh-kbd" data-mod-kbd="B">⌘B</kbd></dd>
+      <dt>{t(lang, 'scGrid')}</dt><dd><kbd class="sh-kbd">←</kbd><kbd class="sh-kbd">↑</kbd><kbd class="sh-kbd">↓</kbd><kbd class="sh-kbd">→</kbd></dd>
+      <dt>{t(lang, 'quickLook')}</dt><dd><kbd class="sh-kbd">{t(lang, 'spaceKey')}</kbd></dd>
+      <dt>{t(lang, 'scOpen')}</dt><dd><kbd class="sh-kbd">↵</kbd></dd>
+      <dt>{t(lang, 'scFav')}</dt><dd><kbd class="sh-kbd">F</kbd></dd>
+      <dt>{t(lang, 'gridSize')}</dt><dd><kbd class="sh-kbd">[</kbd><kbd class="sh-kbd">]</kbd></dd>
+      <dt>{t(lang, 'scCopyCode')}</dt><dd><kbd class="sh-kbd">C</kbd></dd>
+      <dt>{t(lang, 'scCopyPrompt')}</dt><dd><kbd class="sh-kbd">P</kbd></dd>
+      <dt>{t(lang, 'scVariant')}</dt><dd><kbd class="sh-kbd">1</kbd><kbd class="sh-kbd">2</kbd><kbd class="sh-kbd">3</kbd></dd>
+      <dt>{t(lang, 'scThisList')}</dt><dd><kbd class="sh-kbd">?</kbd></dd>
     </dl>
   </div>
 </div>
 
 <div class="sh-tip" id="tip" role="tooltip" hidden></div>
 
-<div class="sh-toast-layer" role="status" aria-live="polite"><div class="sh-toast" id="toast" hidden></div></div>
+<div class="sh-toast-layer" role="status" aria-live="polite" aria-atomic="true"><div class="sh-toast" id="toast" hidden></div></div>

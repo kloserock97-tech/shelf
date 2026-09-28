@@ -1,0 +1,14 @@
+---
+import App from '../../layouts/App.astro';
+import ShelfArt from '../../components/ShelfArt.astro';
+import { lurl } from '../../lib/url';
+import { t } from '../../lib/i18n';
+---
+<App title={t('ru', 'notFound')} lang="ru" page="not-found">
+  <div class="sh-empty sh-empty--page">
+    <ShelfArt kind="lost" />
+    <h1 class="sh-empty__title">{t('ru', 'notFoundTitle')}</h1>
+    <p class="sh-empty__text">{t('ru', 'notFoundText')}</p>
+    <a class="sh-btn sh-btn--primary" href={lurl('ru', '')}>{t('ru', 'openLibrary')}</a>
+  </div>
+</App>

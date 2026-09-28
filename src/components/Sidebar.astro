@@ -1,57 +1,54 @@
 ---
 import Icon from './Icon.astro';
-import { GROUPS, TYPES } from '../lib/taxonomy';
-import { url } from '../lib/url';
+import Logo from './Logo.astro';
+import { GROUPS, TYPES, typeLabel, groupLabel } from '../lib/taxonomy';
+import { lurl } from '../lib/url';
+import { t, itemsWord, type Lang } from '../lib/i18n';
 import type { Item } from '../lib/items';
 
 interface Props {
   nav: string;
   items: Item[];
+  lang: Lang;
 }
-const { nav, items } = Astro.props;
+const { nav, items, lang } = Astro.props;
 const counts = new Map<string, number>();
 for (const it of items) counts.set(it.data.type, (counts.get(it.data.type) ?? 0) + 1);
 // Only kinds that have items, in groups that have kinds.
 const groups = GROUPS.map((g) => ({ ...g, types: TYPES.filter((t) => t.group === g.id && counts.get(t.id)) })).filter((g) => g.types.length);
 const current = (key: string) => (nav === key ? 'page' : undefined);
+const n = items.length;
 ---
 <aside class="sh-sidebar" id="sidebar" aria-label="Shelf">
   <div class="sh-sb__head">
-    <a class="sh-sb__brand" href={url('')} data-tip="Expand sidebar" data-tip-kbd="mod+B" data-rail-action="expand">
-      <span class="sh-sb__mark" aria-hidden="true">
-        <svg viewBox="0 0 20 20" fill="currentColor">
-          <rect x="3" y="3" width="5" height="7" rx="1.5" />
-          <rect x="10" y="5.5" width="7" height="4.5" rx="1.5" opacity=".72" />
-          <rect x="2" y="11.5" width="16" height="1.5" rx=".75" />
-          <rect x="4" y="14.5" width="8" height="3" rx="1.5" opacity=".72" />
-        </svg>
-      </span>
+    <a class="sh-sb__brand" href={lurl(lang, '')} data-tip={t(lang, 'expandSidebar')} data-tip-kbd="mod+B" data-rail-action="expand">
+      <Logo />
       <span class="sh-sb__label sh-sb__wordmark">Shelf</span>
     </a>
-    <button class="sh-sb__toggle sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-action="sidebar-toggle" aria-controls="sidebar" aria-label="Collapse sidebar" data-tip="Collapse sidebar" data-tip-kbd="mod+B"><Icon name="PanelLeft" /></button>
+    <button class="sh-sb__toggle sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-action="sidebar-toggle" aria-controls="sidebar" aria-label={t(lang, 'collapseSidebar')} data-tip={t(lang, 'collapseSidebar')} data-tip-kbd="mod+B"><Icon name="PanelLeft" /></button>
   </div>
 
-  <nav class="sh-sb__body" aria-label="Library">
+  <nav class="sh-sb__body" aria-label={t(lang, 'library')}>
     <div class="sh-sb__group">
-      <button class="sh-sb__row" type="button" data-action="palette" data-tip="Search" data-tip-kbd="mod+K">
-        <Icon name="Search" /><span class="sh-sb__label">Search</span><kbd class="sh-sb__kbd" data-mod-kbd="K">⌘K</kbd>
+      <button class="sh-sb__row" type="button" data-action="palette" data-tip={t(lang, 'search')} data-tip-kbd="mod+K">
+        <Icon name="Search" /><span class="sh-sb__label">{t(lang, 'search')}</span><kbd class="sh-sb__kbd" data-mod-kbd="K">⌘K</kbd>
       </button>
-      <a class="sh-sb__row" href={url('')} aria-current={current('all')} data-tip="All items">
-        {nav === 'all' && <span class="sh-sb__pill"></span>}<Icon name="Library" /><span class="sh-sb__label">All items</span><span class="sh-sb__count">{items.length}</span>
+      <a class="sh-sb__row" href={lurl(lang, '')} aria-current={current('all')} data-tip={t(lang, 'allItems')}>
+        {nav === 'all' && <span class="sh-sb__pill"></span>}<Icon name="Library" /><span class="sh-sb__label">{t(lang, 'allItems')}</span><span class="sh-sb__count">{n}</span>
       </a>
-      <a class="sh-sb__row" href={url('favorites/')} aria-current={current('favorites')} data-tip="Favorites">
-        {nav === 'favorites' && <span class="sh-sb__pill"></span>}<Icon name="Star" /><span class="sh-sb__label">Favorites</span><span class="sh-sb__count" data-count="favorites"></span>
+      <a class="sh-sb__row" href={lurl(lang, 'favorites/')} aria-current={current('favorites')} data-tip={t(lang, 'favorites')}>
+        {nav === 'favorites' && <span class="sh-sb__pill"></span>}<Icon name="Star" /><span class="sh-sb__label">{t(lang, 'favorites')}</span><span class="sh-sb__count" data-count="favorites"></span>
       </a>
     </div>
 
     {groups.map((g) => (
       <section class="sh-sb__group" data-section={g.id}>
-        <button class="sh-sb__heading" type="button" aria-expanded="true" data-action="section-toggle"><span class="sh-sb__label">{g.label}</span><Icon name="ChevronDown" class="sh-sb__chev" /></button>
+        <button class="sh-sb__heading" type="button" aria-expanded="true" data-action="section-toggle"><span class="sh-sb__label">{groupLabel(g, lang)}</span><Icon name="ChevronDown" class="sh-sb__chev" /></button>
         <div class="sh-sb__list">
           <div>
-            {g.types.map((t) => (
-              <a class="sh-sb__row" href={url(`type/${t.id}/`)} aria-current={current(`type:${t.id}`)} data-tip={t.label}>
-                {nav === `type:${t.id}` && <span class="sh-sb__pill"></span>}<Icon name={t.icon} /><span class="sh-sb__label">{t.label}</span><span class="sh-sb__count">{counts.get(t.id)}</span>
+            {g.types.map((ty) => (
+              <a class="sh-sb__row" href={lurl(lang, `type/${ty.id}/`)} aria-current={current(`type:${ty.id}`)} data-tip={typeLabel(ty, lang)}>
+                {nav === `type:${ty.id}` && <span class="sh-sb__pill"></span>}<Icon name={ty.icon} /><span class="sh-sb__label">{typeLabel(ty, lang)}</span><span class="sh-sb__count">{counts.get(ty.id)}</span>
               </a>
             ))}
           </div>
@@ -61,37 +58,45 @@ const current = (key: string) => (nav === key ? 'page' : undefined);
   </nav>
 
   <div class="sh-sb__foot">
-    <button class="sh-sb__profile" type="button" data-action="profile-menu" aria-haspopup="menu" aria-expanded="false" aria-controls="profile-menu" data-tip="Nikita Gorbachev">
+    <button class="sh-sb__profile" type="button" data-action="profile-menu" aria-haspopup="dialog" aria-expanded="false" aria-controls="profile-menu" data-tip="Nikita Gorbachev">
       <span class="sh-sb__avatar" aria-hidden="true">N</span>
-      <span class="sh-sb__label sh-sb__who"><span class="sh-sb__name">Nikita Gorbachev</span><span class="sh-sb__meta">{items.length} {items.length === 1 ? 'item' : 'items'} on the shelf</span></span>
+      <span class="sh-sb__label sh-sb__who"><span class="sh-sb__name">Nikita Gorbachev</span><span class="sh-sb__meta">{t(lang, 'itemsOnShelf', { n, items: itemsWord(lang, n) })}</span></span>
       <Icon name="ChevronsUpDown" class="sh-sb__label sh-sb__updown" />
     </button>
   </div>
 
-  <div class="sh-sb__edge" data-action="sidebar-edge" aria-hidden="true"></div>
+  <div class="sh-sb__edge" data-action="sidebar-edge" role="separator" aria-orientation="vertical" aria-controls="sidebar" tabindex="0"
+    aria-label={t(lang, 'sidebarEdge')} aria-valuemin="216" aria-valuemax="320" aria-valuenow="248"></div>
 </aside>
 
-<div class="sh-menu sh-profile-menu" id="profile-menu" role="menu" aria-label="Settings" hidden>
-  <div class="sh-menu__label">Appearance</div>
+<div class="sh-menu sh-profile-menu" id="profile-menu" role="dialog" aria-label={t(lang, 'settings')} hidden>
+  <div class="sh-menu__label" id="pm-lang">{t(lang, 'language')}</div>
   <div class="sh-menu__seg">
-    <div class="sh-seg sh-seg--sm" role="group" aria-label="Appearance" data-theme-switch>
-      <button class="sh-seg__opt" type="button" data-value="system" aria-pressed="true">System</button>
-      <button class="sh-seg__opt" type="button" data-value="light" aria-pressed="false">Light</button>
-      <button class="sh-seg__opt" type="button" data-value="dark" aria-pressed="false">Dark</button>
+    <div class="sh-seg sh-seg--sm" role="group" aria-labelledby="pm-lang" data-lang-switch>
+      <button class="sh-seg__opt" type="button" data-value="en" lang="en" aria-pressed={lang === 'en' ? 'true' : 'false'}>English</button>
+      <button class="sh-seg__opt" type="button" data-value="ru" lang="ru" aria-pressed={lang === 'ru' ? 'true' : 'false'}>Русский</button>
+    </div>
+  </div>
+  <div class="sh-menu__label" id="pm-theme">{t(lang, 'appearance')}</div>
+  <div class="sh-menu__seg">
+    <div class="sh-seg sh-seg--sm" role="group" aria-labelledby="pm-theme" data-theme-switch>
+      <button class="sh-seg__opt" type="button" data-value="system" aria-pressed="true">{t(lang, 'themeSystem')}</button>
+      <button class="sh-seg__opt" type="button" data-value="light" aria-pressed="false">{t(lang, 'themeLight')}</button>
+      <button class="sh-seg__opt" type="button" data-value="dark" aria-pressed="false">{t(lang, 'themeDark')}</button>
     </div>
   </div>
   <div class="sh-hide-narrow">
-    <div class="sh-menu__label">Sidebar</div>
+    <div class="sh-menu__label" id="pm-sidebar">{t(lang, 'sidebar')}</div>
     <div class="sh-menu__seg">
-      <div class="sh-seg sh-seg--sm" role="group" aria-label="Sidebar style" data-sidebar-style>
-        <button class="sh-seg__opt" type="button" data-value="floating" aria-pressed="true">Floating</button>
-        <button class="sh-seg__opt" type="button" data-value="attached" aria-pressed="false">Attached</button>
+      <div class="sh-seg sh-seg--sm" role="group" aria-labelledby="pm-sidebar" data-sidebar-style>
+        <button class="sh-seg__opt" type="button" data-value="floating" aria-pressed="true">{t(lang, 'floating')}</button>
+        <button class="sh-seg__opt" type="button" data-value="attached" aria-pressed="false">{t(lang, 'attached')}</button>
       </div>
     </div>
   </div>
   <div class="sh-menu__sep"></div>
-  <button class="sh-menu__item" type="button" role="menuitem" data-action="sidebar-toggle"><Icon name="PanelLeft" /><span data-sidebar-label>Collapse sidebar</span><span class="sh-menu__key" data-mod-kbd="B">⌘B</span></button>
-  <button class="sh-menu__item" type="button" role="menuitem" data-action="shortcuts"><Icon name="Keyboard" />Keyboard shortcuts<span class="sh-menu__key">?</span></button>
+  <button class="sh-menu__item" type="button" data-action="sidebar-toggle"><Icon name="PanelLeft" /><span data-sidebar-label>{t(lang, 'collapseSidebar')}</span><span class="sh-menu__key" data-mod-kbd="B">⌘B</span></button>
+  <button class="sh-menu__item" type="button" data-action="shortcuts"><Icon name="Keyboard" />{t(lang, 'shortcuts')}<span class="sh-menu__key">?</span></button>
   <div class="sh-menu__sep"></div>
-  <a class="sh-menu__item" role="menuitem" href="https://github.com/kloserock97-tech/shelf" target="_blank" rel="noopener"><Icon name="ExternalLink" />Source on GitHub</a>
+  <a class="sh-menu__item" href="https://github.com/kloserock97-tech/shelf" target="_blank" rel="noopener"><Icon name="ExternalLink" />{t(lang, 'sourceOnGithub')}</a>
 </div>

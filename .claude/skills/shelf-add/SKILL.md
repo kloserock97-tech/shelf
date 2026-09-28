@@ -14,8 +14,13 @@ description: Кладёт UI-решение на полку Shelf (Projects/shel
 - Определи происхождение. Своё — `origin: own`. Переписано по мотивам известного приёма — `adapted` с `priorArt`.
   Чужой код, константы, ассеты — не публиковать как есть: переписать или положить в `private/` с `origin: third-party`.
   Опись с пометками происхождения — `docs/research/inventory.md`.
-- Выбери тип (component, button, section, app, webgl, shader, motion, loader, text, background, object, utility)
-  и короткий kebab-case slug.
+- Выбери тип и короткий kebab-case slug. Типы по группам сайдбара:
+  Interface — component, button, card, navigation, gallery, icon, cursor;
+  Animation — motion, transition, scroll, text, loader;
+  Graphics — webgl, shader, background, object;
+  Pages & tools — section, app, sound, utility.
+  Нужного типа нет — добавь его в `src/lib/taxonomy.ts` (подписи EN/RU, иконка Lucide, группа, строка о типе) и в
+  `scripts/lib/items.mjs`.
 
 ## 2. Собрать папку
 
@@ -26,13 +31,14 @@ description: Кладёт UI-решение на полку Shelf (Projects/shel
   компонент интерфейса; он же попадёт в реестр shadcn, если в `item.md` указан `registry: <slug>`.
 - `demo/index.html` — живое превью: прозрачный фон, элемент по центру, файлы варианта подключены через
   `../variants/<id>/…`. Для больших проектов с собственной страницей вместо демо — `demo.url`.
-- `item.md`: `summary` — одно предложение, что делает; `tech`, `tags` (добавь русские синонимы для поиска),
+- `item.md`: `title` — по-английски (он же имя в обоих языках интерфейса); `summary` — одно предложение, что делает; `tech`, `tags` (добавь русские синонимы для поиска),
   `added` — сегодняшняя дата, `source` — проект и путь. В теле — заметки по-русски: грабли и решения, коротко.
 
 ## 3. Превью
 
 - `npm run capture -- <slug>` — постер 4:3 в Chrome с GPU (для WebGL проверь, что в выводе ANGLE, а не SwiftShader).
-  Мелкий элемент снимай с `--size 640x480`, сцену — с `--wait 7000`.
+  Локальное демо съёмщик отдаёт через временный http-сервер, так что ES-модули работают; параметры демо —
+  `--query "?p=0.4&play=0"`. Мелкий элемент снимай с `--size 640x480`, сцену — с `--wait 7000`.
 - Если у проекта уже есть кадр или ролик (например, `Portfolio 3D TS2/public/ui/card-*.webp|mp4`), можно взять его:
   `poster.webp`, `loop.mp4`.
 

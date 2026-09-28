@@ -2,13 +2,15 @@
 import Icon from './Icon.astro';
 import { typeOf } from '../lib/taxonomy';
 import { type Item, itemUrl, posterUrl, loopUrl, subtitle, isPrivate } from '../lib/items';
+import { t, type Lang } from '../lib/i18n';
 
 interface Props {
   item: Item;
+  lang: Lang;
 }
-const { item } = Astro.props;
+const { item, lang } = Astro.props;
 const d = item.data;
-const href = itemUrl(item);
+const href = itemUrl(item, lang);
 const poster = posterUrl(item);
 const loop = loopUrl(item);
 const priv = isPrivate(item);
@@ -22,17 +24,17 @@ const priv = isPrivate(item);
     )}
     {(d.status === 'draft' || priv) && (
       <span class="sh-card__badges">
-        {d.status === 'draft' && <span class="sh-badge sh-badge--glass sh-badge--draft">Draft</span>}
-        {priv && <span class="sh-badge sh-badge--glass"><Icon name="Lock" />Private</span>}
+        {d.status === 'draft' && <span class="sh-badge sh-badge--glass sh-badge--draft">{t(lang, 'draft')}</span>}
+        {priv && <span class="sh-badge sh-badge--glass"><Icon name="Lock" />{t(lang, 'private')}</span>}
       </span>
     )}
-    <span class="sh-card__hint sh-badge sh-badge--glass">Quick Look <kbd class="sh-kbd">Space</kbd></span>
+    <span class="sh-card__hint sh-badge sh-badge--glass" aria-hidden="true">{t(lang, 'quickLook')} <kbd class="sh-kbd">{t(lang, 'spaceKey')}</kbd></span>
   </a>
   <div class="sh-card__meta">
     <div class="sh-card__text">
       <a class="sh-card__title" href={href} tabindex="-1">{d.title}</a>
-      <div class="sh-card__sub">{subtitle(item)}</div>
+      <div class="sh-card__sub">{subtitle(item, lang)}</div>
     </div>
-    <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm sh-card__fav sh-fav" type="button" aria-label={`Add ${d.title} to Favorites`} aria-pressed="false" data-fav={item.id}><Icon name="Star" /></button>
+    <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm sh-card__fav sh-fav" type="button" aria-label={t(lang, 'favAdd', { title: d.title })} aria-pressed="false" data-fav={item.id}><Icon name="Star" /></button>
   </div>
 </article>

@@ -82,14 +82,14 @@
 
 1. **Шапка 52px.** Знак 28×28 на `--accent`, радиус 8: четыре белых скруглённых бруска, как полка с предметами.
    Рядом «Shelf» 17/22 w700 −0.02em. Справа круглая кнопка 28px с иконкой `panel-left` цветом `--label-secondary`.
-2. **Группа без заголовка.** Search с клавишей ⌘K справа (видна при наведении), All items 90, Favorites 11, Recent.
-3. **Раздел «Types».** Заголовок 28px, шеврон при наведении. Строки:
-   - Components 17, Buttons 2, Sections & pages 5, Apps 4;
-   - 3D & WebGL 12, Shaders 9, Motion 15, Loaders 3.
-   Иконки: `component`, `mouse-pointer-click`, `layout-panel-top`, `app-window`, `box`, `blend`, `orbit`, `loader`.
-4. **Раздел «Recently opened».** Три строки с миниатюрой 24×18 радиус 4 вместо иконки: Windcrest, Living Garden,
-   Driftfield.
-5. **Подвал.** Сверху линия 0.5px `--separator`. Кнопка профиля 44px: аватар 28px на `--inverse` с буквой N,
+2. **Группа без заголовка.** Search с клавишей ⌘K справа (видна при наведении), All items 90, Favorites 11.
+3. **Группы типов**, у каждой заголовок 28px и шеврон при наведении:
+   - Interface: Components 17, Buttons 4, Cards 5, Navigation 3, Galleries 8;
+   - Animation: Motion 6, Scroll effects 4, Text effects 3, Loaders 2;
+   - Graphics: 3D & WebGL 12, Shaders 9.
+   Иконки: `component`, `mouse-pointer-click`, `square-stack`, `compass`, `gallery-horizontal-end`, `orbit`, `mouse`,
+   `type`, `loader`, `box`, `blend`.
+4. **Подвал.** Сверху линия 0.5px `--separator`. Кнопка профиля 44px: аватар 28px на `--inverse` с буквой N,
    «Nikita Gorbachev» 13/18 w600, «90 items on the shelf» 12/16 `--label-secondary`, справа `chevrons-up-down`.
 
 Строка сайдбара:

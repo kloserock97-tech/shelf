@@ -99,8 +99,8 @@
   --duration-base: 240ms;
   --duration-slow: 400ms;
   --ease-standard: cubic-bezier(0.25, 0.1, 0.25, 1);
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
   --ease-spring: linear(0, 0.049 4%, 0.163 8%, 0.341 13%, 0.55 19%, 0.745 26%, 0.891 34%, 0.976 43%, 1.01 53%, 1.014 65%, 1.007 80%, 1);
   --z-sidebar: 10;

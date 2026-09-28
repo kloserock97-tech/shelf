@@ -1,0 +1,42 @@
+---
+// Line illustrations for empty states: one plank on two brackets and what is (or is not) on it.
+// Stroke is currentColor, so the art follows the theme; the thing on the shelf takes the accent.
+interface Props {
+  kind: 'favorites' | 'search' | 'empty' | 'lost';
+}
+const { kind } = Astro.props;
+---
+<svg class="sh-art-empty" viewBox="0 0 160 104" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <path class="sh-art-empty__plank" d="M18 70h124" />
+  <path class="sh-art-empty__bracket" d="M34 70v8l-6 6M126 70v8l6 6" />
+  {kind === 'favorites' && (
+    <g class="sh-art-empty__thing">
+      <rect x="40" y="44" width="16" height="26" rx="3" opacity=".45" />
+      <path class="sh-art-empty__accent" d="M92 38l4.9 9.9 10.9 1.6-7.9 7.7 1.9 10.8L92 62.9 82.2 68l1.9-10.8-7.9-7.7 10.9-1.6z" stroke-dasharray="3 4" />
+      <rect x="112" y="52" width="14" height="18" rx="3" opacity=".45" />
+    </g>
+  )}
+  {kind === 'search' && (
+    <g class="sh-art-empty__thing">
+      <rect x="40" y="50" width="22" height="20" rx="3" opacity=".45" />
+      <circle class="sh-art-empty__accent" cx="98" cy="46" r="13" />
+      <path class="sh-art-empty__accent" d="M107.5 55.5L118 69" />
+      <path d="M92 44a7 7 0 0 1 7-5" opacity=".6" />
+    </g>
+  )}
+  {kind === 'empty' && (
+    <g class="sh-art-empty__thing" stroke-dasharray="3 4" opacity=".7">
+      <rect x="46" y="40" width="18" height="30" rx="3" />
+      <rect x="72" y="52" width="30" height="18" rx="3" />
+      <rect x="110" y="46" width="12" height="24" rx="3" />
+    </g>
+  )}
+  {kind === 'lost' && (
+    <g class="sh-art-empty__thing">
+      <rect x="44" y="46" width="16" height="24" rx="3" opacity=".45" />
+      <rect x="66" y="56" width="26" height="14" rx="3" opacity=".45" />
+      <rect class="sh-art-empty__accent" x="104" y="80" width="18" height="12" rx="3" transform="rotate(-18 113 86)" />
+      <path d="M100 66c4 3 7 6 8 10" stroke-dasharray="2 4" opacity=".6" />
+    </g>
+  )}
+</svg>

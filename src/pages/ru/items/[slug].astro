@@ -1,6 +1,6 @@
 ---
-import ItemPage from '../../components/ItemPage.astro';
-import { allItems, type Item } from '../../lib/items';
+import ItemPage from '../../../components/ItemPage.astro';
+import { allItems, type Item } from '../../../lib/items';
 
 export async function getStaticPaths() {
   const items = await allItems();
@@ -8,4 +8,4 @@ export async function getStaticPaths() {
 }
 const { item, items } = Astro.props as { item: Item; items: Item[] };
 ---
-<ItemPage item={item} items={items} lang="en" />
+<ItemPage item={item} items={items} lang="ru" />
