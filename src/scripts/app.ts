@@ -1,6 +1,6 @@
 // Shelf in the browser: theme, copy, favourites, recent, the grid, Quick Look, the ⌘K palette and the item page.
 import MiniSearch from 'minisearch';
-import { Check, Contrast, Copy, MessageSquareCode, PanelLeft, TriangleAlert } from 'lucide-static';
+import { Check, Contrast, Copy, Keyboard, MessageSquareCode, PanelLeft, TriangleAlert } from 'lucide-static';
 import { cleanSvg } from '../lib/svg';
 
 interface Entry {
@@ -90,30 +90,220 @@ async function copyFrom(btn: HTMLElement | null, text: string, message: string) 
   }
 }
 
-/* ---------- theme and sidebar ---------- */
+/* ---------- theme ---------- */
 const THEMES = [null, 'light', 'dark'] as const;
+let themeSeg: ReturnType<typeof wireSeg> = null;
 function applyTheme(t: string | null) {
   if (t === 'light' || t === 'dark') html.dataset.theme = t;
   else delete html.dataset.theme;
-  const btn = $('[data-action="theme"]');
-  btn?.setAttribute('aria-label', `Appearance: ${t ? t[0].toUpperCase() + t.slice(1) : 'follow the system'}`);
+  themeSeg?.select(t === 'light' ? 1 : t === 'dark' ? 2 : 0, false);
+}
+function setTheme(t: string | null, announce = true) {
+  store.set('shelf:theme', t);
+  applyTheme(t);
+  if (announce) toast(`Appearance: ${t ? t[0].toUpperCase() + t.slice(1) : 'System'}`);
 }
 function cycleTheme() {
   const cur = store.get('shelf:theme');
-  const next = THEMES[(THEMES.indexOf(cur as (typeof THEMES)[number]) + 1) % THEMES.length];
-  store.set('shelf:theme', next);
-  applyTheme(next);
-  toast(`Appearance: ${next ? next[0].toUpperCase() + next.slice(1) : 'System'}`);
-}
-function toggleSidebar() {
-  if (narrow.matches) {
-    html.classList.toggle('sidebar-open');
-    return;
-  }
-  const hidden = html.classList.toggle('sidebar-hidden');
-  store.set('shelf:sidebar', hidden ? 'hidden' : null);
+  setTheme(THEMES[(THEMES.indexOf(cur as (typeof THEMES)[number]) + 1) % THEMES.length]);
 }
 applyTheme(store.get('shelf:theme'));
+
+/* ---------- sidebar: rail on desktop (⌘B), sheet on phones ---------- */
+const sidebar = $('#sidebar');
+const SB_MIN = 216;
+const SB_MAX = 320;
+const isRail = () => html.classList.contains('sidebar-rail') && !narrow.matches;
+const fmtKbd = (spec: string) => spec.replace('mod+', isMac ? '⌘' : 'Ctrl ');
+
+function setRail(on: boolean) {
+  html.classList.toggle('sidebar-rail', on);
+  store.set('shelf:sidebar', on ? 'rail' : null);
+  const label = on ? 'Expand sidebar' : 'Collapse sidebar';
+  $('.sh-sb__toggle')?.setAttribute('aria-label', label);
+  $$('[data-sidebar-label]').forEach((el) => (el.textContent = label));
+  hideTip();
+}
+let sheetReturn: HTMLElement | null = null;
+function setSheet(open: boolean) {
+  html.classList.toggle('sidebar-open', open);
+  $('.sh-sb__toggle')?.setAttribute('aria-label', open ? 'Close sidebar' : 'Collapse sidebar');
+  lockScroll(open);
+  if (open) {
+    sheetReturn = document.activeElement as HTMLElement | null;
+    requestAnimationFrame(() => sidebar?.querySelector<HTMLElement>('.sh-sb__row')?.focus());
+  } else {
+    sheetReturn?.focus?.();
+  }
+}
+function toggleSidebar() {
+  closeMenu(false);
+  if (narrow.matches) setSheet(!html.classList.contains('sidebar-open'));
+  else setRail(!html.classList.contains('sidebar-rail'));
+}
+
+// Sections remember whether they are folded.
+function initSections() {
+  const closed = new Set(readList('shelf:sections'));
+  $$('[data-section]').forEach((sec) => {
+    const id = sec.dataset.section!;
+    html.classList.remove(`sec-closed-${id}`);
+    $('.sh-sb__heading', sec)?.setAttribute('aria-expanded', String(!closed.has(id)));
+  });
+}
+function toggleSection(heading: HTMLElement) {
+  const id = heading.closest<HTMLElement>('[data-section]')?.dataset.section;
+  if (!id) return;
+  const open = heading.getAttribute('aria-expanded') !== 'true';
+  heading.setAttribute('aria-expanded', String(open));
+  const closed = new Set(readList('shelf:sections'));
+  if (open) closed.delete(id); else closed.add(id);
+  store.set('shelf:sections', JSON.stringify([...closed]));
+}
+
+// The last opened items, like a chat history, each with its poster.
+function renderOpened() {
+  const sec = $('[data-section="opened"]');
+  const box = $('#sb-opened');
+  if (!sec || !box) return;
+  const list = readList('shelf:recent').map((s) => BY_SLUG.get(s)).filter((e): e is Entry => Boolean(e)).slice(0, 5);
+  sec.hidden = list.length === 0;
+  box.innerHTML = list
+    .map((e) =>
+      `<a class="sh-sb__row" href="${esc(e.url)}" data-tip="${esc(e.title)}">` +
+      `<span class="sh-sb__thumb">${e.poster ? `<img src="${esc(e.poster)}" alt="" loading="lazy" decoding="async">` : ''}</span>` +
+      `<span class="sh-sb__label">${esc(e.title)}</span></a>`)
+    .join('');
+}
+
+// Tooltips name the icons while the sidebar is a rail; the collapse button always has one.
+const tip = $('#tip');
+let tipTimer = 0;
+function showTip(el: HTMLElement, delay: number) {
+  if (!tip || !el.dataset.tip) return;
+  if (!isRail() && !el.classList.contains('sh-sb__toggle')) return;
+  clearTimeout(tipTimer);
+  tipTimer = window.setTimeout(() => {
+    const kbd = el.dataset.tipKbd ? `<kbd class="sh-kbd">${esc(fmtKbd(el.dataset.tipKbd))}</kbd>` : '';
+    tip.innerHTML = `<span></span>${kbd}`;
+    (tip.firstElementChild as HTMLElement).textContent = el.dataset.tip!;
+    const r = el.getBoundingClientRect();
+    tip.style.left = `${Math.round(r.right + 10)}px`;
+    tip.style.top = `${Math.round(r.top + r.height / 2)}px`;
+    tip.hidden = false;
+    tip.classList.remove('is-in');
+    void tip.offsetWidth;
+    tip.classList.add('is-in');
+  }, delay);
+}
+function hideTip() {
+  clearTimeout(tipTimer);
+  if (tip) tip.hidden = true;
+}
+
+// Drag the right edge to resize, drag far left to fold into the rail, click it to toggle, double-click to reset.
+function initEdge() {
+  const edge = $('.sh-sb__edge');
+  if (!edge || !sidebar) return;
+  edge.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    const startX = e.clientX;
+    const startW = sidebar.getBoundingClientRect().width;
+    const wasRail = isRail();
+    let moved = false;
+    edge.setPointerCapture(e.pointerId);
+    const move = (ev: PointerEvent) => {
+      const dx = ev.clientX - startX;
+      if (!moved && Math.abs(dx) < 3) return;
+      if (!moved) { moved = true; html.classList.add('sb-resizing'); hideTip(); }
+      if (wasRail) { if (dx > 48 && isRail()) { html.classList.remove('sb-resizing'); setRail(false); } return; }
+      const w = startW + dx;
+      if (w < SB_MIN - 56) { if (!isRail()) { html.classList.remove('sb-resizing'); setRail(true); } return; }
+      if (isRail()) setRail(false);
+      html.style.setProperty('--sidebar-width', `${Math.max(SB_MIN, Math.min(SB_MAX, Math.round(w)))}px`);
+    };
+    const up = () => {
+      edge.removeEventListener('pointermove', move);
+      edge.removeEventListener('pointerup', up);
+      edge.removeEventListener('pointercancel', up);
+      html.classList.remove('sb-resizing');
+      if (!moved) { toggleSidebar(); return; }
+      const w = parseInt(getComputedStyle(html).getPropertyValue('--sidebar-width'), 10);
+      store.set('shelf:sidebar-width', Number.isFinite(w) && w !== 248 ? String(w) : null);
+    };
+    edge.addEventListener('pointermove', move);
+    edge.addEventListener('pointerup', up);
+    edge.addEventListener('pointercancel', up);
+  });
+  edge.addEventListener('dblclick', () => {
+    html.style.removeProperty('--sidebar-width');
+    store.set('shelf:sidebar-width', null);
+  });
+}
+
+// Profile menu: appearance, sidebar, shortcuts, source.
+const menu = $('#profile-menu');
+const profileBtn = $<HTMLButtonElement>('[data-action="profile-menu"]');
+const menuItems = () => (menu ? $$<HTMLElement>('.sh-seg__opt, .sh-menu__item', menu) : []);
+function placeMenu() {
+  if (!menu || !profileBtn) return;
+  const r = profileBtn.getBoundingClientRect();
+  menu.style.left = `${Math.max(8, Math.round(r.left))}px`;
+  menu.style.bottom = `${Math.round(innerHeight - r.top + 6)}px`;
+}
+function openMenu() {
+  if (!menu || !profileBtn) return;
+  hideTip();
+  placeMenu();
+  menu.hidden = false;
+  menu.classList.remove('is-in');
+  void menu.offsetWidth;
+  menu.classList.add('is-in');
+  profileBtn.setAttribute('aria-expanded', 'true');
+  menuItems()[0]?.focus();
+}
+function closeMenu(returnFocus = true) {
+  if (!menu || menu.hidden) return;
+  menu.hidden = true;
+  profileBtn?.setAttribute('aria-expanded', 'false');
+  if (returnFocus) profileBtn?.focus();
+}
+
+// Sidebar style: the floating panel of macOS 26 or the edge-to-edge sidebar of macOS 27.
+// The switch morphs the panel through a view transition; the phone sheet always floats.
+let styleSeg: ReturnType<typeof wireSeg> = null;
+function setSidebarStyle(style: string, animate = true) {
+  const attached = style === 'attached';
+  store.set('shelf:sidebar-style', attached ? 'attached' : null);
+  styleSeg?.select(attached ? 1 : 0, false);
+  const flip = () => {
+    html.classList.add('sb-noanim');
+    html.classList.toggle('sb-attached', attached);
+    placeMenu();
+    requestAnimationFrame(() => requestAnimationFrame(() => html.classList.remove('sb-noanim')));
+  };
+  if (animate && !reduceMotion.matches && document.startViewTransition) document.startViewTransition(flip);
+  else flip();
+}
+
+// Keyboard shortcuts sheet.
+const shortcuts = $('#shortcuts');
+function openShortcuts() {
+  if (!shortcuts) return;
+  closeMenu(false);
+  shortcuts.hidden = false;
+  shortcuts.classList.remove('is-in');
+  void shortcuts.offsetWidth;
+  shortcuts.classList.add('is-in');
+  lockScroll(true);
+  $<HTMLElement>('[data-action="shortcuts-close"]', shortcuts)?.focus();
+}
+function closeShortcuts() {
+  if (!shortcuts || shortcuts.hidden) return;
+  shortcuts.hidden = true;
+  lockScroll(false);
+}
 
 /* ---------- segmented control ---------- */
 function wireSeg(seg: HTMLElement | null, onChange?: (value: string, index: number) => void) {
@@ -433,7 +623,8 @@ function highlightMatch(text: string, q: string) {
 function paletteActions(): { label: string; icon: string; key?: string; run: () => void }[] {
   const actions: { label: string; icon: string; key?: string; run: () => void }[] = [
     { label: 'Change appearance', icon: 'contrast', run: cycleTheme },
-    { label: html.classList.contains('sidebar-hidden') ? 'Show sidebar' : 'Hide sidebar', icon: 'panel', run: toggleSidebar }
+    { label: isRail() ? 'Expand sidebar' : 'Collapse sidebar', icon: 'panel', key: fmtKbd('mod+B'), run: toggleSidebar },
+    { label: 'Keyboard shortcuts', icon: 'keyboard', key: '?', run: openShortcuts }
   ];
   if (itemApi) {
     actions.unshift(
@@ -447,7 +638,8 @@ const PAL_ICON: Record<string, string> = {
   contrast: cleanSvg(Contrast),
   panel: cleanSvg(PanelLeft),
   copy: cleanSvg(Copy),
-  prompt: cleanSvg(MessageSquareCode)
+  prompt: cleanSvg(MessageSquareCode),
+  keyboard: cleanSvg(Keyboard)
 };
 function renderPalette() {
   if (!palList || !palInput) return;
@@ -467,7 +659,9 @@ function renderPalette() {
       () => { location.href = e.url; }
     );
   }
-  const places = $$<HTMLAnchorElement>('.sh-nav__row').map((a) => ({ label: a.childNodes[1]?.textContent?.trim() || a.textContent!.trim(), href: a.href, icon: a.querySelector('.sh-i')?.innerHTML ?? '' }));
+  const places = $$<HTMLAnchorElement>('#sidebar .sh-sb__row[href]')
+    .filter((a) => !a.closest('#sb-opened'))
+    .map((a) => ({ label: a.querySelector('.sh-sb__label')?.textContent?.trim() ?? '', href: a.href, icon: a.querySelector('.sh-i')?.innerHTML ?? '' }));
   const matchedPlaces = places.filter((p) => !q || p.label.toLowerCase().includes(q.toLowerCase()));
   if (matchedPlaces.length && q) {
     rows.push('<div class="sh-palette__group">Go to</div>');
@@ -630,35 +824,91 @@ function initItem(article: HTMLElement) {
 /* ---------- wiring ---------- */
 document.addEventListener('click', (e) => {
   const t = e.target as HTMLElement;
+  if (menu && !menu.hidden && !t.closest('#profile-menu') && !t.closest('[data-action="profile-menu"]')) closeMenu(false);
   const fav = t.closest<HTMLElement>('[data-fav]');
   if (fav) { e.preventDefault(); toggleFav(fav.dataset.fav!); return; }
   const copy = t.closest<HTMLElement>('[data-copy]');
   if (copy) { copyFrom(copy, copy.dataset.copy ?? '', copy.dataset.toast ?? 'Copied'); return; }
-  const action = t.closest<HTMLElement>('[data-action]')?.dataset.action;
+  const target = t.closest<HTMLElement>('[data-action]');
+  const action = target?.dataset.action;
   if (action === 'theme') cycleTheme();
   else if (action === 'sidebar-toggle') toggleSidebar();
-  else if (action === 'sidebar-close') html.classList.remove('sidebar-open');
+  else if (action === 'sidebar-close') setSheet(false);
+  else if (action === 'palette') { if (narrow.matches) setSheet(false); openPalette(''); }
+  else if (action === 'profile-menu') { if (menu?.hidden) openMenu(); else closeMenu(); }
+  else if (action === 'section-toggle' && target) toggleSection(target);
+  else if (action === 'shortcuts') openShortcuts();
+  else if (action === 'shortcuts-close') closeShortcuts();
   else if (action === 'ql-close') closeQuickLook();
 });
+shortcuts?.addEventListener('click', (e) => { if (e.target === shortcuts) closeShortcuts(); });
 
-$$('[data-shortcut="palette"]').forEach((k) => {
-  k.textContent = isMac ? '⌘K' : 'Ctrl K';
-  k.style.cursor = 'pointer';
-  k.addEventListener('click', (e) => { e.preventDefault(); openPalette($<HTMLInputElement>('#search')?.value ?? ''); });
+// In the rail the brand mark unfolds the sidebar instead of going home.
+$('.sh-sb__brand')?.addEventListener('click', (e) => {
+  if (isRail()) { e.preventDefault(); setRail(false); }
 });
+if (sidebar) {
+  sidebar.addEventListener('pointerover', (e) => {
+    const el = (e.target as HTMLElement).closest<HTMLElement>('[data-tip]');
+    if (el && sidebar.contains(el)) showTip(el, 120);
+  });
+  sidebar.addEventListener('pointerout', (e) => {
+    const to = (e.relatedTarget as HTMLElement | null)?.closest?.('[data-tip]');
+    if (!to) hideTip();
+  });
+  sidebar.addEventListener('focusin', (e) => {
+    const el = (e.target as HTMLElement).closest<HTMLElement>('[data-tip]');
+    if (el) showTip(el, 0);
+  });
+  sidebar.addEventListener('focusout', hideTip);
+  $('.sh-sb__body', sidebar)?.addEventListener('scroll', hideTip, { passive: true });
+}
+$$('[data-mod-kbd]').forEach((k) => (k.textContent = isMac ? `⌘${k.dataset.modKbd}` : `Ctrl ${k.dataset.modKbd}`));
+themeSeg = wireSeg($('[data-theme-switch]'), (v) => setTheme(v === 'system' ? null : v));
+applyTheme(store.get('shelf:theme'));
+styleSeg = wireSeg($('[data-sidebar-style]'), (v) => setSidebarStyle(v));
+styleSeg?.select(html.classList.contains('sb-attached') ? 1 : 0, false);
+setRail(html.classList.contains('sidebar-rail'));
+initSections();
+initEdge();
 
 const searchInput = $<HTMLInputElement>('#search');
 const grid = $('#grid');
 if (grid) initGrid(grid);
-else searchInput?.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && searchInput.value.trim()) location.href = `${BASE}?q=${encodeURIComponent(searchInput.value.trim())}`;
-});
 const article = $('[data-item]');
 const itemCtl = article ? initItem(article) : null;
+renderOpened();
 renderFavs();
+requestAnimationFrame(() => requestAnimationFrame(() => html.classList.remove('sb-noanim')));
 
 document.addEventListener('keydown', (e) => {
   const mod = e.metaKey || e.ctrlKey;
+  if (mod && !e.shiftKey && !e.altKey && e.key.toLowerCase() === 'b') { e.preventDefault(); toggleSidebar(); return; }
+  if (menu && !menu.hidden) {
+    if (e.key === 'Escape') { e.preventDefault(); closeMenu(); }
+    else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      const items = menuItems();
+      const i = items.indexOf(document.activeElement as HTMLElement);
+      items[(i + (e.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length]?.focus();
+    } else if (e.key === 'Tab') closeMenu(false);
+    return;
+  }
+  if (shortcuts && !shortcuts.hidden) {
+    if (e.key === 'Escape' || e.key === '?') { e.preventDefault(); closeShortcuts(); }
+    return;
+  }
+  if (html.classList.contains('sidebar-open') && sidebar) {
+    if (e.key === 'Escape') { e.preventDefault(); setSheet(false); return; }
+    if (e.key === 'Tab') {
+      const focusable = $$<HTMLElement>('a[href], button:not([disabled]), input', sidebar).filter((el) => el.offsetParent !== null);
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
+      return;
+    }
+  }
   if (mod && e.key.toLowerCase() === 'k') {
     e.preventDefault();
     if (pal?.hidden === false) closePalette();
@@ -678,13 +928,17 @@ document.addEventListener('keydown', (e) => {
     else if (e.key === 'ArrowLeft') { e.preventDefault(); stepQuickLook(-1); }
     return;
   }
-  if (e.key === 'Escape' && html.classList.contains('sidebar-open')) { html.classList.remove('sidebar-open'); return; }
   if (isTyping(e.target)) {
     if (e.key === 'Escape') (e.target as HTMLElement).blur();
     return;
   }
   if (mod || e.altKey) return;
-  if (e.key === '/') { e.preventDefault(); searchInput?.focus(); searchInput?.select(); return; }
+  if (e.key === '?') { e.preventDefault(); openShortcuts(); return; }
+  if (e.key === '/') {
+    e.preventDefault();
+    if (searchInput) { searchInput.focus(); searchInput.select(); } else openPalette('');
+    return;
+  }
 
   if (gridApi) {
     const list = gridApi.visible();

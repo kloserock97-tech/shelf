@@ -29,12 +29,18 @@ const index = JSON.stringify(items.map(indexEntry)).replace(/</g, '\\u003c');
     <script is:inline>
       (function () {
         var d = document.documentElement;
+        d.classList.add("sb-noanim");
         try {
-          var t = localStorage.getItem('shelf:theme');
-          if (t === 'light' || t === 'dark') d.dataset.theme = t;
-          if (localStorage.getItem('shelf:sidebar') === 'hidden') d.classList.add('sidebar-hidden');
-          var z = localStorage.getItem('shelf:zoom');
-          if (z) d.style.setProperty('--card-min-width', z + 'px');
+          var t = localStorage.getItem("shelf:theme");
+          if (t === "light" || t === "dark") d.dataset.theme = t;
+          if (localStorage.getItem("shelf:sidebar") === "rail") d.classList.add("sidebar-rail");
+          if (localStorage.getItem("shelf:sidebar-style") === "attached") d.classList.add("sb-attached");
+          var w = Number(localStorage.getItem("shelf:sidebar-width"));
+          if (w >= 216 && w <= 320) d.style.setProperty("--sidebar-width", w + "px");
+          var z = localStorage.getItem("shelf:zoom");
+          if (z) d.style.setProperty("--card-min-width", z + "px");
+          var s = JSON.parse(localStorage.getItem("shelf:sections") || "[]");
+          if (Array.isArray(s)) s.forEach(function (id) { d.classList.add("sec-closed-" + id); });
         } catch (e) {}
       })();
     </script>

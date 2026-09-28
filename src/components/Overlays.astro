@@ -42,4 +42,29 @@ import Icon from './Icon.astro';
   </div>
 </div>
 
+<div class="sh-overlay sh-overlay--sheet" id="shortcuts" hidden>
+  <div class="sh-sheet sh-sheet--narrow" role="dialog" aria-modal="true" aria-labelledby="sc-title">
+    <div class="sh-sheet__head">
+      <div class="sh-sheet__title" id="sc-title">Keyboard shortcuts</div>
+      <div class="sh-sheet__actions"><button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-action="shortcuts-close" aria-label="Close"><Icon name="X" /></button></div>
+    </div>
+    <dl class="sh-shortcuts">
+      <dt>Search everything</dt><dd><kbd class="sh-kbd" data-mod-kbd="K">⌘K</kbd></dd>
+      <dt>Filter this page</dt><dd><kbd class="sh-kbd">/</kbd></dd>
+      <dt>Collapse the sidebar</dt><dd><kbd class="sh-kbd" data-mod-kbd="B">⌘B</kbd></dd>
+      <dt>Move through the grid</dt><dd><kbd class="sh-kbd">←</kbd><kbd class="sh-kbd">↑</kbd><kbd class="sh-kbd">↓</kbd><kbd class="sh-kbd">→</kbd></dd>
+      <dt>Quick Look</dt><dd><kbd class="sh-kbd">Space</kbd></dd>
+      <dt>Open</dt><dd><kbd class="sh-kbd">↵</kbd></dd>
+      <dt>Add to Favorites</dt><dd><kbd class="sh-kbd">F</kbd></dd>
+      <dt>Grid size</dt><dd><kbd class="sh-kbd">[</kbd><kbd class="sh-kbd">]</kbd></dd>
+      <dt>Copy code</dt><dd><kbd class="sh-kbd">C</kbd></dd>
+      <dt>Copy prompt</dt><dd><kbd class="sh-kbd">P</kbd></dd>
+      <dt>Code variant</dt><dd><kbd class="sh-kbd">1</kbd><kbd class="sh-kbd">2</kbd><kbd class="sh-kbd">3</kbd></dd>
+      <dt>This list</dt><dd><kbd class="sh-kbd">?</kbd></dd>
+    </dl>
+  </div>
+</div>
+
+<div class="sh-tip" id="tip" role="tooltip" hidden></div>
+
 <div class="sh-toast-layer" role="status" aria-live="polite"><div class="sh-toast" id="toast" hidden></div></div>

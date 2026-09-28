@@ -26,6 +26,10 @@ const filterable = mode === 'all' || mode === 'type';
     </div>
   )}
   <div class="sh-toolbar__spacer"></div>
+  <label class="sh-search sh-search--toolbar">
+    <Icon name="Search" />
+    <input class="sh-search__input" id="search" type="search" placeholder="Filter" aria-label={`Filter ${title}`} autocomplete="off" spellcheck="false">
+  </label>
   <div class="sh-zoom" title="Grid size">
     <Icon name="LayoutGrid" class="sh-i--xs" />
     <input class="sh-slider" type="range" min="0" max="2" step="1" value="1" aria-label="Grid size" data-zoom>

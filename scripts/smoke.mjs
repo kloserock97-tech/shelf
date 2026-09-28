@@ -97,6 +97,67 @@ const check = (ok, what) => { if (!ok) problems.push(`flow: ${what}`); return ok
   await page.close();
 }
 {
+  // The sidebar: rail, tooltips, profile menu, folded sections, shortcuts, resizing.
+  const { page } = await open(ctx, '');
+  const width = () => page.evaluate(() => Math.round(document.querySelector('#sidebar').getBoundingClientRect().width));
+  await page.screenshot({ path: path.join(out, 'sidebar-expanded.png') });
+  await page.keyboard.press('Control+b');
+  await page.waitForTimeout(600);
+  check(await page.evaluate(() => document.documentElement.classList.contains('sidebar-rail')), '⌘B does not fold the sidebar');
+  check(Math.abs((await width()) - 64) <= 2, `the rail should be 64px wide, got ${await width()}`);
+  await page.locator('#sidebar .sh-sb__row[href]').nth(1).hover();
+  await page.waitForTimeout(400);
+  check(await page.locator('#tip').isVisible(), 'rail icons show no tooltip');
+  await page.screenshot({ path: path.join(out, 'sidebar-rail.png') });
+  await page.keyboard.press('Control+b');
+  await page.waitForTimeout(600);
+  check((await width()) > 200, 'the sidebar does not unfold again');
+  await page.locator('[data-action="profile-menu"]').click();
+  check(await page.locator('#profile-menu').isVisible(), 'the profile menu does not open');
+  await page.locator('[data-theme-switch] .sh-seg__opt', { hasText: 'Dark' }).click();
+  check((await page.evaluate(() => document.documentElement.dataset.theme)) === 'dark', 'the appearance switch does not set dark');
+  await page.screenshot({ path: path.join(out, 'sidebar-menu-dark.png') });
+  await page.locator('[data-theme-switch] .sh-seg__opt', { hasText: 'System' }).click();
+  await page.keyboard.press('Escape');
+  check(await page.locator('#profile-menu').isHidden(), 'Esc does not close the profile menu');
+  // Sidebar style: attached (macOS 27) touches the window edges and survives a reload; floating sits 8px in.
+  const box = () => page.evaluate(() => { const r = document.querySelector('#sidebar').getBoundingClientRect(); return `${Math.round(r.left)},${Math.round(r.top)}`; });
+  await page.locator('[data-action="profile-menu"]').click();
+  await page.locator('[data-sidebar-style] .sh-seg__opt', { hasText: 'Attached' }).click();
+  await page.waitForTimeout(500);
+  check((await box()) === '0,0', `an attached sidebar should touch the window edges, got ${await box()}`);
+  await page.keyboard.press('Escape');
+  await page.reload();
+  await page.waitForTimeout(300);
+  check((await box()) === '0,0', `the attached sidebar does not survive a reload, got ${await box()}`);
+  await page.screenshot({ path: path.join(out, 'sidebar-attached.png') });
+  await page.locator('[data-action="profile-menu"]').click();
+  await page.locator('[data-sidebar-style] .sh-seg__opt', { hasText: 'Floating' }).click();
+  await page.waitForTimeout(500);
+  await page.keyboard.press('Escape');
+  check((await box()) === '8,8', `a floating sidebar should sit 8px from the window edges, got ${await box()}`);
+  await page.locator('[data-section="types"] .sh-sb__heading').click();
+  await page.reload();
+  await page.waitForTimeout(300);
+  check((await page.locator('[data-section="types"] .sh-sb__heading').getAttribute('aria-expanded')) === 'false', 'a folded section does not stay folded');
+  await page.locator('[data-section="types"] .sh-sb__heading').click();
+  await page.keyboard.press('?');
+  check(await page.locator('#shortcuts').isVisible(), '? does not open the shortcuts');
+  await page.screenshot({ path: path.join(out, 'shortcuts.png') });
+  await page.keyboard.press('Escape');
+  const edge = await page.locator('.sh-sb__edge').boundingBox();
+  if (check(Boolean(edge), 'the sidebar has no resize edge')) {
+    await page.mouse.move(edge.x + edge.width / 2, edge.y + 40);
+    await page.mouse.down();
+    await page.mouse.move(edge.x + 50, edge.y + 40, { steps: 6 });
+    await page.mouse.up();
+    await page.waitForTimeout(100);
+    check((await width()) >= 280, `dragging the edge does not widen the sidebar (got ${await width()})`);
+    await page.locator('.sh-sb__edge').dblclick();
+  }
+  await page.close();
+}
+{
   const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, colorScheme: 'light', hasTouch: true, isMobile: true });
   const { page, errors } = await open(mobile, '');
   check(!(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)), 'the phone layout scrolls sideways');
