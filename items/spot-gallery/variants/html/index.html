@@ -1,0 +1,28 @@
+<!-- --ar is the screen's width / height; --x and --y put a point in percent of the screen.
+     data-spot ties a point to its card. The script adds is-left / is-right / is-below to keep hints on the page. -->
+<figure class="spot">
+  <h3 class="spot-title">Overview: four numbers, one chart, one list</h3>
+  <div class="spot-layout">
+    <div class="spot-fig">
+      <div class="spot-stage" style="--ar: 1.6">
+        <div class="spot-img">
+          <img src="overview.png" alt="Overview screen" width="1440" height="900" draggable="false">
+          <button type="button" class="spot-dot" style="--x: 30; --y: 14" data-spot="1" aria-label="Point 1: Filters sit in one row">
+            <span>1</span><em>Filters sit in one row above the numbers</em>
+          </button>
+          <button type="button" class="spot-dot" style="--x: 61; --y: 46" data-spot="2" aria-label="Point 2: Planned and done on one axis">
+            <span>2</span><em>Planned and done on one axis</em>
+          </button>
+        </div>
+      </div>
+      <figcaption>Overview after the redesign</figcaption>
+    </div>
+    <ol class="spot-cards">
+      <li class="spot-card" data-spot="1"><button type="button"><i>1</i><b>Filters in one row</b><span>Nobody has to open a panel to narrow the page.</span></button></li>
+      <li class="spot-card" data-spot="2"><button type="button"><i>2</i><b>One chart instead of three</b><span>The gap between the lines is the whole story.</span></button></li>
+    </ol>
+  </div>
+</figure>
+
+<link rel="stylesheet" href="spot-gallery.css">
+<script src="spot-gallery.js" defer></script>

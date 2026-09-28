@@ -1,0 +1,22 @@
+<!-- data-sfx: folder with the MP3 cues (press, toggle-on, close, expand); data-storage-key: where the choice is kept -->
+<button class="sound-fab" type="button" aria-pressed="false" aria-label="Sound is off. Turn it on"
+        data-sfx="sfx/" data-storage-key="sound">
+  <span class="sound-fab__ico" aria-hidden="true">
+    <svg viewBox="0 0 24 24">
+      <path class="sf-spk" d="M3.8 9.6h3.1l4.4-3.5v11.8l-4.4-3.5H3.8z"/>
+      <path class="sf-w sf-w1" d="M14.4 9.3a3.9 3.9 0 0 1 0 5.4"/>
+      <path class="sf-w sf-w2" d="M16.9 6.9a7.3 7.3 0 0 1 0 10.2"/>
+      <path class="sf-x" d="m15 9.7 4.6 4.6m0-4.6L15 14.3"/>
+    </svg>
+  </span>
+  <span class="sound-fab__label"><span data-sound-label>Turn sound on</span><kbd>M</kbd></span>
+  <span class="sound-fab__bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+</button>
+
+<link rel="stylesheet" href="sound-button.css">
+<!-- sound-engine.js sits next to this script and is loaded by it on the first "on" -->
+<script src="sound-button.js" defer></script>
+<script>
+  // anywhere in the interface:
+  // SoundBus.cue('press');  SoundBus.cue('expand', 0.6);
+</script>

@@ -1,0 +1,59 @@
+/* Blur words reveal: a chapter title comes out of the blur word by word as you scroll, then lifts away.
+   The script writes one variable, --k (0…1, progress through the section); every delay and curve is here.
+   Each word knows its index (--i), so word i fades in over k = 0.06 + 0.045·i … 0.28 + 0.045·i. */
+.bwr {
+  --k: 0;
+  --screens: 1.65; /* scroll length of the reveal, in screens */
+  position: relative;
+  height: calc((1 + var(--screens)) * 100vh);
+}
+.bwr-stage {
+  position: sticky; top: 0; height: 100vh; overflow: hidden;
+  display: grid; place-items: center;
+}
+.bwr-intro {
+  /* the whole intro leaves over k = 0.72…1: fades, rises 9vh and blurs 10px */
+  --o: clamp(0, calc((var(--k) - 0.72) / 0.28), 1);
+  --out: calc(var(--o) * var(--o) * (3 - 2 * var(--o)));
+  position: relative; z-index: 1;
+  display: grid; justify-items: center; gap: 18px;
+  padding: 0 6vw; text-align: center; color: #f4f1ea;
+  opacity: calc(1 - var(--out));
+  translate: 0 calc(var(--out) * -9vh);
+  filter: blur(calc(var(--out) * 10px));
+}
+.bwr-kicker {
+  --a: clamp(0, calc((var(--k) - 0.02) / 0.14), 1);
+  --in: calc(var(--a) * var(--a) * (3 - 2 * var(--a)));
+  margin: 0; font-size: 13px; font-weight: 400; letter-spacing: 0.32em; text-transform: uppercase;
+  opacity: calc(var(--in) * 0.7);
+  translate: 0 calc((1 - var(--in)) * 12px);
+}
+.bwr-title {
+  margin: 0; max-width: 16ch;
+  font-size: clamp(44px, 7.2vw, 132px); font-weight: 300; line-height: 0.98; letter-spacing: -0.035em;
+  text-shadow: 0 2px 40px rgba(0, 0, 0, 0.45);
+}
+.bwr-word {
+  --a: clamp(0, calc((var(--k) - 0.06 - var(--i, 0) * 0.045) / 0.22), 1);
+  --in: calc(var(--a) * var(--a) * (3 - 2 * var(--a)));
+  display: inline-block;
+  opacity: var(--in);
+  filter: blur(calc((1 - var(--in)) * 16px));
+  translate: 0 calc((1 - var(--in)) * 0.45em);
+  will-change: opacity, filter, translate;
+}
+.bwr-sub {
+  --a: clamp(0, calc((var(--k) - 0.34) / 0.18), 1);
+  --in: calc(var(--a) * var(--a) * (3 - 2 * var(--a)));
+  margin: 0; max-width: 44ch; font-size: clamp(15px, 1.2vw, 19px); font-weight: 300; line-height: 1.5;
+  opacity: calc(var(--in) * 0.78);
+  translate: 0 calc((1 - var(--in)) * 14px);
+  text-shadow: 0 1px 18px rgba(0, 0, 0, 0.5);
+}
+@media (max-width: 900px) {
+  .bwr-title { font-size: clamp(38px, 11vw, 64px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bwr-word, .bwr-intro { filter: none; translate: none; }
+}

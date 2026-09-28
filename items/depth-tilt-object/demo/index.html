@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Depth Tilt Object</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400..600&display=swap">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"}}</script>
+<style>
+  html, body { height: 100%; margin: 0; }
+  body {
+    display: grid; grid-template-rows: minmax(0, 1fr) auto; overflow: hidden; touch-action: none;
+    background: radial-gradient(80% 70% at 50% 40%, #2a2f24 0%, #15180f 70%, #101209 100%); background-color: #101209;
+    color: #fff; font-family: "Onest", system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased;
+  }
+  /* the zone fades to the top and bottom edges, as in the case wheel: a rolling object dissolves */
+  .dt-stage {
+    position: relative; margin: 24px 24px 0; min-height: 0;
+    -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 9%, #000 90%, transparent 100%);
+    mask-image: linear-gradient(180deg, transparent 0, #000 9%, #000 90%, transparent 100%);
+  }
+  .dt-gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .dt-flat { position: absolute; inset: 2% 1% 4%; width: 98%; height: 94%; object-fit: contain; object-position: 50% 60%; display: none; }
+  .dt-stage.is-flat .dt-flat { display: block; }
+  .dt-bar { display: flex; align-items: center; justify-content: center; gap: 18px; padding: 14px 20px 22px; }
+  .dt-name { min-width: 7.5em; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; text-align: center; }
+  .dt-step {
+    display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; cursor: pointer;
+    background: rgba(255, 255, 255, 0.1); color: #fff; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+    transition: background 0.2s ease, opacity 0.2s ease, scale 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .dt-step svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+  .dt-step[data-d="1"] svg { rotate: 180deg; }
+  .dt-step:hover { background: rgba(255, 255, 255, 0.18); }
+  .dt-step:active { scale: 0.95; }
+  .dt-step:disabled { opacity: 0.3; cursor: default; }
+  .dt-step:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+  .dt-hint { position: fixed; left: 50%; top: 14px; translate: -50% 0; margin: 0; font-size: 12px; letter-spacing: 0.04em; color: rgba(255, 255, 255, 0.5); white-space: nowrap; }
+  @media (pointer: coarse) { .dt-hint::after { content: "Drag to tilt"; } }
+  @media (pointer: fine) { .dt-hint::after { content: "Move the cursor to tilt"; } }
+</style>
+</head>
+<body>
+<div class="dt-stage"><img class="dt-flat" src="objects/harbor.webp" alt=""></div>
+<div class="dt-bar">
+  <button class="dt-step" type="button" data-d="-1" aria-label="Previous object"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg></button>
+  <span class="dt-name" aria-live="polite"></span>
+  <button class="dt-step" type="button" data-d="1" aria-label="Next object"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg></button>
+</div>
+<p class="dt-hint" aria-hidden="true"><span class="dt-now"></span> <span class="dt-of"></span> · </p>
+<script type="module" src="app.js"></script>
+</body>
+</html>

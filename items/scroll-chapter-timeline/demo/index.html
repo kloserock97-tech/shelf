@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Scroll Chapter Timeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500&display=swap">
+<style>
+  :root { --bg: #0f1210; --ink: #eceee6; --soft: rgba(236, 238, 230, 0.6); --faint: rgba(236, 238, 230, 0.16); --accent: #9fe38b; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); }
+  body { font: 300 15px/1.5 Onest, system-ui, sans-serif; color: var(--ink); }
+
+  /* the content above the story: on a wide screen the story starts at once, on a narrow one it waits
+     until this block's bottom edge rises to 40 % of the window (leadPx) */
+  .hero {
+    position: relative; z-index: 2; min-height: 100svh; background: var(--bg);
+    display: grid; align-content: center; gap: 14px; padding: 60px clamp(20px, 6vw, 96px) 190px;
+  }
+  .hero .k { margin: 0; font-size: 12px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent); }
+  .hero h1 { margin: 0; max-width: 14ch; font-size: clamp(40px, 6.4vw, 92px); font-weight: 300; line-height: 1; letter-spacing: -0.03em; }
+  .hero p.t { margin: 0; max-width: 46ch; color: var(--soft); font-size: clamp(15px, 1.3vw, 18px); }
+  .story { pointer-events: none; }
+
+  /* the stage stays put; chapters are drawn from story progress */
+  .stage { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+  .ch { position: absolute; inset: 0; display: grid; place-items: center; visibility: hidden; opacity: 0; }
+  .ch-k { position: absolute; left: clamp(20px, 6vw, 96px); top: clamp(24px, 9vh, 90px); margin: 0; font-size: 12px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent); }
+  .ch h2 { margin: 0; font-size: clamp(44px, 9vw, 140px); font-weight: 300; letter-spacing: -0.04em; line-height: 1; text-align: center; }
+  .ch-intro p { margin: 18px 0 0; text-align: center; color: var(--soft); max-width: 36ch; }
+  .ch-intro > div { display: grid; justify-items: center; padding: 0 20px 120px; }
+
+  .strip { position: relative; width: 0; height: 0; }
+  .card {
+    --w: clamp(220px, 26vw, 340px);
+    position: absolute; left: calc(var(--w) / -2); top: calc(var(--w) * -0.36 - 40px); width: var(--w); aspect-ratio: 4 / 3;
+    display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; padding: 18px 20px; border-radius: 22px;
+    background: radial-gradient(120% 90% at 20% 10%, hsl(var(--h) 60% 62% / 0.9), hsl(calc(var(--h) + 40) 45% 22%) 70%);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12), 0 24px 50px rgba(0, 0, 0, 0.45);
+    will-change: transform, opacity;
+  }
+  .card-n { font-size: 12px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.75; }
+  .card b { font-size: clamp(20px, 2vw, 28px); font-weight: 400; letter-spacing: -0.02em; }
+  .card.is-active { box-shadow: inset 0 0 0 2px var(--accent), 0 30px 60px rgba(0, 0, 0, 0.5); }
+  .case-foot { position: absolute; left: 50%; bottom: calc(150px + 4vh); translate: -50% 0; display: flex; align-items: center; gap: 16px; }
+  .case-count { font-size: 32px; font-weight: 300; font-variant-numeric: tabular-nums; }
+  .case-count span { font-size: 15px; opacity: 0.6; }
+  .case-bar { width: 140px; height: 2px; background: var(--faint); }
+  .case-bar i { display: block; height: 100%; background: var(--ink); transform-origin: left; transform: scaleX(0); }
+
+  .reel { position: relative; width: min(88vw, 720px); height: 0; margin-top: -120px; }
+  .row {
+    position: absolute; left: 0; right: 0; top: -32px; margin: 0; display: flex; align-items: baseline; gap: 18px;
+    font-size: clamp(22px, 3.4vw, 44px); font-weight: 300; letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    transform-origin: left center; will-change: transform, opacity;
+  }
+  .row span { font-size: 14px; font-weight: 500; color: var(--accent); letter-spacing: 0.1em; }
+  .ch-end > div { display: grid; justify-items: center; gap: 24px; padding-bottom: 140px; }
+  .ch-end button {
+    pointer-events: auto; padding: 12px 22px; border: 0; border-radius: 999px; background: var(--ink); color: var(--bg);
+    font: 500 14px/1 Onest, system-ui, sans-serif; cursor: pointer;
+  }
+
+  /* progress at the right edge, with a tick at every chapter boundary */
+  .bar { position: fixed; top: 0; right: 0; bottom: 0; z-index: 5; width: 3px; background: var(--faint); pointer-events: none; }
+  .bar i { position: absolute; inset: 0; background: var(--accent); transform-origin: top; transform: scaleY(0); }
+  .bar-ticks i { position: absolute; right: 0; width: 10px; height: 1px; background: var(--ink); }
+
+  /* the map: chapters as long as they are in screens, a tick per list item, a playhead */
+  .hud {
+    position: fixed; left: 50%; bottom: 16px; z-index: 6; translate: -50% 0; width: min(calc(100% - 32px), 860px);
+    padding: 12px 14px 10px; border-radius: 18px; background: rgba(22, 26, 22, 0.86); box-shadow: inset 0 0 0 1px var(--faint), 0 18px 40px rgba(0, 0, 0, 0.35);
+    display: grid; gap: 8px; font-size: 12px;
+  }
+  .hud-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .map-head { color: var(--soft); font-variant-numeric: tabular-nums; }
+  .ctl { display: flex; align-items: center; gap: 8px; color: var(--soft); }
+  .ctl b { min-width: 1.2em; text-align: center; color: var(--ink); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .ctl button {
+    width: 28px; height: 28px; border: 0; border-radius: 50%; background: var(--faint); color: var(--ink);
+    font: 400 16px/1 Onest, system-ui, sans-serif; cursor: pointer;
+  }
+  .ctl button:focus-visible, .seg:focus-visible, .ch-end button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .map { position: relative; display: flex; gap: 3px; height: 38px; }
+  .seg {
+    position: relative; flex: 1 1 0; min-width: 0; padding: 6px 8px; border: 0; border-radius: 8px; background: rgba(236, 238, 230, 0.07); color: var(--ink);
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 4px; font: 400 11px/1 Onest, system-ui, sans-serif; cursor: pointer; overflow: hidden;
+  }
+  .seg:hover { background: rgba(236, 238, 230, 0.12); }
+  .seg-l { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .seg-v { color: var(--soft); font-variant-numeric: tabular-nums; }
+  .seg i { position: absolute; bottom: 5px; width: 1px; height: 9px; background: var(--accent); }
+  .playhead { position: absolute; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; border-radius: 2px; background: #fff; box-shadow: 0 0 10px rgba(255, 255, 255, 0.6); pointer-events: none; }
+  .readout { margin: 0; color: var(--soft); font: 400 11px/1.4 ui-monospace, Consolas, monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  @media (max-width: 600px) {
+    .seg-v { display: none; }
+    .case-foot { bottom: 170px; }
+  }
+</style>
+</head>
+<body>
+<header class="hero">
+  <p class="k">Scroll chapter timeline</p>
+  <h1>Chapters sized by their content</h1>
+  <p class="t">Each scene is measured in screens, and every card in a list adds one step of scroll. Change the number of cases below: the story grows, and you stay where you were.</p>
+</header>
+<div class="story" aria-hidden="true"></div>
+
+<div class="stage" aria-hidden="true">
+  <section class="ch ch-intro"><p class="ch-k">Chapter 01</p><div><h2>Intro</h2><p>A fixed scene: 1.4 screens of scroll, a bit less on a phone.</p></div></section>
+  <section class="ch ch-cases"><p class="ch-k">Chapter 02 · Cases</p><div class="strip"></div>
+    <div class="case-foot"><span class="case-count"><b data-now>01</b> <span>/ <span data-of>05</span></span></span><span class="case-bar"><i></i></span></div>
+  </section>
+  <section class="ch ch-notes"><p class="ch-k">Chapter 03 · Notes</p><div class="reel"></div></section>
+  <section class="ch ch-end"><p class="ch-k">Chapter 04</p><div><h2>The end</h2><button type="button" data-top>Back to the top</button></div></section>
+</div>
+
+<div class="bar" aria-hidden="true"><i></i><span class="bar-ticks"></span></div>
+<div class="hud">
+  <div class="hud-top">
+    <span class="map-head"></span>
+    <span class="ctl">Cases <button type="button" data-less aria-label="One case less">−</button><b data-n>5</b><button type="button" data-more aria-label="One case more">+</button></span>
+  </div>
+  <div class="map" aria-label="Story chapters"></div>
+  <p class="readout" aria-live="off"></p>
+</div>
+<script src="app.js" defer></script>
+</body>
+</html>

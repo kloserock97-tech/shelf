@@ -1,0 +1,186 @@
+/* Work mega menu — a large dropdown on the "Templates" pattern: categories on the left, a grid of cards with
+   previews on the right, a row with a note and a button at the bottom. A dark panel with no backdrop-filter:
+   blurring over a live WebGL canvas would cost a frame for every pixel of the panel. */
+.work-menu {
+  --ease-menu: cubic-bezier(0.23, 1, 0.32, 1);
+  --wm-ink: #f3f2ec;
+  --wm-soft: rgba(243, 242, 236, 0.56);
+  --wm-line: rgba(255, 255, 255, 0.08);
+  position: fixed; top: 80px; left: 16px; z-index: 45;
+  width: min(1040px, calc(100vw - 32px)); box-sizing: border-box;
+  /* the frame does not scroll — only the grid inside does */
+  max-height: calc(100vh - 110px); overflow: hidden;
+  display: flex; flex-direction: column;
+  padding: 14px;
+  border-radius: 26px;
+  background: radial-gradient(120% 90% at 0% 100%, rgba(60, 70, 58, 0.35), transparent 60%), #141613;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 30px 80px rgba(10, 12, 8, 0.45), 0 2px 10px rgba(10, 12, 8, 0.25);
+  color: var(--wm-ink);
+  font-family: var(--wm-font, "Onest", system-ui, -apple-system, "Segoe UI", sans-serif);
+  pointer-events: none; visibility: hidden;
+  opacity: 0; scale: 0.97; translate: 0 -6px;
+  transform-origin: var(--origin-x, 50%) 0;
+  /* closing is faster than opening */
+  transition: opacity 0.14s ease-out, scale 0.14s ease-out, translate 0.14s ease-out, visibility 0s linear 0.14s;
+}
+.work-menu.is-open {
+  pointer-events: auto; visibility: visible;
+  opacity: 1; scale: 1; translate: 0 0;
+  transition: opacity 0.2s var(--ease-menu), scale 0.26s var(--ease-menu), translate 0.26s var(--ease-menu), visibility 0s;
+}
+/* a bridge between the trigger and the panel: the cursor does not fall into the gap */
+.work-menu::before { content: ""; position: absolute; left: 0; right: 0; top: -12px; height: 12px; }
+
+.work-menu__body { display: grid; grid-template-columns: 220px 1fr; grid-template-rows: minmax(0, 1fr); gap: 22px; flex: 1 1 auto; min-height: 0; }
+
+/* scrolling inside the frame: an own rail instead of the system scrollbar (see syncRail in the script) */
+.work-menu__pane { position: relative; min-height: 0; display: flex; }
+.work-menu__grid {
+  flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  scrollbar-width: none;
+  /* the edge beyond which there are more cards dissolves; the script sets the fade from the scroll left */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--fade-top, 0px), #000 calc(100% - var(--fade-bot, 0px)), transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 var(--fade-top, 0px), #000 calc(100% - var(--fade-bot, 0px)), transparent 100%);
+}
+.work-menu__grid::-webkit-scrollbar { display: none; }
+.work-menu__rail {
+  position: absolute; top: 8px; bottom: 8px; right: 0; width: 12px;
+  border-radius: 999px; background: rgba(255, 255, 255, 0);
+  opacity: 0; transition: opacity 0.3s ease-out, background 0.2s ease-out;
+  pointer-events: none;
+}
+.work-menu__pane.is-scrollable .work-menu__rail { pointer-events: auto; }
+.work-menu__pane.is-scrollable:hover .work-menu__rail,
+.work-menu__pane.is-scrolling .work-menu__rail,
+.work-menu__pane.is-dragging .work-menu__rail { opacity: 1; transition-duration: 0.12s; }
+.work-menu__rail:hover, .work-menu__pane.is-dragging .work-menu__rail { background: rgba(255, 255, 255, 0.05); }
+.work-menu__bar {
+  position: absolute; left: 4px; right: 4px; top: 0; height: 40px;
+  border-radius: 999px; background: rgba(243, 242, 236, 0.26);
+  transition: left 0.18s ease-out, right 0.18s ease-out, background 0.18s ease-out;
+  cursor: grab; touch-action: none;
+}
+.work-menu__rail:hover .work-menu__bar, .work-menu__pane.is-dragging .work-menu__bar { left: 2px; right: 2px; background: rgba(243, 242, 236, 0.5); }
+.work-menu__pane.is-dragging .work-menu__bar { cursor: grabbing; }
+
+/* categories: large rows, the current one on a light underlay */
+.work-menu__filters { display: grid; align-content: start; gap: 4px; }
+.work-menu__filter {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  padding: 14px 18px; border: 0; border-radius: 16px; cursor: pointer; text-align: left;
+  background: transparent; color: var(--wm-soft);
+  font-family: inherit; font-size: 22px; font-weight: 400; line-height: 1.1; letter-spacing: -0.01em;
+  transition: background 0.2s ease-out, color 0.2s ease-out;
+}
+.work-menu__filter-n { font-size: 12px; font-variant-numeric: tabular-nums; color: rgba(243, 242, 236, 0.32); transition: color 0.2s ease-out; }
+.work-menu__filter.is-on { background: rgba(255, 255, 255, 0.07); color: var(--wm-ink); }
+.work-menu__filter.is-on .work-menu__filter-n { color: var(--wm-soft); }
+.work-menu__filter:focus-visible { outline: 2px solid var(--wm-ink); outline-offset: 2px; }
+.work-menu__filter:active { scale: 0.98; }
+
+/* the grid of cards: a 16:10 preview in the project's colours, a title and a tag under it.
+   Paddings inside the scroll leave room for the focus ring and the rail; negative margins keep the grid in place */
+.work-menu__grid {
+  list-style: none; margin: -6px 0 -6px -6px; padding: 6px 18px 8px 6px;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 18px; align-content: start;
+  transition: opacity 0.12s ease-out;
+}
+.work-menu.is-filtering .work-menu__grid { opacity: 0; }
+.work-menu__grid li { opacity: 0; translate: 0 8px; transition: opacity 0.1s ease-out, translate 0.1s ease-out; }
+.work-menu__grid li[hidden] { display: none; }
+/* a short cascade: 32 ms per card after a 40 ms pause */
+.work-menu.is-open .work-menu__grid li {
+  opacity: 1; translate: 0 0;
+  transition: opacity 0.26s var(--ease-menu) calc(var(--i) * 32ms + 40ms), translate 0.34s var(--ease-menu) calc(var(--i) * 32ms + 40ms);
+}
+.work-menu__card { display: grid; gap: 4px; color: inherit; text-decoration: none; border-radius: 16px; }
+/* a wide window: four in a row — eight projects fit two rows and scrolling is usually not needed at all */
+@media (min-width: 1180px) {
+  .work-menu__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px 14px; }
+  .work-menu__name { font-size: 16px; line-height: 1.2; white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }
+}
+.work-menu__thumb {
+  position: relative; display: block; aspect-ratio: 16 / 10; margin-bottom: 8px; container-type: size;
+  border-radius: 14px; overflow: hidden; background: linear-gradient(180deg, var(--s1, #f1f1ee), var(--s2, #dcdcd6));
+  /* a light preview on a dark panel still gets a thin edge */
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+/* the product screen in a device frame: the frame tells at once whether it is web or a phone.
+   The device goes out past the right edge, the object stands in front of it on the left. */
+.work-menu__dev {
+  position: absolute; left: 30%; top: 14%; width: 84%; display: block;
+  border-radius: 2.2cqw; overflow: hidden; background: #fff;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink, #1d1d1f) 12%, transparent), 0 4cqw 7cqw color-mix(in srgb, var(--ink, #1d1d1f) 26%, transparent);
+  transform-origin: 0% 60%; transform: perspective(900px) rotateY(-14deg) rotateX(4deg) rotateZ(1deg);
+  transition: transform 0.5s var(--ease-menu);
+}
+.work-menu__dev-bar { display: block; height: 4.4cqw; background: color-mix(in srgb, var(--ink, #1d1d1f) 7%, #fff); border-bottom: 1px solid color-mix(in srgb, var(--ink, #1d1d1f) 9%, transparent); }
+.work-menu__dev svg { display: block; width: 100%; height: auto; }
+/* a phone stands almost upright and is cut by the bottom of the card — the silhouette reads at first glance */
+.work-menu__dev--phone {
+  left: auto; right: 6%; top: 10%; width: auto; height: 108%; aspect-ratio: 402 / 874;
+  border-radius: 7cqw; border: 1.2cqw solid #12161c; background: #12161c; transform-origin: 50% 70%;
+  transform: perspective(900px) rotateY(-14deg) rotateX(5deg) rotateZ(4deg);
+}
+.work-menu__dev--phone svg { width: 100%; height: 100%; border-radius: 6cqw; }
+
+.work-menu__obj { position: absolute; left: -12%; bottom: -10%; width: 62%; aspect-ratio: var(--oar, 1.2); display: block; transition: scale 0.5s var(--ease-menu); transform-origin: 50% 90%; }
+.work-menu__obj img { width: 100%; height: 100%; object-fit: contain; object-position: 50% 100%; display: block; filter: drop-shadow(0 10px 12px color-mix(in srgb, var(--ink, #1d1d1f) 24%, transparent)); }
+.work-menu__go {
+  position: absolute; right: 10px; bottom: 10px; width: 34px; height: 34px; border-radius: 50%;
+  display: grid; place-items: center; background: var(--ink, #141613); color: #fff;
+  opacity: 0; scale: 0.8; transition: opacity 0.2s ease-out, scale 0.3s var(--ease-menu);
+}
+.work-menu__go svg { width: 15px; height: 15px; }
+.work-menu__name { padding: 0 4px; font-size: 18px; font-weight: 400; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.work-menu__sub { padding: 0 4px; font-size: 12px; font-weight: 300; color: var(--wm-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.work-menu__card:focus-visible { outline: 2px solid var(--wm-ink); outline-offset: 4px; }
+.work-menu__card:focus-visible .work-menu__go { opacity: 1; scale: 1; }
+.work-menu__card:active { scale: 0.99; }
+
+/* the bottom row: a note on the left, buttons on the right */
+.work-menu__foot {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px;
+  margin-top: 18px; padding: 16px 8px 4px 18px; border-top: 1px solid var(--wm-line);
+}
+.work-menu__note { margin: 0; font-size: 15px; font-weight: 300; color: var(--wm-soft); }
+.work-menu__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.work-menu__all {
+  height: 46px; padding: 0 20px; border-radius: 999px; cursor: pointer;
+  font-family: inherit; font-size: 15px; font-weight: 400; line-height: 1;
+  border: 1px solid rgba(255, 255, 255, 0.16); background: rgba(255, 255, 255, 0.06); color: var(--wm-ink);
+  transition: background 0.2s ease-out, color 0.2s ease-out, border-color 0.2s ease-out;
+}
+.work-menu__all:focus-visible { outline: 2px solid var(--wm-ink); outline-offset: 2px; }
+.work-menu__all:active { scale: 0.98; }
+
+@media (hover: hover) and (pointer: fine) {
+  .work-menu__filter:not(.is-on):hover { color: var(--wm-ink); background: rgba(255, 255, 255, 0.035); }
+  .work-menu__card:hover .work-menu__obj { scale: 1.06; }
+  .work-menu__card:hover .work-menu__go { opacity: 1; scale: 1; }
+  .work-menu__all:hover { background: #f3f2ec; color: #141613; }
+}
+
+/* a narrow screen: the panel spans the width, categories become a row of chips over a two-column grid */
+@media (max-width: 900px) {
+  .work-menu {
+    left: 12px !important; right: 12px; width: auto;
+    max-height: calc(100svh - var(--wm-top, 80px) - 12px);
+    padding: 10px; border-radius: 22px;
+  }
+  .work-menu__body { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); gap: 12px; }
+  .work-menu__filters { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+  .work-menu__filter { flex: none; padding: 10px 14px; border-radius: 999px; font-size: 15px; gap: 8px; border: 1px solid var(--wm-line); }
+  .work-menu__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 10px; padding: 4px 14px 6px 4px; margin: -4px 0 -6px -4px; }
+  .work-menu__name { font-size: 14px; }
+  .work-menu__sub { font-size: 11px; }
+  .work-menu__go { display: none; }
+  .work-menu__foot { padding: 12px 4px 2px; margin-top: 12px; }
+  .work-menu__note { font-size: 13px; }
+  .work-menu__actions { width: 100%; }
+  .work-menu__all { flex: 1; height: 42px; padding: 0 12px; font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .work-menu, .work-menu.is-open, .work-menu__grid li { scale: none; translate: none; }
+}

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Sound Button</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@300..600&display=swap">
+<link rel="stylesheet" href="../variants/html/sound-button.css">
+<style>
+  html, body { height: 100%; margin: 0; background: transparent; }
+  body {
+    display: grid; place-items: center; font-family: "Onest", system-ui, sans-serif;
+    --ink: #1d1d1f; --soft: #636366; --chip: rgba(118, 118, 128, 0.12); --chip-hover: rgba(118, 118, 128, 0.2);
+  }
+  @media (prefers-color-scheme: dark) {
+    body { --ink: #f5f5f7; --soft: #aaaaaf; --chip: rgba(118, 118, 128, 0.24); --chip-hover: rgba(118, 118, 128, 0.34); }
+  }
+  @media (prefers-color-scheme: light) {
+    .sound-fab { --sound-focus: #1f231c; --sound-ring: rgba(31, 35, 28, 0.55); }
+  }
+  main { display: grid; justify-items: center; gap: 28px; padding: 24px 16px; text-align: center; }
+  .cues { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; }
+  .cues span { margin-right: 4px; font-size: 13px; color: var(--soft); }
+  .cue {
+    height: 32px; padding: 0 14px; border: 0; border-radius: 999px; cursor: pointer;
+    background: var(--chip); color: var(--ink); font: 500 13px/1 "Onest", system-ui, sans-serif;
+    transition: background 0.16s ease, scale 0.1s ease;
+  }
+  .cue:hover { background: var(--chip-hover); }
+  .cue:active { scale: 0.97; }
+  .cue:focus-visible { outline: 2px solid #0073e6; outline-offset: 2px; }
+  .hint { margin: 0; max-width: 30em; font-size: 13px; line-height: 1.45; color: var(--soft); }
+  .hint kbd { padding: 2px 6px; border-radius: 6px; background: var(--chip); font: 500 12px/1 "Onest", system-ui, sans-serif; color: var(--ink); }
+</style>
+</head>
+<body>
+<main>
+  <button class="sound-fab" type="button" aria-pressed="false" aria-label="Sound is off. Turn it on"
+          data-sfx="sfx/" data-storage-key="shelf-sound-demo">
+    <span class="sound-fab__ico" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <path class="sf-spk" d="M3.8 9.6h3.1l4.4-3.5v11.8l-4.4-3.5H3.8z"/>
+        <path class="sf-w sf-w1" d="M14.4 9.3a3.9 3.9 0 0 1 0 5.4"/>
+        <path class="sf-w sf-w2" d="M16.9 6.9a7.3 7.3 0 0 1 0 10.2"/>
+        <path class="sf-x" d="m15 9.7 4.6 4.6m0-4.6L15 14.3"/>
+      </svg>
+    </span>
+    <span class="sound-fab__label"><span data-sound-label>Turn sound on</span><kbd>M</kbd></span>
+    <span class="sound-fab__bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+  </button>
+  <div class="cues" role="group" aria-label="Try a cue">
+    <span>Try a cue</span>
+    <button class="cue" type="button" data-cue="press">Press</button>
+    <button class="cue" type="button" data-cue="expand">Expand</button>
+    <button class="cue" type="button" data-cue="close">Close</button>
+  </div>
+  <p class="hint">The first click or key turns sound on, unless you switched it off. <kbd>M</kbd> toggles it.</p>
+</main>
+<script src="../variants/html/sound-button.js"></script>
+<script>
+  document.querySelectorAll('[data-cue]').forEach((b) => b.addEventListener('click', () => SoundBus.cue(b.dataset.cue)));
+</script>
+</body>
+</html>

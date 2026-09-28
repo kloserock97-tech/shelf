@@ -1,0 +1,189 @@
+/* Case wheel — titles on the arc on the right, the object of the active case and its text on the left.
+   The object has no tile behind it: it stands right over the blurred field. It lives in its own zone between the
+   heading and the text; towards the top and bottom the zone fades out through a mask, so a passing object dissolves
+   instead of running over the heading or the text.
+   Titles' positions and the objects' travel are written by the script from the scroll; here are layout and looks.
+   --e — entrance of the block (0…1); --R, --cx, --cy — circle radius and centre in .cw-wheel coordinates;
+   --head-top and --kick — top and size of the heading: the object zone starts from them, so the gap
+   "heading — object" is the same on any screen. */
+.cases {
+  --font: "Onest", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --serif: "Playfair Display", Georgia, "Times New Roman", serif;
+  position: fixed; inset: 0; font-family: var(--font); color: #fff;
+}
+.cases-head { position: absolute; left: clamp(20px, 4.4vw, 88px); text-shadow: 0 1px 18px rgba(40, 30, 10, 0.25); }
+.cases-kicker { margin: 0; font-weight: 300; line-height: 1; letter-spacing: -0.02em; }
+.cases-meta { margin: 12px 0 0; font-size: 14px; font-weight: 300; opacity: 0.8; }
+
+.cases[data-mode="wheel"] {
+  --e: 0;
+  --head-top: clamp(96px, 14vh, 150px); --kick: clamp(36px, 4.4vw, 76px);
+  --side: clamp(20px, 4.4vw, 88px);
+}
+.cases[data-mode="wheel"] .cases-head { top: var(--head-top); opacity: var(--e); }
+.cases[data-mode="wheel"] .cases-kicker { font-size: var(--kick); }
+
+/* the number of cases next to the heading: a superscript in italic serif */
+.cases-sup {
+  font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 0.36em; line-height: 1; letter-spacing: 0;
+  vertical-align: top; position: relative; top: 0.3em; margin-left: 0.2em; opacity: 0.85; font-variant-numeric: lining-nums;
+}
+
+.cw { position: absolute; inset: 0; pointer-events: none; font-family: var(--font); color: #fff; }
+/* the wheel also turns with a held mouse button: a grab cursor says so; while dragging, text selection is off */
+.cases[data-mode="wheel"] { cursor: grab; }
+body.is-wheel-drag, body.is-wheel-drag * { cursor: grabbing !important; user-select: none; }
+
+/* ── preview on the left: the object zone and the text under it ── */
+.cw-preview {
+  position: absolute; left: var(--side); width: min(44vw, 720px);
+  top: calc(var(--head-top) + var(--kick) + 30px + clamp(14px, 3vh, 32px)); bottom: clamp(28px, 5.4vh, 60px);
+  display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: clamp(14px, 2.6vh, 28px);
+  opacity: var(--e); translate: 0 calc((1 - var(--e)) * 38vh); pointer-events: auto;
+}
+.cw-stage { position: relative; min-height: 0; container-type: size; cursor: pointer; isolation: isolate; }
+.cw-objs {
+  position: absolute; z-index: 2; inset: 0; translate: calc(var(--px, 0) * 1.4cqw) calc(var(--py, 0) * 1.1cqw);
+  transition: translate 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), scale 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 9%, #000 90%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 9%, #000 90%, transparent 100%);
+}
+.cw-stage:hover .cw-objs { scale: 1.02; }
+.cw-objbox { position: absolute; inset: 0; will-change: transform, opacity; transform-origin: 46% 60%; }
+.cw-objbox.is-far { visibility: hidden; } /* further than the neighbour: not seen and not clickable */
+.cw-obj { position: absolute; inset: 1cqh 2cqw 2cqh 0; display: block; pointer-events: none; }
+.cw-obj img { display: block; width: 100%; height: 100%; object-fit: contain; object-position: 38% 60%; user-select: none; -webkit-user-drag: none; }
+
+/* A staircase on one left edge: tag → subtitle → result figure → button. One line makes a column read top to bottom. */
+.cw-info {
+  display: grid; justify-items: start; gap: clamp(6px, 1vh, 12px);
+  transition: opacity 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), translate 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.cw-info.is-out { opacity: 0; translate: 0 -10px; transition-duration: 0.16s; }
+.cw-info.is-in { opacity: 0; translate: 0 14px; transition: none; }
+.cw-tag { margin: 0; font-size: 14px; font-weight: 600; letter-spacing: 0.01em; color: color-mix(in srgb, var(--s2, #fff) 78%, #fff); font-variant-numeric: tabular-nums; }
+.cw-sub { margin: 0; max-width: 19em; font-size: clamp(18px, 1.5vw, 24px); font-weight: 500; line-height: 1.3; letter-spacing: -0.008em; text-wrap: pretty; text-shadow: 0 1px 18px rgba(0, 0, 0, 0.35); }
+/* the result figure stands in the column, not apart: it is a fact, not a decoration — large but thin */
+.cw-fact { margin: clamp(2px, 0.8vh, 8px) 0 0; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.cw-fact b { font-size: clamp(26px, 2.3vw, 38px); font-weight: 300; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: lining-nums; }
+.cw-fact span { font-size: 13px; color: color-mix(in srgb, #fff 55%, transparent); line-height: 1.3; max-width: 18em; }
+
+.cw-open {
+  display: inline-flex; align-items: center; gap: 4px; height: 48px; padding: 0 8px 0 22px; border-radius: 999px;
+  background: #fff; color: #1d1d1f; font-size: 15px; font-weight: 600; text-decoration: none; white-space: nowrap;
+  transition: scale 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.cw-open svg { width: 36px; height: 36px; padding: 9px; box-sizing: border-box; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: rotate 0.45s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.cw-open:hover { scale: 1.03; }
+.cw-open:hover svg { rotate: 45deg; }
+.cw-open:focus-visible, .cw-item:focus-visible { outline: 2px solid #fff; outline-offset: 6px; border-radius: 8px; }
+
+/* ── the wheel on the right ── */
+.cw-wheel {
+  position: absolute; right: 0; top: 0; bottom: 0; width: 47vw; overflow: hidden; pointer-events: none;
+  opacity: var(--e); translate: calc((1 - var(--e)) * 26vw) 0;
+  -webkit-mask-image: linear-gradient(180deg, transparent 2%, #000 22%, #000 78%, transparent 98%); mask-image: linear-gradient(180deg, transparent 2%, #000 22%, #000 78%, transparent 98%);
+}
+.cw-arc { position: absolute; left: var(--cx, 600px); top: var(--cy, 50%); width: 1px; height: 1px; overflow: visible; }
+.cw-ring { fill: none; stroke: rgba(255, 255, 255, 0.22); stroke-width: 1; }
+.cw-tick { stroke: #fff; stroke-width: 1.5; stroke-linecap: round; }
+.cw-needle {
+  position: absolute; left: calc(var(--cx, 600px) - var(--R, 480px) - 5px); top: calc(var(--cy, 50%) - 5px); width: 10px; height: 10px; border-radius: 50%;
+  background: #fff; box-shadow: 0 0 0 7px rgba(255, 255, 255, 0.16);
+}
+.cw-list { list-style: none; margin: 0; padding: 0; }
+.cw-list li { display: contents; }
+.cw-item {
+  position: absolute; left: var(--cx, 600px); top: var(--cy, 50%); transform-origin: 0 0; display: flex; align-items: center; height: 0;
+  color: #fff; text-decoration: none; white-space: nowrap; pointer-events: auto; will-change: transform, opacity; -webkit-tap-highlight-color: transparent;
+}
+.cw-t {
+  margin-left: 34px; padding: 10px 0; font-size: clamp(23px, 2.35vw, 38px); font-weight: 600; line-height: 1.05; letter-spacing: -0.022em;
+  transform-origin: 0 50%; scale: calc(0.58 + 0.42 * var(--k, 0)); text-shadow: 0 1px 22px rgba(0, 0, 0, 0.4);
+  transition: translate 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.cw-n {
+  position: absolute; right: calc(100% + 22px); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: 0.02em;
+  opacity: calc(0.45 + 0.55 * var(--k, 0));
+}
+.cw-item:not(.is-active):hover .cw-t { translate: 8px 0; }
+.cw-item.is-active .cw-t::after {
+  content: "↗"; display: inline-block; margin-left: 0.32em; font-weight: 400; opacity: 0.7; transition: translate 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.cw-item.is-active:hover .cw-t::after { translate: 3px -3px; opacity: 1; }
+
+/* a short window: a tighter heading and less air in the text — the room goes to the object */
+@media (max-height: 820px) {
+  .cases[data-mode="wheel"] { --head-top: clamp(84px, 11.5vh, 100px); --kick: clamp(32px, 3.7vw, 56px); }
+  .cw-sub { font-size: clamp(17px, 1.45vw, 22px); }
+  .cw-open { height: 44px; }
+}
+@media (max-height: 640px) {
+  .cases[data-mode="wheel"] { --head-top: 56px; }
+  .cases[data-mode="wheel"] .cases-meta { display: none; }
+}
+
+/* ── phone and tablet: the object on top, the arc with titles at the bottom ── */
+.cases.is-narrow[data-mode="wheel"] { --head-top: calc(66px + env(safe-area-inset-top)); --kick: clamp(30px, 8.4vw, 48px); --side: 18px; }
+.cases.is-narrow[data-mode="wheel"] .cases-head { left: 18px; right: 18px; }
+.cases.is-narrow[data-mode="wheel"] .cases-meta { display: none; }
+.cases.is-narrow .cw-preview { left: 16px; right: 16px; width: auto; top: calc(var(--head-top) + var(--kick) + 14px); bottom: calc(176px + env(safe-area-inset-bottom)); gap: 10px; }
+.cases.is-narrow .cw-obj { inset: 2cqh 0 2cqh 0; }
+.cases.is-narrow .cw-obj img { object-position: 50% 60%; }
+/* the figure and the button share a row: on a phone every saved line is height the object takes */
+.cases.is-narrow .cw-info { grid-template-columns: minmax(0, 1fr) auto; gap: 5px 14px; align-items: center; }
+.cases.is-narrow .cw-tag { grid-column: 1 / -1; font-size: 13px; }
+.cases.is-narrow .cw-sub { grid-column: 1 / -1; font-size: clamp(15px, 4.2vw, 19px); line-height: 1.28; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.cases.is-narrow .cw-fact { grid-column: 1; grid-row: 3; margin: 0; gap: 9px; }
+.cases.is-narrow .cw-fact b { font-size: 26px; }
+.cases.is-narrow .cw-fact span { font-size: 11.5px; max-width: 14em; }
+/* on a phone the button is a round arrow: the subtitle needs the width, and the object and the active title open the case too */
+.cases.is-narrow .cw-open { grid-column: 2; grid-row: 3; width: 46px; height: 46px; padding: 0; justify-content: center; }
+.cases.is-narrow .cw-open-l { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.cases.is-narrow .cw-open svg { width: 40px; height: 40px; padding: 11px; }
+.cases.is-narrow .cw-wheel {
+  left: 0; right: 0; top: auto; bottom: 0; width: auto; height: calc(168px + env(safe-area-inset-bottom)); translate: 0 calc((1 - var(--e)) * 30vh); touch-action: pan-y; pointer-events: auto;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 16%, #000 84%, transparent 100%); mask-image: linear-gradient(90deg, transparent 0, #000 16%, #000 84%, transparent 100%);
+}
+.cases.is-narrow .cw-needle { left: calc(var(--cx) - 5px); top: calc(var(--cy) - var(--R) - 5px); }
+.cases.is-narrow .cw-item { display: block; width: 0; height: 0; }
+.cases.is-narrow .cw-t {
+  position: absolute; left: 0; top: 22px; margin: 0; padding: 6px 0; translate: -50% 0; transform-origin: 50% 0; font-size: clamp(22px, 6.4vw, 30px);
+  scale: calc(0.6 + 0.4 * var(--k, 0));
+}
+.cases.is-narrow .cw-item:not(.is-active):hover .cw-t { translate: -50% 0; }
+.cases.is-narrow .cw-n { right: auto; left: 0; bottom: 16px; translate: -50% 0; }
+
+/* ── one case back and forward ──
+   Wide screen: the wheel turns vertically, so the arrows point up and down; they stand in the bottom right corner,
+   not at the middle: the active title lies exactly at "3 o'clock" and would run into them.
+   Phone: at the ends of the bottom arc, where titles have already dissolved. */
+.cw-steps { position: absolute; z-index: 4; pointer-events: none; opacity: var(--e); }
+.cw-step {
+  position: absolute; display: grid; place-items: center; width: 46px; height: 46px; padding: 0;
+  border: 0; border-radius: 50%; background: rgba(12, 14, 10, 0.42); color: #fff; cursor: pointer;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24); pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.3s ease, opacity 0.3s ease, scale 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.cw-step svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.cw-step--next svg { rotate: 180deg; }
+.cw-step:hover { background: rgba(12, 14, 10, 0.68); scale: 1.06; }
+.cw-step:active { scale: 0.96; }
+.cw-step:disabled { opacity: 0.28; cursor: default; scale: 1; }
+.cw-step:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+.cases[data-mode="wheel"]:not(.is-narrow) .cw-steps { right: 18px; bottom: clamp(24px, 5vh, 56px); width: 46px; height: 110px; }
+.cases[data-mode="wheel"]:not(.is-narrow) .cw-step { left: 0; }
+.cases[data-mode="wheel"]:not(.is-narrow) .cw-step[data-d="-1"] { top: 0; }
+.cases[data-mode="wheel"]:not(.is-narrow) .cw-step--next { bottom: 0; }
+.cases[data-mode="wheel"]:not(.is-narrow) .cw-step svg { rotate: 90deg; }
+.cases[data-mode="wheel"]:not(.is-narrow) .cw-step--next svg { rotate: -90deg; }
+.cases.is-narrow[data-mode="wheel"] .cw-steps { left: 0; right: 0; bottom: calc(96px + env(safe-area-inset-bottom)); height: 46px; }
+.cases.is-narrow[data-mode="wheel"] .cw-step[data-d="-1"] { left: 10px; }
+.cases.is-narrow[data-mode="wheel"] .cw-step--next { right: 10px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cw-objs, .cw-info, .cw-t, .cw-stage, .cw-open, .cw-open svg, .cw-step { transition: none; }
+  .cw-preview, .cw-wheel, .cases.is-narrow .cw-wheel { translate: none; }
+}

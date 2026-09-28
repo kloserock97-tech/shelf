@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Line Icons</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500&display=swap">
+<style>
+  :root { --ink: light-dark(#1d1d1f, #f5f5f7); --dim: light-dark(#6e6e73, #a1a1a6); --chip: light-dark(#0000000d, #ffffff14); --chip-on: light-dark(#1d1d1f, #f5f5f7); --on: light-dark(#fff, #1d1d1f); }
+  html, body { margin: 0; background: transparent; }
+  body { --size: 20px; --weight: 1.25; min-height: 100vh; box-sizing: border-box; display: grid; place-items: center; padding: 16px; color: var(--ink); font: 400 13px/1.3 Onest, system-ui, sans-serif; }
+  .sheet { width: min(860px, 100%); }
+  .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 14px; }
+  .seg { display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--chip); }
+  .seg button { appearance: none; border: 0; margin: 0; padding: 6px 10px; border-radius: 999px; background: transparent; color: inherit; font: 500 12px/1 Onest, system-ui, sans-serif; cursor: pointer; font-variant-numeric: tabular-nums; }
+  .seg button[aria-pressed="true"] { background: var(--chip-on); color: var(--on); }
+  .group { display: inline-flex; align-items: center; gap: 8px; }
+  .label { color: var(--dim); font-size: 12px; }
+  .status { margin-left: auto; color: var(--dim); font-size: 12px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; }
+  .tile {
+    appearance: none; border: 0; margin: 0; display: grid; justify-items: center; align-content: center; gap: 10px;
+    min-height: 84px; padding: 12px 6px 10px; border-radius: 14px; background: transparent; color: inherit; cursor: pointer;
+    font: 400 11px/1.2 Onest, system-ui, sans-serif; transition: background-color .16s ease;
+  }
+  .tile:hover { background: var(--chip); }
+  .tile:active { transform: scale(.97); }
+  .tile span { color: var(--dim); }
+  .tile.is-copied { background: var(--chip-on); color: var(--on); }
+  .tile.is-copied span { color: inherit; opacity: .75; }
+  /* the size and the line weight: CSS overrides the stroke-width attribute */
+  .tile svg { width: var(--size); height: var(--size); stroke-width: var(--weight); }
+  button:focus-visible { outline: 2px solid #0071e3; outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { .tile { transition: none; } .tile:active { transform: none; } }
+</style>
+</head>
+<body>
+<main class="sheet" aria-label="Line icons">
+  <div class="bar">
+    <div class="group"><span class="label">Size</span>
+    <div class="seg" role="group" aria-label="Size">
+      <button type="button" data-size="16" aria-pressed="false">16</button>
+      <button type="button" data-size="20" aria-pressed="true">20</button>
+      <button type="button" data-size="24" aria-pressed="false">24</button>
+      <button type="button" data-size="32" aria-pressed="false">32</button>
+    </div></div>
+    <div class="group"><span class="label">Line</span>
+    <div class="seg" role="group" aria-label="Line weight">
+      <button type="button" data-weight="1" aria-pressed="false">1</button>
+      <button type="button" data-weight="1.25" aria-pressed="true">1.25</button>
+      <button type="button" data-weight="1.5" aria-pressed="false">1.5</button>
+      <button type="button" data-weight="2" aria-pressed="false">2</button>
+    </div></div>
+    <span class="status" data-status aria-live="polite">Click an icon to copy its SVG</span>
+  </div>
+  <div class="grid" data-grid></div>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>

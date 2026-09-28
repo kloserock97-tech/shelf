@@ -21,10 +21,10 @@
   color: var(--code-gutter);
   user-select: none;
 }
-.sh-code .shiki span[style] { color: var(--shiki-light); }
+.sh-code .shiki span[class^="k"] { color: var(--shiki-light); }
 .sh-code__wrap .shiki { white-space: pre-wrap; }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .sh-code .shiki span[style] { color: var(--shiki-dark); }
+  :root:not([data-theme="light"]) .sh-code .shiki span[class^="k"] { color: var(--shiki-dark); }
 }
-:root[data-theme="dark"] .sh-code .shiki span[style] { color: var(--shiki-dark); }
+:root[data-theme="dark"] .sh-code .shiki span[class^="k"] { color: var(--shiki-dark); }

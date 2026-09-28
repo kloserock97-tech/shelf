@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Work Mega Menu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@300..600&display=swap">
+<link rel="stylesheet" href="../variants/html/work-menu.css">
+<style>
+  html, body { height: 100%; margin: 0; background: transparent; }
+  body { font-family: "Onest", system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+  /* a plain dark top bar: only the trigger matters here */
+  .topnav-wrap { display: flex; justify-content: center; padding: 18px 12px 0; }
+  .topnav {
+    display: flex; gap: 3px; padding: 5px; border-radius: 14px; background: #1f231c;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 10px 26px rgba(10, 12, 8, 0.25);
+  }
+  .topnav a {
+    display: inline-flex; align-items: center; height: 36px; padding: 0 14px; border-radius: 10px;
+    color: rgba(243, 242, 236, 0.7); text-decoration: none; font-size: 11px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase;
+    background: rgba(255, 255, 255, 0.045); transition: color 0.2s, background 0.2s;
+  }
+  .topnav a:hover, .topnav a[aria-expanded="true"] { color: #fff; background: rgba(255, 255, 255, 0.12); }
+  .topnav a:focus-visible { outline: 2px solid #f3f2ec; outline-offset: 2px; }
+  .topnav .mark { width: 36px; padding: 0; justify-content: center; background: #eef1e7; color: #23261f; font-weight: 700; letter-spacing: 0; font-size: 13px; }
+  @media (max-width: 480px) { .topnav a { padding: 0 10px; letter-spacing: 1px; } .topnav .hide-s { display: none; } }
+</style>
+</head>
+<body>
+<div class="topnav-wrap">
+  <nav class="topnav" aria-label="Primary">
+    <a class="mark" href="#top" aria-label="Home">S</a>
+    <a class="hide-s" href="#about">About</a>
+    <a href="#work" class="work-trigger">Work</a>
+    <a class="hide-s" href="#lab">Lab</a>
+    <a href="#contact">Say hi</a>
+  </nav>
+</div>
+<script type="module">
+  import { initWorkMenu } from '../variants/html/work-menu.js';
+
+  const look = (s1, s2, ink, accent) => ({ stage: [s1, s2], ink, accent });
+  const menu = initWorkMenu({
+    trigger: document.querySelector('.work-trigger'),
+    items: [
+      { id: 'harbor', title: 'Harbor', tag: 'Web platform · 2024', kind: ['web'], look: look('#fcefe6', '#f6d9c6', '#3a1d12', '#d9603b'), object: { src: 'objects/harbor.webp', ratio: 900 / 547 } },
+      { id: 'lumen', title: 'Lumen', tag: 'Analytics · 2025', kind: ['web'], look: look('#edf6f0', '#d2e8da', '#12281c', '#1f8a4c'), object: { src: 'objects/lumen.webp', ratio: 900 / 731 } },
+      { id: 'northwind', title: 'Northwind', tag: 'AI assistant · 2026', kind: ['web'], look: look('#eef3fb', '#d3e1f6', '#14213d', '#2f5fd0'), object: { src: 'objects/northwind.webp', ratio: 888 / 851 } },
+      { id: 'meridian', title: 'Meridian', tag: 'B2B dashboard · 2024', kind: ['web'], look: look('#f1eef9', '#dbd3ee', '#231a3a', '#6b55c9'), object: { src: 'objects/meridian.webp', ratio: 900 / 773 } },
+      { id: 'atlas', title: 'Atlas', tag: 'iOS · Android · 2023', kind: ['mobile'], look: look('#e9f4f7', '#cbe3ea', '#0f2a31', '#15899d'), object: { src: 'objects/atlas.webp', ratio: 900 / 698 } },
+      { id: 'quarry', title: 'Quarry', tag: 'Field app · 2025', kind: ['mobile'], look: look('#f6f1e7', '#e7dcc6', '#2a2318', '#a9752b'), object: { src: 'objects/quarry.webp', ratio: 900 / 1156 } }
+    ]
+  });
+  // demo only: links go nowhere, and the menu opens once on load so the preview shows it
+  document.addEventListener('click', (e) => { if (e.target.closest('a')) e.preventDefault(); });
+  setTimeout(menu.open, 350);
+</script>
+</body>
+</html>

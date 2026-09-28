@@ -1,0 +1,129 @@
+/* Magnetic Dock: the navigation dock from the Portfolio 3D TS2 hero (hero.css, hill-ui.css).
+   Numbers are pixels of the 1600 × 880 hero frame; --u scales the whole dock. */
+.dock-wrap {
+  --u: 1px;
+  --dock-ease: cubic-bezier(0.25, 0.7, 0.3, 1);
+  --dock-enter: cubic-bezier(0.23, 1, 0.32, 1);
+  position: fixed;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  top: calc(38 * var(--u));
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* Dark glass with a thin edge. The edge is a second background: fill on the padding box, and under the
+   transparent border a spot of light at the cursor (--gx, --gy, --glint are written by dock.js).
+   No backdrop-filter: on the site a WebGL canvas redraws under the dock every frame. */
+.dock {
+  position: relative;
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: calc(3 * var(--u));
+  height: calc(46 * var(--u));
+  padding: calc(5 * var(--u));
+  box-sizing: border-box;
+  border: 1px solid transparent;
+  border-radius: calc(14 * var(--u));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0) 42%) padding-box,
+    linear-gradient(rgba(30, 36, 27, 0.8), rgba(30, 36, 27, 0.8)) padding-box,
+    radial-gradient(calc(180 * var(--u)) circle at var(--gx, 50%) var(--gy, -40%), rgba(248, 250, 240, calc(0.18 + var(--glint, 0) * 0.7)), rgba(248, 250, 240, 0.1) 70%) border-box;
+  box-shadow: 0 calc(10 * var(--u)) calc(28 * var(--u)) rgba(40, 36, 20, 0.22), inset 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.dock-item {
+  --near: 0;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  box-sizing: border-box;
+  height: calc(36 * var(--u));
+  gap: calc(8 * var(--u));
+  padding: 0 calc(13 * var(--u));
+  margin-inline: calc(var(--near) * 4 * var(--u));
+  border: 1px solid transparent;
+  border-radius: calc(10 * var(--u));
+  background: rgba(255, 255, 255, 0.045);
+  color: rgba(255, 255, 255, 0.46);
+  text-decoration: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: calc(11 * var(--u));
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: calc(1.5 * var(--u));
+  text-transform: uppercase;
+  white-space: nowrap;
+  /* grows down from the top edge: there is no room above */
+  transform-origin: 50% 0;
+  scale: calc(1 + var(--near) * 0.16);
+  translate: 0 calc(var(--near) * 2 * var(--u));
+  transition: color 0.2s var(--dock-ease), background 0.2s var(--dock-ease), border-color 0.2s var(--dock-ease);
+}
+.dock-item[data-near="true"] {
+  z-index: 2;
+  color: #fff;
+  background: rgba(31, 37, 28, 0.95);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 calc(6 * var(--u)) calc(14 * var(--u)) rgba(10, 14, 8, 0.28);
+}
+.dock-glyph { width: calc(14 * var(--u)); height: calc(14 * var(--u)); flex: none; opacity: 0.7; transition: opacity 0.2s var(--dock-ease); }
+.dock-glyph svg { display: block; width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+.dock-item[data-near="true"] .dock-glyph { opacity: 1; }
+.dock-item--enter { color: #fff; background: rgba(255, 255, 255, 0.08); }
+
+/* the mark is the only light tile in the dark dock; under the cursor it turns white and keeps a dark drawing */
+.dock-mark { width: calc(36 * var(--u)); padding: 0; background: #eef1e7; border-color: #eef1e7; color: #23261f; }
+.dock-mark svg { display: block; width: 70%; height: 70%; fill: currentColor; overflow: visible; }
+.dock-mark[data-near="true"] { background: #fff; border-color: #fff; color: #1b1e18; }
+
+/* the current section is paper, like the cards on the page; it stays paper under the cursor too */
+.dock-item.is-active,
+.dock-item.is-active[data-near="true"] {
+  background: #f2f3ef;
+  border-color: #f2f3ef;
+  color: #23261f;
+  box-shadow: 0 calc(5 * var(--u)) calc(14 * var(--u)) rgba(12, 17, 9, 0.22);
+}
+.dock-item.is-active .dock-glyph { opacity: 0.85; }
+.dock-item:focus-visible { outline: 2px solid rgba(255, 255, 255, 0.85); outline-offset: calc(4 * var(--u)); }
+
+/* Entrance: items come out of a short blur one by one (--d in the markup). dock.js sets data-enter,
+   so without JS the dock is simply there. After the entrance the blur filter is dropped for good. */
+.dock[data-enter] .dock-item { opacity: 0; translate: 0 -8px; filter: blur(4px); }
+.dock[data-enter].is-in .dock-item {
+  opacity: 1;
+  translate: 0 calc(var(--near) * 2 * var(--u));
+  filter: blur(0);
+  transition:
+    opacity 0.4s var(--dock-enter) calc(var(--d, 0ms) * 0.5),
+    translate 0.6s var(--dock-enter) calc(var(--d, 0ms) * 0.5),
+    filter 0.4s var(--dock-enter) calc(var(--d, 0ms) * 0.5),
+    color 0.18s var(--dock-ease), border-color 0.2s var(--dock-ease), background 0.2s var(--dock-ease);
+}
+.dock[data-enter].is-settled .dock-item {
+  filter: none;
+  transition: color 0.2s var(--dock-ease), background 0.2s var(--dock-ease), border-color 0.2s var(--dock-ease);
+}
+
+/* Narrow screens: icons only, sizes with a floor so a finger can hit them.
+   The label stays in the markup for screen readers, it is only hidden from view. */
+@media (max-width: 900px) {
+  .dock-wrap { --u: calc(100vw / 760); top: calc(30 * var(--u)); }
+  .dock { height: max(56px, calc(58 * var(--u))); padding: max(6px, calc(6 * var(--u))); gap: max(4px, calc(4 * var(--u))); border-radius: max(17px, calc(18 * var(--u))); }
+  .dock-item { width: max(44px, calc(46 * var(--u))); height: max(44px, calc(46 * var(--u))); padding: 0; border-radius: max(12px, calc(13 * var(--u))); }
+  .dock-item .dock-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .dock-item .dock-glyph { width: max(19px, calc(20 * var(--u))); height: max(19px, calc(20 * var(--u))); }
+  .dock-mark svg { width: 64%; height: 64%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dock-item { scale: 1 !important; translate: none !important; margin-inline: 0 !important; }
+  .dock[data-enter] .dock-item { filter: none; }
+}

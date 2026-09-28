@@ -1,0 +1,308 @@
+/* Первый экран «Тихого холма»: сетка кадра, док, заголовок, кнопки, статистика, карточка заметок.
+   v30: своя база вместо заимствованного UI-слоя. Композиция кадра прежняя (числа раскладки — это наш кадр),
+   а материалы и приёмы свои: металлические кнопки на градиентах без WebGL, блик на кромке дока
+   идёт за курсором радиальным отсветом, увеличение пунктов дока — через scale и поля, появление
+   картинки — растворение из размытия. Поверх лежат правки палитры и раскладки из hill-ui.css. */
+
+/* шрифты — в fonts.css (v64) */
+
+/* ── единица кадра ───────────────────────────────────────────────────────────
+   Кадр рассчитан на 1600 × 880: 1u — пиксель этого кадра. На очень широком экране кадр
+   дальше не растёт, на узком (≤900 px) переключается на колонку шириной 760u. */
+:root {
+  --u: min(calc(100vw / 1600), calc(1900px / 1600));
+  --ink: #ffffff;
+  --ink-soft: rgba(255, 255, 255, 0.62);
+  --ink-faint: rgba(255, 255, 255, 0.44);
+  --rule: rgba(255, 255, 255, 0.06);
+  --card: #f2f3ef;
+  --card-ink: #23261f;
+  --card-label: #7c8177;
+  --ease: cubic-bezier(0.25, 0.7, 0.3, 1);
+  --ease-out: cubic-bezier(0.2, 0.9, 0.25, 1);
+  --glass: rgba(30, 36, 27, 0.8);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  font-weight: 300;
+  color: var(--ink);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.hero { position: relative; width: 100%; height: 100svh; min-height: calc(880 * var(--u)); overflow: hidden; isolation: isolate; }
+
+/* Сцена кадра по центру экрана. Центровка полями, а не transform: transform открыл бы контекст
+   наложения, и весь интерфейс ушёл бы под канвас. */
+.stage {
+  position: absolute; inset: 0; margin: auto;
+  width: calc(1600 * var(--u)); height: calc(880 * var(--u));
+}
+
+#scene { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+/* тонкие вертикальные направляющие сетки. v78: Никита попросил убрать полосы с фона первого экрана —
+   направляющие больше не показываются (разметка осталась, её используют отступы) */
+.guides { display: none; }
+.guides { position: absolute; top: calc(-40 * var(--u)); bottom: calc(-40 * var(--u)); left: 0; right: 0; pointer-events: none; }
+.guides i {
+  position: absolute; top: 0; bottom: 0; width: 1px;
+  background: linear-gradient(180deg, transparent, var(--rule) 15%, var(--rule) 80%, transparent);
+}
+
+/* ── док ──────────────────────────────────────────────────────────────────────
+   Тёмное стекло с тонкой кромкой. Кромка — двойной фон: заливка по padding-box и градиент по
+   border-box под прозрачной рамкой. Градиент — пятно света в точке курсора (--gx, --gy пишет
+   heroUi.ts), поэтому кромка загорается там, где рядом рука. Без backdrop-filter: под доком
+   канвас, который перерисовывается каждый кадр, и размытие фона стоило бы кадров. */
+.dock-wrap {
+  position: absolute; z-index: 5; left: 0; right: 0; top: calc(38 * var(--u));
+  display: flex; justify-content: center; pointer-events: none;
+}
+.dock {
+  position: relative; pointer-events: auto;
+  display: flex; align-items: flex-start; gap: calc(3 * var(--u));
+  height: calc(46 * var(--u)); padding: calc(5 * var(--u));
+  border: 1px solid transparent; border-radius: calc(14 * var(--u));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 45%) padding-box,
+    linear-gradient(var(--glass), var(--glass)) padding-box,
+    radial-gradient(calc(180 * var(--u)) circle at var(--gx, 50%) var(--gy, -40%), rgba(248, 250, 240, calc(0.18 + var(--glint, 0) * 0.7)), rgba(248, 250, 240, 0.1) 70%) border-box;
+}
+.dock-item {
+  --near: 0;
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  height: calc(36 * var(--u)); gap: calc(8 * var(--u)); padding: 0 calc(13 * var(--u));
+  margin-inline: calc(var(--near) * 4 * var(--u));
+  border: 1px solid transparent; border-radius: calc(10 * var(--u));
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--ink-faint); text-decoration: none; cursor: pointer;
+  font-family: inherit; font-size: calc(11 * var(--u)); font-weight: 500; line-height: 1;
+  letter-spacing: calc(1.5 * var(--u)); text-transform: uppercase; white-space: nowrap;
+  /* увеличение растёт вниз, от верхней кромки: вверх расти некуда */
+  transform-origin: 50% 0;
+  scale: calc(1 + var(--near) * 0.16);
+  translate: 0 calc(var(--near) * 2 * var(--u));
+  transition: color 0.2s var(--ease), background 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+.dock-item[data-near="true"] {
+  z-index: 2; color: var(--ink);
+  background: rgba(31, 37, 28, 0.95); border-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 calc(6 * var(--u)) calc(14 * var(--u)) rgba(10, 14, 8, 0.28);
+}
+.dock-item .glyph { width: calc(14 * var(--u)); height: calc(14 * var(--u)); flex: none; opacity: 0.7; transition: opacity 0.2s var(--ease); }
+.dock-item .glyph svg { display: block; width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+.dock-item[data-near="true"] .glyph { opacity: 1; }
+/* знак сайта — единственная светлая плитка в тёмном доке */
+.dock-mark { width: calc(36 * var(--u)); padding: 0; background: #eef1e7; border-color: #eef1e7; color: #23261f; }
+.dock-mark svg { width: 70%; height: 70%; display: block; fill: currentColor; overflow: visible; }
+/* v45: фонтан кита оживает под курсором */
+.dock-mark[data-near="true"] { background: #fff; border-color: #fff; color: #1b1e18; }
+/* текущий раздел — из той же бумаги, что карточки */
+.dock-item.is-active { background: var(--card); border-color: var(--card); color: var(--card-ink); box-shadow: 0 calc(5 * var(--u)) calc(14 * var(--u)) rgba(12, 17, 9, 0.22); }
+.dock-item.is-active .glyph { opacity: 0.85; }
+.dock-item--enter { color: var(--ink); background: rgba(255, 255, 255, 0.08); }
+
+/* ── заголовок и подзаголовок ─────────────────────────────────────────────── */
+.headline {
+  position: absolute; z-index: 4; left: calc(46 * var(--u)); top: calc(202 * var(--u));
+  font-size: calc(63 * var(--u)); line-height: calc(65 * var(--u)); font-weight: 500; letter-spacing: calc(-0.4 * var(--u));
+}
+.headline span { display: block; padding-bottom: 0.04em; }
+.headline span i { display: inline-block; font-style: normal; }
+body.lang-ru .headline {
+  font-weight: 500;   /* Ugol, средний: в тонком штрихе дуга в «и» почти не видна (28.09) */
+  letter-spacing: calc(-0.7 * var(--u));
+}
+.lede {
+  position: absolute; z-index: 4; left: calc(520 * var(--u)); top: calc(196 * var(--u)); width: calc(208 * var(--u));
+  font-size: calc(16.5 * var(--u)); line-height: calc(22 * var(--u)); font-weight: 300;
+}
+
+/* ── стеклянные кнопки (v37, было «металл» v30) ───────────────────────────────
+   Дымчатое стекло в цвет дока: размытие сцены под кнопкой, светлая кромка градиентной рамкой,
+   по кромке медленно бежит светло-зелёный блик (конический градиент, угол — @property --beam),
+   по поверхности проходит проблеск — при наведении и изредка сам. Свечение за курсором (--mx, --my
+   пишет heroUi.ts). Нажатие — сжатие и кольцо. Класс остался .metal, чтобы не трогать разметку и JS. */
+@property --beam { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.metal {
+  --mx: 30%; --my: 0%;
+  position: relative; isolation: isolate; overflow: hidden;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid transparent; border-radius: 999px; cursor: pointer;
+  color: #f7f8f2; font-family: inherit; font-weight: 500; line-height: 1;
+  text-shadow: 0 1px 10px rgba(10, 14, 8, 0.35);
+  -webkit-tap-highlight-color: transparent;
+  background:
+    radial-gradient(90% 160% at var(--mx) var(--my), rgba(245, 251, 230, 0.34), rgba(245, 251, 230, 0) 58%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.015) 48%, rgba(159, 227, 139, 0.08)) padding-box,
+    linear-gradient(rgba(25, 31, 22, 0.5), rgba(20, 26, 18, 0.58)) padding-box,
+    conic-gradient(from var(--beam), rgba(255, 255, 255, 0.34), rgba(214, 240, 170, 0.95) 7%, rgba(255, 255, 255, 0.22) 18%, rgba(255, 255, 255, 0.16) 62%, rgba(255, 255, 255, 0.5) 82%, rgba(255, 255, 255, 0.34)) border-box;
+  -webkit-backdrop-filter: blur(20px) saturate(1.35);
+  backdrop-filter: blur(20px) saturate(1.35);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+    0 calc(12 * var(--u)) calc(34 * var(--u)) rgba(20, 24, 16, 0.24),
+    0 0 0 1px rgba(218, 235, 192, 0.06);
+  animation: glass-beam 9s linear infinite;
+  transition: scale 0.22s var(--ease-out), box-shadow 0.3s var(--ease), background-color 0.3s var(--ease);
+}
+@keyframes glass-beam { to { --beam: 360deg; } }
+/* v72: на телефоне стекло без размытия фона. Под кнопкой — живой WebGL-холст, и backdrop-filter заново
+   размывал его кусок в каждом кадре; на iPhone 11 интерфейс поверх холста стоил около 12 мс кадра. Над небом
+   размытие на глаз почти не видно — остаётся полупрозрачная тёмная подложка */
+@media (hover: none) and (pointer: coarse) {
+  .metal { -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+/* проблеск: светлая косая полоса проходит слева направо */
+.metal::before {
+  content: ""; position: absolute; inset: 0; z-index: 1; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.34) 48%, rgba(255, 255, 255, 0.08) 54%, transparent 64%) no-repeat;
+  background-size: 250% 100%; background-position: 130% 0;
+  animation: glass-sheen 7s var(--ease) 2.4s infinite;
+}
+.metal:hover::before { animation: glass-sheen-once 0.9s var(--ease-out) both; }
+@keyframes glass-sheen { 0%, 78% { background-position: 130% 0; } 100% { background-position: -30% 0; } }
+@keyframes glass-sheen-once { from { background-position: 130% 0; } to { background-position: -30% 0; } }
+.metal > * { position: relative; z-index: 2; }
+.metal:hover {
+  animation-duration: 3.2s;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.36), inset 0 -1px 0 rgba(255, 255, 255, 0.08), 0 calc(14 * var(--u)) calc(34 * var(--u)) rgba(28, 24, 12, 0.3), 0 0 calc(24 * var(--u)) rgba(214, 232, 170, 0.22);
+}
+.metal:active { scale: 0.97; }
+.metal::after {
+  content: ""; position: absolute; inset: 0; z-index: 0; border-radius: inherit; pointer-events: none;
+  box-shadow: inset 0 0 0 0 rgba(214, 232, 170, 0.55); opacity: 0;
+}
+.metal.is-rippling::after { animation: metal-ring 0.7s var(--ease-out); }
+@keyframes metal-ring {
+  0% { opacity: 1; box-shadow: inset 0 0 0 calc(30 * var(--u)) rgba(214, 232, 170, 0.35); }
+  100% { opacity: 0; box-shadow: inset 0 0 0 0 rgba(214, 232, 170, 0); }
+}
+.metal:focus-visible { outline: 2px solid rgba(255, 255, 255, 0.85); outline-offset: calc(5 * var(--u)); }
+@media (prefers-reduced-motion: reduce) {
+  .metal, .metal::before, .metal:hover::before { animation: none; }
+}
+.metal svg { display: block; flex: none; }
+
+/* «Смотреть кейсы»: (left, top) обёртки — левый край кнопки и её середина по вертикали.
+   v68: кнопка встала в левую текстовую колонку, поэтому равняется по левому краю, а не по центру. */
+.cta-wrap { position: absolute; z-index: 4; left: calc(644 * var(--u)); top: calc(360 * var(--u)); width: 0; height: 0; }
+.cta {
+  position: absolute; left: 0; top: 0; transform: translateY(-50%);
+  height: calc(60 * var(--u)); padding: 0 calc(28 * var(--u)) 0 calc(20 * var(--u)); gap: calc(12 * var(--u));
+  font-size: calc(16.5 * var(--u)); white-space: nowrap;
+}
+.cta:active { scale: 1; transform: translateY(-50%) scale(0.96); }
+.cta svg { width: calc(18 * var(--u)); height: calc(18 * var(--u)); fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+.cta .lbl { translate: 0 calc(1 * var(--u)); }
+
+/* «Позвать ветер»: круглая кнопка в тонком кольце */
+.play-wrap { position: absolute; z-index: 4; left: calc(187 * var(--u)); top: calc(431 * var(--u)); width: calc(170 * var(--u)); height: calc(170 * var(--u)); }
+.gust { position: absolute; left: 50%; top: 50%; width: calc(88 * var(--u)); height: calc(88 * var(--u)); margin: calc(-44 * var(--u)) 0 0 calc(-44 * var(--u)); }
+.gust svg { width: calc(30 * var(--u)); height: calc(30 * var(--u)); margin-left: calc(4 * var(--u)); fill: currentColor; }
+.gust-ring { position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.18); pointer-events: none; transition: border-color 0.5s var(--ease), scale 0.8s var(--ease-out); }
+.gust:hover + .gust-ring, .gust:focus-visible + .gust-ring { border-color: rgba(255, 255, 255, 0.4); scale: 1.05; }
+
+/* ── статистика ───────────────────────────────────────────────────────────── */
+.stat { position: absolute; z-index: 4; display: flex; align-items: flex-start; gap: calc(9 * var(--u)); }
+.stat--a { left: calc(1250 * var(--u)); top: calc(216 * var(--u)); }
+.stat--b { left: calc(1346 * var(--u)); top: calc(326 * var(--u)); }
+.stat .mark { width: calc(32 * var(--u)); height: calc(32 * var(--u)); flex: none; margin-top: calc(2 * var(--u)); }
+.stat .mark svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 calc(2 * var(--u)) calc(8 * var(--u)) rgba(10, 14, 8, 0.55)); }
+.stat dt, .stat dd { text-shadow: 0 calc(2 * var(--u)) calc(14 * var(--u)) rgba(10, 14, 8, 0.55); }
+.stat dt { font-size: calc(13.5 * var(--u)); line-height: calc(19 * var(--u)); font-weight: 300; }
+.stat dd { font-size: calc(13.5 * var(--u)); line-height: calc(21 * var(--u)); font-weight: 600; }
+
+/* ── карточка заметок ─────────────────────────────────────────────────────── */
+.card {
+  position: absolute; background: var(--card); border-radius: calc(46 * var(--u));
+  transition: box-shadow 0.8s var(--ease);
+}
+.card--stove { z-index: 4; left: calc(1213 * var(--u)); top: calc(482 * var(--u)); width: calc(352 * var(--u)); height: calc(310 * var(--u)); }
+.portal-media {
+  position: absolute; inset: calc(-8 * var(--u)); display: block;
+  transform: translate3d(calc(var(--px, 0) * -8px), calc(var(--py, 0) * -5px), 0);
+}
+.portal-media img { display: block; width: 100%; height: 100%; object-fit: cover; scale: 1.06; transition: scale 1.2s var(--ease-out), filter 0.8s var(--ease); }
+.card:hover .portal-media img { scale: 1.11; }
+
+/* ── подсказка «Дальше» ───────────────────────────────────────────────────── */
+.scroll {
+  position: absolute; z-index: 4; left: calc(846 * var(--u)); top: calc(690 * var(--u));
+  display: flex; align-items: center; gap: calc(12 * var(--u));
+  writing-mode: vertical-rl; text-transform: uppercase; text-decoration: none;
+  font-size: calc(11 * var(--u)); font-weight: 400; letter-spacing: calc(4.4 * var(--u));
+}
+/* по линии вниз стекает светлая капля */
+.scroll .track { position: relative; width: 1px; height: calc(56 * var(--u)); background: rgba(255, 255, 255, 0.18); overflow: hidden; }
+.scroll .track::after {
+  content: ""; position: absolute; left: -1px; width: 3px; height: calc(10 * var(--u)); top: 0;
+  border-radius: 2px; background: currentColor; opacity: 0.8;
+  animation: scroll-drop 2.4s var(--ease) infinite;
+}
+@keyframes scroll-drop {
+  0% { translate: 0 calc(-12 * var(--u)); opacity: 0; }
+  25% { opacity: 0.85; }
+  80% { opacity: 0.85; }
+  100% { translate: 0 calc(62 * var(--u)); opacity: 0; }
+}
+
+/* ── параллакс за курсором ────────────────────────────────────────────────────
+   heroUi.ts пишет --px, --py (-1…1) на .hero; каждый слой сдвигается на свою глубину --pd.
+   Только сдвиг, без поворотов: плоский коллаж, у которого слои лежат на разной высоте. */
+.par { transform: translate3d(calc(var(--px, 0) * var(--pd, 0) * -1px), calc(var(--py, 0) * var(--pd, 0) * -0.6px), 0); }
+
+/* ── фокус с клавиатуры ───────────────────────────────────────────────────── */
+a:focus-visible, button:focus-visible { outline: 2px solid rgba(255, 255, 255, 0.85); outline-offset: calc(4 * var(--u)); border-radius: calc(6 * var(--u)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .par, .portal-media { transform: none !important; }
+  .portal-media img { scale: 1 !important; transition: none !important; }
+  .scroll .track::after { animation: none; }
+  .dock-item { scale: 1 !important; translate: none !important; margin-inline: 0 !important; }
+}
+
+/* ── узкий экран: одна колонка, сцена-полоса между текстом и карточкой ──────── */
+@media (max-width: 900px) {
+  :root { --u: calc(100vw / 760); }
+  .hero { height: auto; min-height: 100svh; }
+  .stage { position: relative; inset: auto; margin: 0; width: 100%; height: calc(1625 * var(--u)); }
+  .guides i:nth-child(1) { left: calc(253 * var(--u)) !important; }
+  .guides i:nth-child(2) { left: calc(506 * var(--u)) !important; }
+  .guides i:nth-child(3) { display: none; }
+
+  /* подписи уходят, остаются значки; размеры с нижним пределом, чтобы по ним попадал палец */
+  .dock-wrap { top: calc(30 * var(--u)); }
+  .dock { height: max(56px, calc(58 * var(--u))); padding: max(6px, calc(6 * var(--u))); gap: max(4px, calc(4 * var(--u))); border-radius: max(17px, calc(18 * var(--u))); }
+  .dock-item { width: max(44px, calc(46 * var(--u))); height: max(44px, calc(46 * var(--u))); padding: 0; border-radius: max(12px, calc(13 * var(--u))); }
+  .dock-item span:not(.glyph) { display: none; }
+  .dock-item .glyph { width: max(19px, calc(20 * var(--u))); height: max(19px, calc(20 * var(--u))); }
+  .dock-mark svg { width: 64%; height: 64%; }
+
+  .headline { left: calc(34 * var(--u)); top: calc(128 * var(--u)); font-size: calc(62 * var(--u)); line-height: calc(66 * var(--u)); }
+  .lede { left: calc(34 * var(--u)); top: calc(288 * var(--u)); width: calc(400 * var(--u)); font-size: calc(19 * var(--u)); line-height: calc(27 * var(--u)); }
+
+  .cta-wrap { left: calc(34 * var(--u)); top: calc(440 * var(--u)); }
+  .cta { transform: translate(0, -50%); height: calc(74 * var(--u)); font-size: calc(20 * var(--u)); padding: 0 calc(34 * var(--u)) 0 calc(24 * var(--u)); gap: calc(14 * var(--u)); }
+  .cta:active { transform: translate(0, -50%) scale(0.96); }
+  .cta svg { width: calc(22 * var(--u)); height: calc(22 * var(--u)); }
+  .play-wrap { display: none; }
+
+  .stat { gap: calc(11 * var(--u)); }
+  .stat .mark { width: calc(36 * var(--u)); height: calc(36 * var(--u)); }
+  .stat dt { font-size: calc(16 * var(--u)); line-height: calc(22 * var(--u)); }
+  .stat dd { font-size: calc(16.5 * var(--u)); line-height: calc(24 * var(--u)); }
+  .stat--a { left: calc(34 * var(--u)); top: calc(540 * var(--u)); }
+  .stat--b { left: calc(396 * var(--u)); top: calc(540 * var(--u)); }
+
+  .card { border-radius: calc(40 * var(--u)); }
+
+  .scroll { left: calc(702 * var(--u)); top: calc(470 * var(--u)); }
+}

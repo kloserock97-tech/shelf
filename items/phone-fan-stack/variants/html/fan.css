@@ -1,0 +1,65 @@
+/* Phone fan: n phone screens spread like cards on one stage. The layout is pure CSS: each phone knows its
+   index (--i) and the count (--n), turns by 7° per step from the middle and drops by a parabola, so the
+   edges sink lower than the centre. Hover or keyboard focus straightens a phone and lifts it forward.
+   Ported from Portfolio 3D TS2: src/ui/case-story.css (.cs-stage, .cs-stack-fan, .cs-stack-phone). */
+
+.fan-fig {
+  --stage-h: clamp(340px, calc(100svh - 230px), 780px);   /* the stage always fits the window */
+  --stage-pad: clamp(16px, 2.6vw, 44px);
+  --s1: #f0f0f3; --s2: #e2e2e7;                            /* stage gradient */
+  --shade: #1d1d1f;                                        /* shadows */
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  container-type: inline-size; min-width: 0; margin: 0;
+}
+.fan-fig figcaption { padding: 14px 4px 0; max-width: 46em; font-size: 15px; line-height: 1.45; color: var(--soft, #6e6e73); text-wrap: pretty; }
+
+/* the stage: height capped by --stage-h, proportions from --ar (wide on a wide column) */
+.fan {
+  --ar: 1.9;
+  position: relative; display: flex; justify-content: center; align-items: flex-end; width: 100%; overflow: hidden;
+  box-sizing: border-box; padding-top: var(--stage-pad); border-radius: 28px;
+  height: min(var(--stage-h), calc((100cqw - 2 * var(--stage-pad)) / var(--ar) + 2 * var(--stage-pad)));
+  background: linear-gradient(180deg, var(--s1), var(--s2));
+}
+/* in a narrow column the fan gets a taller stage, otherwise the phones come out nail-sized */
+@container (max-width: 640px) { .fan { --ar: 0.95; } }
+
+.fan-phone {
+  --mid: calc((var(--n) - 1) / 2);
+  --o: calc(var(--i) - var(--mid));                        /* offset from the middle: −1, 0, 1 for three */
+  position: relative; flex: none; min-width: 0; width: auto; height: 92%; aspect-ratio: 402 / 874;
+  margin: 0 clamp(-36px, -2.4cqw, -12px); padding: 0;
+  border: 6px solid #15181d; border-radius: 30px; overflow: hidden; background: #15181d; cursor: zoom-in;
+  rotate: calc(var(--o) * 7deg);
+  translate: 0 calc(var(--o) * var(--o) * 4% + 9%);
+  box-shadow: 0 26px 50px color-mix(in srgb, var(--shade) 34%, transparent);
+  transition: translate 0.5s var(--ease), rotate 0.5s var(--ease), scale 0.5s var(--ease);
+}
+.fan-phone:hover, .fan-phone:focus-visible { rotate: 0deg; translate: 0 4%; scale: 1.03; z-index: 2; }
+.fan-phone:focus-visible { outline: 2px solid var(--shade); outline-offset: 4px; }
+.fan-phone img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+/* a screen that already comes inside a device render: no drawn frame, the shadow follows its outline */
+.fan-phone.is-device {
+  border: 0; border-radius: 0; background: none; overflow: visible; box-shadow: none; aspect-ratio: 1300 / 2642;
+  filter: drop-shadow(0 26px 36px color-mix(in srgb, var(--shade) 34%, transparent));
+}
+
+/* a phone opened on its own */
+.fan-view { padding: 0; border: 0; background: none; max-width: none; max-height: none; overflow: visible; color: #fff; }
+.fan-view[open] { display: grid; justify-items: center; gap: 14px; }
+.fan-view::backdrop { background: rgba(9, 11, 14, 0.88); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.fan-view img { display: block; height: min(80vh, 760px); width: auto; max-width: 92vw; border-radius: 34px; box-shadow: 0 0 0 6px #15181d; }
+.fan-view img.is-device { border-radius: 0; box-shadow: none; }
+.fan-view p { margin: 0; max-width: 32em; font-size: 14px; line-height: 1.45; text-align: center; color: rgba(255, 255, 255, 0.72); }
+.fan-view button {
+  position: fixed; top: 14px; right: 14px; width: 40px; height: 40px; border: 0; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14); color: #fff; font-size: 22px; line-height: 1; cursor: pointer;
+}
+
+@media (max-width: 760px) {
+  .fan { border-radius: 22px; }
+  .fan-phone { border-width: 4px; border-radius: 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fan-phone { transition: none; }
+}

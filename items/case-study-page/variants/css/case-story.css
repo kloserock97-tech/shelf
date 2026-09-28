@@ -1,0 +1,671 @@
+/* v64: страница кейса «по-эпловски» — стили к caseStoryView.ts (заменил case-v41.css).
+   Откуда правила (замеры — docs/prompts/v64-research-apple.md):
+   · одна гарнитура, заголовки всегда 600, текст 400, лёгких начертаний нет; контраст делает размер, а не вес;
+   · трекинг от кегля: −0.025em на самом крупном, около нуля на 24–28, ноль на тексте;
+   · плитки без теней и обводок: белая плитка на тёплой бумаге, крупные radius 28, мелкие 20; глубину даёт смена фона;
+   · v65: страница кейса серая у всех кейсов (caseLook.ts, MONO): сцена --s1 → --s2, чернила --ink, акцент --accent — графит.
+     Цвет кейса несёт только предмет-обложка; карточка в ленте остаётся в цвете кейса (src/data/cases.ts, look).
+     Тёмные плашки красятся чернилами кейса, а не общим зелёным стеклом;
+   · серый абзац с чёрным «заходом» (.cs-run) вместо отдельных подзаголовков;
+   · числа: мелко — крупно — мелко, крупное акцентом;
+   · экраны стоят на светлой сцене в цвет кейса, подпись под сценой.
+   Текст нигде не мельче 15 px. Навигация: панель сверху и капсула оглавления снизу (на любом экране). */
+
+.cv-scroll--story { padding: 0 clamp(16px, 3.4vw, 56px) 120px; scroll-padding-top: 84px; }
+.cv-scroll--story > * { max-width: 1240px; }
+.cs {
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --soft: color-mix(in srgb, var(--ink) 62%, transparent);
+  --faint: color-mix(in srgb, var(--ink) 44%, transparent);
+  --line: color-mix(in srgb, var(--ink) 11%, transparent);
+  --tile: #ffffff; --tile-2: color-mix(in srgb, var(--s2) 30%, #ececf0);
+  --stage: linear-gradient(180deg, var(--s1), var(--s2));
+  --warn: #cf4a2f;
+  position: relative; color: var(--ink); font-weight: 400; font-size: 17px; line-height: 1.5;
+  font-feature-settings: "ss01" on; font-variant-numeric: lining-nums;
+}
+:where(.cs) :where(p, h1, h2, h3, h4, ol, ul, dl, dd, figure, blockquote) { margin: 0; }
+:where(.cs) :where(ol, ul) { list-style: none; padding: 0; }
+:where(.cs) :where(h1, h2, h3, h4, b) { font-weight: 600; }
+.cs .ic { width: 1em; height: 1em; flex: none; }
+.cs-nw { white-space: nowrap; }
+
+/* ── панель сверху ─────────────────────────────────────────────────────── */
+.cs-top {
+  position: sticky; top: 0; z-index: 6; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px;
+  padding: 12px 0;
+}
+.cs-top::before {
+  content: ""; position: absolute; z-index: -1; inset: 0 calc(50% - 50vw); opacity: 0; transition: opacity 0.35s var(--ease);
+  background: color-mix(in srgb, var(--paper) 76%, transparent); border-bottom: 1px solid var(--line);
+  -webkit-backdrop-filter: blur(20px) saturate(1.8); backdrop-filter: blur(20px) saturate(1.8);
+}
+.cs-top.is-scrolled::before { opacity: 1; }
+.cs-back, .cs-top-arrow {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 40px; padding: 0 17px; border: 0; border-radius: 999px;
+  background: color-mix(in srgb, #fff 78%, transparent); color: var(--ink); font: 500 14px/1 var(--font);
+  -webkit-backdrop-filter: blur(18px) saturate(1.6); backdrop-filter: blur(18px) saturate(1.6);
+  text-decoration: none; cursor: pointer; transition: background 0.25s var(--ease), scale 0.25s var(--ease);
+}
+.cs-back { justify-self: start; }
+.cs-back:hover, .cs-top-arrow:hover { background: #fff; }
+.cs-back:active, .cs-top-arrow:active { scale: 0.97; }
+.cs-top-arrow { width: 40px; padding: 0; }
+.cs-top-nav { justify-self: end; display: flex; align-items: center; gap: 8px; }
+.cs-top-count { margin-right: 6px; font-size: 14px; font-weight: 500; color: var(--soft); font-variant-numeric: tabular-nums; }
+/* название кейса и линия прогресса появляются, когда герой ушёл вверх */
+.cs-top-title {
+  position: relative; display: grid; gap: 7px; min-width: min(340px, 40vw); padding: 10px 20px 10px; border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 88%, transparent); color: #fff; text-align: center; opacity: 0; translate: 0 -8px; pointer-events: none;
+  -webkit-backdrop-filter: blur(18px) saturate(1.6); backdrop-filter: blur(18px) saturate(1.6);
+  transition: opacity 0.4s var(--ease), translate 0.5s var(--ease);
+}
+.cs-top.is-past .cs-top-title { opacity: 1; translate: 0 0; }
+.cs-top-title b { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cs-progress { display: block; height: 2px; border-radius: 2px; background: rgba(255, 255, 255, 0.2); overflow: hidden; }
+.cs-progress::after { content: ""; display: block; height: 100%; width: 100%; background: var(--s2); transform-origin: 0 50%; transform: scaleX(var(--p, 0)); }
+
+/* ── раскладка ─────────────────────────────────────────────────────────── */
+.cs-layout { display: block; }
+.cs-body { min-width: 0; }
+.cs-mini, .cs-kicker { font-size: 14px; font-weight: 600; line-height: 1.3; letter-spacing: 0; color: var(--faint); }
+
+/* ── герой ─────────────────────────────────────────────────────────────── */
+.cs-hero { display: grid; gap: clamp(20px, 3vh, 32px); padding-top: 4px; }
+.cs-hero-stage {
+  position: relative; display: grid; grid-template-columns: minmax(0, 0.86fr) minmax(0, 1fr); gap: clamp(16px, 3vw, 48px);
+  min-height: clamp(460px, 68svh, 680px); padding: clamp(28px, 4vw, 64px); padding-right: 0;
+  border-radius: 32px; overflow: hidden; isolation: isolate; background: var(--stage);
+}
+/* мягкий свет сверху слева: сцена не плоская */
+.cs-hero-stage::before { content: ""; position: absolute; inset: 0; z-index: -1; background: radial-gradient(60% 70% at 18% 8%, rgba(255, 255, 255, 0.75), transparent 70%); }
+.cs-hero-text { position: relative; z-index: 2; display: flex; flex-direction: column; justify-content: center; min-width: 0; padding-top: clamp(64px, 6vw, 92px); }
+/* v74: карточка по правилам бренда Яндекса (образец — GRIF AI): знак с названием продукта — вверху слева,
+   ниже строка о продукте серым, крупный жирный заголовок и подзаголовок. Контраст заголовка к тексту — высокий
+   (5× к 2× по сетке правил). Знак — 4 модуля в высоту */
+.cs-hero-brand { position: absolute; top: 0; left: 0; display: flex; align-items: center; gap: 14px; margin: 0; font-size: clamp(20px, 1.8vw, 28px); font-weight: 600; letter-spacing: -0.01em; color: var(--ink); }
+.cs-hero-brand .cs-brand { height: clamp(40px, 3.6vw, 56px); width: auto; margin: 0; border-radius: 22%; }
+.cs-kicker { color: var(--faint); font-weight: 500; font-size: clamp(14px, 1.15vw, 17px); }
+.cs-hero h1 { margin-top: 16px; font-size: clamp(44px, 6vw, 96px); font-weight: 700; line-height: 1; letter-spacing: -0.035em; text-wrap: balance; }
+body.lang-ru .cs-hero h1 { line-height: 1.05; letter-spacing: -0.024em; }
+.cs-tagline { margin-top: clamp(16px, 2.4vh, 26px) !important; max-width: 22em; font-size: clamp(18px, 1.6vw, 24px); font-weight: 500; line-height: 1.36; letter-spacing: -0.005em; color: var(--soft); text-wrap: pretty; }
+.cs-hero .ya { align-self: stretch; }
+
+/* факты строкой: иконка, подпись, значение */
+.cs-facts--hero { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.cs-facts--hero div { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; align-content: start; padding: 18px 20px; border-radius: 20px; background: var(--tile); }
+.cs-facts--hero .ic { grid-row: span 2; width: 20px; height: 20px; margin-top: 1px; color: var(--accent); }
+.cs-facts--hero dt { font-size: 14px; font-weight: 500; color: var(--faint); }
+.cs-facts--hero dd { font-size: 16px; font-weight: 500; line-height: 1.35; }
+.cs-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.cs-tags span { padding: 7px 14px; border-radius: 999px; background: var(--tile-2); font-size: 14px; font-weight: 500; color: var(--soft); }
+/* факты внутри разбора — обычной таблицей */
+.cs-facts:not(.cs-facts--hero) { border-top: 1px solid var(--line); }
+.cs-facts:not(.cs-facts--hero) div { display: grid; grid-template-columns: 130px 1fr; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 15.5px; line-height: 1.45; }
+.cs-facts:not(.cs-facts--hero) dt { color: var(--faint); }
+
+/* числа: мелко — крупно — мелко */
+.cs-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 12px; margin-top: clamp(28px, 5vh, 56px); }
+.cs-kpi { display: grid; align-content: start; gap: 12px; min-width: 0; padding: 26px 26px 28px; border-radius: 24px; background: var(--tile); }
+.cs-kpi b { font-size: clamp(38px, 3.9vw, 64px); line-height: 1; letter-spacing: -0.035em; font-variant-numeric: tabular-nums; color: var(--accent); white-space: nowrap; }
+/* v65: длинное значение («2 платформы») крупным кеглем не влезает в плитку — ему кегль меньше */
+.cs-kpi--long b { font-size: clamp(28px, 2.7vw, 44px); letter-spacing: -0.025em; }
+.cs-kpi span { max-width: 20em; font-size: 15px; font-weight: 500; line-height: 1.4; color: var(--soft); text-wrap: pretty; }
+.cs-kpis--s { margin-top: 20px; }
+.cs-kpis--s .cs-kpi { background: var(--tile-2); padding: 20px 22px; }
+.cs-kpis--s .cs-kpi b { font-size: clamp(28px, 2.4vw, 40px); }
+
+/* ── разделы ───────────────────────────────────────────────────────────── */
+.cs-sec { margin-top: clamp(88px, 15vh, 168px); }
+.cs-sec > * + * { margin-top: clamp(22px, 3.4vh, 36px); }
+.cs-head { scroll-margin-top: 92px; }
+.cs-num { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 600; color: var(--accent); }
+.cs-num .ic { width: 22px; height: 22px; }
+.cs-num span { font-variant-numeric: tabular-nums; color: var(--faint); font-weight: 500; }
+.cs-num--s { font-size: 15px; }
+.cs-num--s span { display: inline-grid; place-items: center; min-width: 34px; height: 26px; padding: 0 10px; border-radius: 999px; background: var(--tile-2); color: var(--soft); font-size: 14px; }
+.cs-lead { margin-top: 18px !important; max-width: 17em; font-size: clamp(32px, 3.8vw, 58px); line-height: 1.06; letter-spacing: -0.022em; text-wrap: balance; }
+body.lang-ru .cs-lead { line-height: 1.09; letter-spacing: -0.018em; }
+/* лид: заход чернилами, продолжение серым */
+.cs-summary { max-width: 32em; font-size: clamp(21px, 1.9vw, 28px); font-weight: 600; line-height: 1.36; letter-spacing: -0.008em; color: var(--faint); text-wrap: pretty; }
+.cs-summary .cs-run, .cs-text--lead .cs-run { color: var(--ink); font-weight: inherit; }
+.cs-text + .cs-text { margin-top: 16px; }
+.cs-text { max-width: 42em; font-size: 17px; line-height: 1.58; color: color-mix(in srgb, var(--ink) 86%, transparent); text-wrap: pretty; }
+.cs-text--lead { max-width: 36em; font-size: clamp(19px, 1.6vw, 23px); font-weight: 600; line-height: 1.42; color: var(--faint); }
+.cs-block > * + * { margin-top: 14px; }
+.cs-note { font-size: 15px; line-height: 1.5; color: var(--soft); max-width: 46em; }
+
+.cs-card { padding: 26px 28px; border-radius: 24px; background: var(--tile); font-size: 17px; line-height: 1.55; }
+.cs-card--dark { background: var(--ink); color: #fff; }
+.cs-card--dark .cs-mini { color: color-mix(in srgb, #fff 62%, transparent); }
+.cs-card > * + * { margin-top: 10px; }
+
+/* участники и команда */
+.cs-roles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr)); gap: 12px; }
+.cs-roles li { display: grid; gap: 8px; align-content: start; padding: 22px 24px; border-radius: 22px; background: var(--tile); }
+.cs-roles b { font-size: 18px; letter-spacing: -0.008em; }
+.cs-roles span { font-size: 15.5px; line-height: 1.5; color: var(--soft); }
+
+/* ограничения, подпорки — пронумерованные строки */
+.cs-constraints, .cs-props { display: grid; border-top: 1px solid var(--line); }
+.cs-constraints li, .cs-props li { display: grid; grid-template-columns: 44px minmax(140px, 0.34fr) 1fr; gap: 8px 22px; padding: 20px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+.cs-constraints li > span, .cs-props li > span, .cs-levels li > span, .cs-steps li > span { font-size: 14px; font-weight: 500; color: var(--faint); font-variant-numeric: tabular-nums; }
+.cs-constraints b, .cs-props b { font-size: 18px; line-height: 1.3; }
+.cs-constraints p, .cs-props p { font-size: 16px; line-height: 1.55; color: var(--soft); }
+.cs-rejected { padding: 22px 26px; border-radius: 22px; background: var(--tile-2); font-size: 16.5px; line-height: 1.58; max-width: 52em; }
+
+/* уровни вложенности — лесенка */
+.cs-levels { display: grid; gap: 10px; }
+.cs-levels li { display: grid; grid-template-columns: 44px minmax(150px, 0.3fr) 1fr; gap: 8px 22px; align-items: baseline; padding: 20px 24px; border-radius: 20px; background: var(--tile); margin-left: calc(var(--k) * clamp(12px, 2.4vw, 40px)); }
+.cs-levels b { font-size: 18px; }
+.cs-levels p { font-size: 16px; line-height: 1.55; color: var(--soft); }
+
+/* черты → правила */
+.cs-rules { display: grid; border-top: 1px solid var(--line); }
+.cs-rules div { display: grid; grid-template-columns: minmax(150px, 0.3fr) 1fr; gap: 8px 24px; padding: 20px 0; border-bottom: 1px solid var(--line); }
+.cs-rules dt { font-size: 19px; font-weight: 600; letter-spacing: -0.008em; }
+.cs-rules dd { font-size: 16.5px; line-height: 1.55; color: var(--soft); }
+.cs-refusals { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr)); gap: 12px; }
+.cs-refusals li { position: relative; padding: 20px 22px 20px 54px; border-radius: 20px; background: var(--tile); font-size: 16px; line-height: 1.5; }
+.cs-refusals li::before { content: ""; position: absolute; left: 22px; top: 23px; width: 17px; height: 17px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--warn); background: linear-gradient(45deg, transparent 45%, var(--warn) 45% 55%, transparent 55%); }
+
+/* ── исследование ──────────────────────────────────────────────────────── */
+.cs-methods { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.cs-method { display: grid; align-content: start; gap: 16px; padding: 30px; border-radius: 28px; background: var(--tile); transition: scale 0.5s var(--ease); }
+.cs-method:hover { scale: 1.008; }
+.cs-method-kind { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; color: var(--accent); }
+.cs-method-kind span { color: var(--faint); font-weight: 500; font-variant-numeric: tabular-nums; }
+.cs-method h3 { font-size: clamp(22px, 1.9vw, 28px); line-height: 1.14; letter-spacing: -0.012em; }
+.cs-method dl { display: grid; gap: 0; border-top: 1px solid var(--line); }
+.cs-method dl div { display: grid; grid-template-columns: 92px 1fr; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 15.5px; line-height: 1.45; }
+.cs-method dt { color: var(--faint); }
+.cs-method-finding { font-size: 16px; line-height: 1.58; color: var(--soft); }
+.cs-method-finding b, .cs-why b, .cs-measured b { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 600; color: var(--ink); }
+
+.cs-hyp { display: grid; border-top: 1px solid var(--line); }
+.cs-hyp li { display: grid; grid-template-columns: 44px 1fr auto; gap: 8px 18px; align-items: center; padding: 20px 0; border-bottom: 1px solid var(--line); }
+.cs-hyp li > span { font-size: 14px; font-weight: 500; color: var(--faint); font-variant-numeric: tabular-nums; }
+.cs-hyp q { quotes: "«" "»"; font-size: clamp(17px, 1.4vw, 21px); font-weight: 500; line-height: 1.4; }
+html[lang="en"] .cs-hyp q { quotes: "\201C" "\201D"; }
+.cs-hyp em { font-style: normal; padding: 7px 14px; border-radius: 999px; background: var(--tile-2); font-size: 14px; font-weight: 500; color: var(--soft); white-space: nowrap; }
+.cs-hyp em.is-won { background: var(--ink); color: #fff; }
+.cs-measured { max-width: 46em; font-size: 16px; line-height: 1.58; color: var(--soft); }
+
+.cs-nodata { padding: clamp(24px, 3vw, 40px); border-radius: 28px; background: var(--tile-2); }
+
+.cs-persona-card { display: grid; grid-template-columns: auto minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1fr); gap: 20px 28px; align-items: start; padding: 30px; border-radius: 28px; background: var(--tile); }
+.cs-persona-face { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; background: var(--stage); color: var(--accent); font-size: 26px; font-weight: 600; }
+.cs-persona-card b { font-size: 20px; }
+.cs-persona-card p { margin-top: 6px; font-size: 16px; line-height: 1.55; color: var(--soft); }
+.cs-persona-card ul { display: grid; gap: 8px; margin-top: 10px; }
+.cs-persona-card li { position: relative; padding-left: 18px; font-size: 15.5px; line-height: 1.5; }
+.cs-persona-card li::before { content: ""; position: absolute; left: 0; top: 9px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+
+.cs-table-wrap { overflow-x: auto; border-radius: 24px; background: var(--tile); }
+.cs-table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.cs-table th, .cs-table td { padding: 14px 16px; border-bottom: 1px solid var(--line); text-align: center; font-weight: 400; }
+.cs-table thead th { font-size: 14px; font-weight: 500; color: var(--faint); vertical-align: bottom; line-height: 1.3; }
+.cs-table tbody th { text-align: left; font-weight: 600; white-space: nowrap; }
+.cs-table tr:last-child th, .cs-table tr:last-child td { border-bottom: 0; }
+.cs-mark { display: inline-block; width: 14px; height: 14px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--line); }
+.cs-mark--1 { background: var(--accent); box-shadow: none; }
+.cs-mark--2 { background: #d9a441; box-shadow: none; }
+
+.cs-matrix { position: relative; aspect-ratio: 16 / 8; max-width: 800px; border-radius: 28px; background:
+  linear-gradient(var(--line), var(--line)) 50% 0 / 1px 100% no-repeat, linear-gradient(var(--line), var(--line)) 0 50% / 100% 1px no-repeat, var(--tile); }
+.cs-matrix-ax, .cs-matrix-ay { position: absolute; font-size: 14px; font-weight: 500; color: var(--faint); }
+.cs-matrix-ax { right: 18px; bottom: 14px; }
+.cs-matrix-ay { left: 16px; top: 16px; writing-mode: vertical-rl; rotate: 180deg; }
+.cs-matrix-dot { position: absolute; left: var(--x); bottom: var(--y); translate: -50% 50%; display: flex; align-items: center; gap: 8px; }
+.cs-matrix-dot b { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 14px; box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 16%, transparent); }
+.cs-matrix-dot em { font-style: normal; font-size: 14px; color: var(--soft); white-space: nowrap; }
+.cs-matrix-list { display: grid; border-top: 1px solid var(--line); counter-reset: m; }
+.cs-matrix-list li { counter-increment: m; display: grid; grid-template-columns: 44px 1fr auto; gap: 8px 18px; align-items: baseline; padding: 16px 0; border-bottom: 1px solid var(--line); font-size: 16.5px; line-height: 1.5; }
+.cs-matrix-list li::before { content: counter(m, decimal-leading-zero); font-size: 14px; font-weight: 500; color: var(--faint); }
+.cs-matrix-list em { font-style: normal; padding: 6px 12px; border-radius: 999px; background: var(--tile-2); font-size: 14px; font-weight: 500; color: var(--soft); white-space: nowrap; }
+
+.cs-funnel { display: grid; gap: 8px; }
+.cs-funnel li { display: grid; gap: 4px; width: calc(100% - var(--k) * (46% / var(--n))); padding: 16px 22px; border-radius: 18px; background: var(--tile); }
+.cs-funnel li.is-drop { background: color-mix(in srgb, var(--warn) 12%, #fff); }
+.cs-funnel b { font-size: 17px; }
+.cs-funnel span { font-size: 15px; line-height: 1.45; color: var(--soft); }
+
+/* ── было / стало ──────────────────────────────────────────────────────── */
+.cs-flow { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.cs-flow-col { padding: clamp(24px, 2.8vw, 36px); border-radius: 28px; background: var(--tile); }
+.cs-flow-col.is-after { background: var(--ink); color: #fff; }
+.cs-flow-col h3 { font-size: clamp(20px, 1.7vw, 25px); line-height: 1.2; letter-spacing: -0.01em; }
+.cs-flow-col ol { position: relative; display: grid; margin-top: 24px; }
+.cs-flow-col li { position: relative; display: grid; grid-template-columns: 34px 1fr; gap: 3px 14px; padding: 0 0 22px; }
+.cs-flow-col li::before { content: ""; position: absolute; left: 13px; top: 28px; bottom: 0; width: 1px; background: currentColor; opacity: 0.16; }
+.cs-flow-col li:last-child::before { display: none; }
+.cs-flow-n { grid-row: span 3; display: grid; place-items: center; width: 27px; height: 27px; border-radius: 50%; background: var(--tile-2); color: var(--soft); font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.is-after .cs-flow-n { background: rgba(255, 255, 255, 0.14); color: #fff; }
+.cs-flow-col li.is-wait .cs-flow-n { background: var(--warn); color: #fff; box-shadow: 0 0 0 5px color-mix(in srgb, var(--warn) 18%, transparent); }
+.cs-flow-who { font-size: 14px; font-weight: 500; opacity: 0.6; }
+.cs-flow-col li b { font-size: 17px; line-height: 1.35; }
+.cs-flow-col li p { font-size: 15px; line-height: 1.5; opacity: 0.72; }
+.cs-flow-sum { margin-top: 6px !important; padding-top: 20px; border-top: 1px solid color-mix(in srgb, currentColor 16%, transparent); font-size: 16px; line-height: 1.55; }
+.cs-legend { display: flex; align-items: center; gap: 10px; font-size: 15px; color: var(--soft); }
+.cs-legend i { width: 12px; height: 12px; border-radius: 50%; background: var(--warn); box-shadow: 0 0 0 4px color-mix(in srgb, var(--warn) 18%, transparent); }
+
+/* ── решения ───────────────────────────────────────────────────────────── */
+.cs-decisions { display: grid; gap: 12px; }
+.cs-decision { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; padding: clamp(26px, 3.2vw, 44px); border-radius: 32px; background: var(--tile); scroll-margin-top: 92px; transition: box-shadow 0.6s var(--ease); }
+.cs-decision:has(.cs-decision-img) { grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr); gap: clamp(24px, 3.4vw, 56px); align-items: center; }
+.cs-decision.is-flash { box-shadow: 0 0 0 3px var(--accent); }
+.cs-decision h3, .cs-mistake h3 { margin-top: 14px; max-width: 18em; font-size: clamp(26px, 2.5vw, 38px); line-height: 1.1; letter-spacing: -0.018em; text-wrap: balance; }
+.cs-fdw { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 20px 30px; margin-top: 24px; }
+.cs-fdw--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 0; }
+.cs-fdw .cs-mini { color: var(--ink); }
+.cs-fdw p:not(.cs-mini) { margin-top: 8px; font-size: 16px; line-height: 1.55; color: var(--soft); }
+/* «Почему так» — врезка с акцентной чертой вместо тёмной плашки */
+.cs-why { margin-top: 24px !important; padding: 4px 0 4px 20px; border-left: 3px solid var(--accent); font-size: 17px; font-weight: 500; line-height: 1.5; max-width: 40em; }
+.cs-why b { color: var(--accent); }
+.cs-why--wide { margin-top: 0 !important; }
+.cs-basis-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-top: 20px !important; }
+.cs-basis-row:empty { display: none; }
+.cs-basis { display: inline-flex; align-items: baseline; gap: 9px; font-size: 15px; line-height: 1.45; color: var(--soft); }
+.cs-basis i { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); translate: 0 -1px; }
+.cs-divelink { display: inline-flex; align-items: center; gap: 7px; padding: 9px 16px; border-radius: 999px; background: var(--tile-2); color: var(--ink); font-size: 15px; font-weight: 500; text-decoration: none; transition: background 0.25s var(--ease); }
+.cs-divelink span { color: var(--accent); transition: translate 0.3s var(--ease); }
+.cs-divelink:hover { background: color-mix(in srgb, var(--s2) 60%, #e3e3e8); }
+.cs-divelink:hover span { translate: 3px 0; }
+
+/* разборы в глубину */
+.cs-deeps { display: grid; gap: 10px; margin-top: clamp(28px, 4vh, 48px) !important; }
+.cs-deeps > .cs-mini { margin-bottom: 4px; }
+.cs-deep { border-radius: 28px; background: var(--tile); scroll-margin-top: 92px; }
+.cs-deep summary { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 18px; padding: 22px 26px; cursor: pointer; list-style: none; border-radius: 28px; }
+.cs-deep summary::-webkit-details-marker { display: none; }
+.cs-deep-title { display: grid; gap: 4px; }
+.cs-deep-title b { font-size: clamp(20px, 1.7vw, 25px); letter-spacing: -0.012em; }
+.cs-deep-title span { font-size: 15.5px; line-height: 1.45; color: var(--soft); }
+.cs-deep-toggle { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--ink); transition: rotate 0.45s var(--ease); }
+.cs-deep-toggle i { position: relative; width: 14px; height: 14px; }
+.cs-deep-toggle i::before, .cs-deep-toggle i::after { content: ""; position: absolute; left: 0; top: 6px; width: 14px; height: 1.6px; border-radius: 2px; background: #fff; }
+.cs-deep-toggle i::after { rotate: 90deg; transition: rotate 0.45s var(--ease); }
+.cs-deep[open] .cs-deep-toggle i::after { rotate: 0deg; }
+.cs-deep summary:hover .cs-deep-toggle { rotate: 90deg; }
+.cs-deep-body { padding: 8px clamp(22px, 2.8vw, 40px) clamp(26px, 3vw, 40px); animation: cs-open 0.55s var(--ease); }
+@keyframes cs-open { from { opacity: 0; translate: 0 -8px; } }
+.cs-deep-head h3 { margin-top: 10px; max-width: 20em; font-size: clamp(26px, 2.5vw, 40px); line-height: 1.1; letter-spacing: -0.018em; text-wrap: balance; }
+.cs-deep-head .cs-facts { margin-top: 20px; max-width: 680px; }
+.cs-part { margin-top: clamp(30px, 4vh, 48px); padding-top: clamp(24px, 3vh, 36px); border-top: 1px solid var(--line); }
+.cs-part > * + * { margin-top: 18px; }
+.cs-part h4 { font-size: clamp(22px, 1.9vw, 29px); line-height: 1.15; letter-spacing: -0.012em; }
+.cs-before { display: grid; gap: 6px; padding: 24px 26px; border-radius: 22px; background: var(--tile-2); }
+.cs-before b { font-size: clamp(22px, 2vw, 30px); letter-spacing: -0.012em; }
+.cs-before p { font-size: 15.5px; color: var(--soft); }
+.cs-checks { display: grid; gap: 10px; margin-top: 12px; }
+.cs-checks li { position: relative; padding-left: 30px; font-size: 16px; line-height: 1.5; }
+.cs-checks li::before { content: ""; position: absolute; left: 0; top: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Cpath fill-rule='evenodd' d='M9 0a9 9 0 1 1 0 18A9 9 0 0 1 9 0Zm4.5 6.900a.8.8 0 0 0-1.100-1.100L7.600 10.600 5.700 8.700a.8.8 0 0 0-1.100 1.100l2.400 2.500c.300.300.800.300 1.100 0l5.400-5.400Z'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Cpath fill-rule='evenodd' d='M9 0a9 9 0 1 1 0 18A9 9 0 0 1 9 0Zm4.5 6.900a.8.8 0 0 0-1.100-1.100L7.600 10.600 5.700 8.700a.8.8 0 0 0-1.100 1.100l2.400 2.500c.300.300.800.300 1.100 0l5.400-5.400Z'/%3E%3C/svg%3E") center / contain no-repeat; }
+.cs-card--dark .cs-checks li::before { background: #fff; }
+.cs-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr)); gap: 12px; align-items: start; }
+.cs-option { display: grid; gap: 10px; padding: 22px; border-radius: 24px; background: var(--tile-2); }
+.cs-option.is-chosen { background: var(--tile); box-shadow: inset 0 0 0 2px var(--accent); }
+.cs-option header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.cs-option b { font-size: 18px; }
+.cs-option p { font-size: 16px; line-height: 1.55; color: var(--soft); }
+.cs-badge { padding: 5px 12px; border-radius: 999px; background: var(--accent); color: #fff; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.cs-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 12px; }
+.cs-steps li { display: grid; align-content: start; gap: 8px; padding: 22px 24px; border-radius: 22px; background: var(--tile-2); }
+.cs-steps b { font-size: 18px; line-height: 1.3; }
+.cs-steps p { font-size: 15.5px; line-height: 1.55; color: var(--soft); }
+.cs-pair, .cs-split { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr)); gap: 12px; }
+.cs-lesson { position: relative; padding: 4px 0 4px 22px; border-left: 3px solid var(--accent); }
+.cs-lesson b { display: block; margin-top: 8px; font-size: 19px; }
+.cs-lesson p:last-child { margin-top: 6px; font-size: 16.5px; line-height: 1.55; color: var(--soft); }
+
+/* ── ошибки ────────────────────────────────────────────────────────────── */
+.cs-mistakes { display: grid; gap: 12px; }
+.cs-mistake { padding: clamp(26px, 3vw, 40px); border-radius: 32px; background: var(--tile); }
+.cs-mistake-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; margin-top: 26px; border-top: 1px solid var(--line); }
+.cs-mistake-grid > div { padding: 20px 22px 4px 0; }
+.cs-mistake-grid > div + div { padding-left: 22px; border-left: 1px solid var(--line); }
+.cs-mistake-grid .cs-mini { color: var(--ink); }
+.cs-mistake-grid p:not(.cs-mini) { margin-top: 8px; font-size: 15.5px; line-height: 1.55; color: var(--soft); }
+.cs-mistake-grid .is-changed .cs-mini { color: var(--accent); }
+.cs-mistake-grid .is-changed p:not(.cs-mini) { color: var(--ink); font-weight: 500; }
+
+/* ── результат ─────────────────────────────────────────────────────────── */
+.cs-outcomes { display: grid; gap: 12px; }
+.cs-outcomes li { display: grid; grid-template-columns: 56px minmax(0, 1.05fr) minmax(0, 1.2fr) minmax(0, 1.2fr); gap: 12px 28px; padding: 28px 30px; border-radius: 28px; background: var(--tile); align-items: start; }
+.cs-outcomes b { display: block; margin-top: 8px; font-size: clamp(21px, 1.8vw, 27px); line-height: 1.2; letter-spacing: -0.012em; color: var(--accent); }
+.cs-outcomes p:not(.cs-mini):not(.cs-num) { margin-top: 8px; font-size: 16px; line-height: 1.55; color: var(--soft); }
+.cs-points { display: grid; border-top: 1px solid var(--line); }
+.cs-points li { position: relative; padding: 18px 0 18px 36px; border-bottom: 1px solid var(--line); font-size: clamp(17px, 1.4vw, 20px); font-weight: 500; line-height: 1.45; }
+.cs-points li::before { content: "↗"; position: absolute; left: 0; top: 18px; color: var(--accent); font-weight: 600; }
+.cs-honesty { padding: 24px 28px; border-radius: 24px; border: 1.5px dashed color-mix(in srgb, var(--ink) 26%, transparent); font-size: 16.5px; line-height: 1.58; color: var(--soft); max-width: 60em; }
+
+/* ── сцена: один способ показывать экран ─────────────────────────────────
+   Любой экран стоит на светлой сцене в цвет кейса. Сцена всегда помещается в окно: высота не больше --stage-h,
+   ширина — по колонке, пропорции — из --ar. Экран виден целиком, подпись остаётся в кадре. Клик открывает экран
+   во весь размер. */
+.cs { --stage-h: clamp(340px, calc(100svh - 230px), 780px); --stage-pad: clamp(16px, 2.6vw, 44px); }
+.cs-fig { container-type: inline-size; min-width: 0; }
+.cs-fig--inline { --stage-h: clamp(240px, 56svh, 520px); --stage-pad: clamp(14px, 1.8vw, 26px); }
+.cs-stage {
+  position: relative; display: grid; place-items: center; width: 100%; overflow: hidden; border-radius: 28px;
+  height: min(var(--stage-h), calc((100cqw - 2 * var(--stage-pad)) / var(--ar, 1.6) + 2 * var(--stage-pad)));
+  background: var(--stage);
+}
+.cs-fig--inline .cs-stage { border-radius: 22px; }
+.cs-stage-media {
+  position: relative; display: block; padding: 0; border: 0; background: none;
+  border-radius: 12px; overflow: hidden; cursor: zoom-in;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 8%, transparent), 0 22px 50px color-mix(in srgb, var(--ink) 22%, transparent);
+  transition: scale 0.6s var(--ease);
+}
+/* размер экрана считается явно, а не процентами: процент от сцены ломается, когда картинка догружается
+   и тянет блок своим настоящим размером. --iar — пропорции конкретной картинки, если они отличаются от сцены */
+.cs-stage-media, .cs-spot-img, .cs-compare-box img {
+  width: auto; min-width: 0; aspect-ratio: var(--iar, var(--ar, 1.6));
+  height: min(calc(var(--stage-h) - 2 * var(--stage-pad)), calc((100cqw - 2 * var(--stage-pad)) / var(--iar, var(--ar, 1.6))));
+}
+.cs-stage-media img, .cs-spot-img img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.cs-stage-media:hover { scale: 1.012; }
+.cs-stage-media.is-device { border-radius: 0; overflow: visible; box-shadow: none; filter: drop-shadow(0 22px 32px color-mix(in srgb, var(--ink) 30%, transparent)); }
+.cs-fig figcaption { padding: 14px 4px 0; max-width: 46em; font-size: 15px; line-height: 1.45; color: var(--soft); text-wrap: pretty; }
+.cs-fig figcaption .cs-run { color: var(--ink); }
+
+/* ── галереи ───────────────────────────────────────────────────────────── */
+.cs-gallery { display: grid; gap: clamp(56px, 9vh, 104px); }
+.cs-gal { min-width: 0; }
+.cs-gal-title { margin-bottom: 16px !important; font-size: clamp(22px, 1.9vw, 28px); line-height: 1.2; letter-spacing: -0.012em; max-width: 26em; }
+
+/* spot: точки стоят на самом экране, поэтому обёртка повторяет его размер */
+.cs-spot-img { position: relative; }
+.cs-spot-img img { border-radius: 12px; box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 8%, transparent), 0 22px 50px color-mix(in srgb, var(--ink) 22%, transparent); }
+.cs-spot-dot {
+  position: absolute; left: calc(var(--x) * 1%); top: calc(var(--y) * 1%);
+  translate: -50% -50%; display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 50%;
+  background: var(--accent); color: #fff; font: 600 14px/1 var(--font); cursor: pointer;
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent), 0 6px 18px rgba(0, 0, 0, 0.3); animation: cs-ping 2.6s ease-out infinite; transition: scale 0.25s var(--ease);
+}
+.cs-spot-dot:hover, .cs-spot-dot:focus-visible { scale: 1.15; animation-play-state: paused; z-index: 2; }
+.cs-spot-dot em {
+  position: absolute; left: 50%; bottom: calc(100% + 12px); translate: -50% 6px; width: max-content; max-width: 260px; padding: 10px 14px; border-radius: 14px;
+  background: var(--ink); color: #fff; font: 500 14px/1.4 var(--font); font-style: normal; text-align: left;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s var(--ease), translate 0.3s var(--ease);
+}
+.cs-spot-dot:hover em, .cs-spot-dot:focus-visible em { opacity: 1; translate: -50% 0; }
+/* у края экрана подсказка выравнивается по точке, а не по центру — иначе вылезает за страницу */
+.cs-spot-dot.is-right em { left: auto; right: -6px; translate: 0 6px; }
+.cs-spot-dot.is-left em { left: -6px; translate: 0 6px; }
+.cs-spot-dot.is-right:hover em, .cs-spot-dot.is-right:focus-visible em, .cs-spot-dot.is-left:hover em, .cs-spot-dot.is-left:focus-visible em { translate: 0 0; }
+@keyframes cs-ping { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent), 0 6px 18px rgba(0, 0, 0, 0.3); } 70%, 100% { box-shadow: 0 0 0 16px transparent, 0 6px 18px rgba(0, 0, 0, 0.3); } }
+.cs-spot-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 10px 26px; margin-top: 18px !important; counter-reset: sp; }
+.cs-spot-list li { counter-increment: sp; display: grid; grid-template-columns: 26px 1fr; gap: 10px; font-size: 15px; line-height: 1.45; color: var(--soft); }
+.cs-spot-list li::before { content: counter(sp); display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 13px; font-weight: 600; }
+
+/* film: высокий экран. Сцена закрепляется под панелью, экран внутри едет на столько же пикселей, на сколько
+   прокрутили страницу: скорость прокрутки не меняется, экран успевают рассмотреть целиком. */
+/* липкий блок держится только внутри содержимого родителя, поэтому запас хода — отдельный пустой блок, а не padding */
+.cs-film-run { height: var(--over, 0px); }
+.cs-film-sticky { position: sticky; top: 92px; }
+.cs-film-stage { height: min(var(--stage-h), var(--film-h, 9999px)); place-items: start center; }
+.cs-film-stage::after { content: ""; position: absolute; inset: auto 0 0; height: 18%; background: linear-gradient(transparent, color-mix(in srgb, var(--s2) 92%, transparent)); pointer-events: none; transition: opacity 0.4s var(--ease); }
+.cs-film-pin.is-end .cs-film-stage::after { opacity: 0; }
+.cs-film-track { position: absolute; top: var(--stage-pad); left: 50%; width: min(calc(100% - 2 * var(--stage-pad)), 760px); translate: -50% calc(var(--shift, 0px) * -1); will-change: translate; }
+.cs-film-track img { display: block; width: 100%; height: auto; border-radius: 12px; box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 8%, transparent), 0 22px 50px color-mix(in srgb, var(--ink) 22%, transparent); }
+
+/* compare: два варианта под одним ползунком, оба экрана видны целиком */
+.cs-compare-box { touch-action: pan-y; cursor: ew-resize; user-select: none; }
+.cs-compare-after, .cs-compare-before { position: absolute; inset: 0; display: grid; place-items: center; }
+.cs-compare-after { background: linear-gradient(180deg, color-mix(in srgb, var(--s1) 60%, #fff), color-mix(in srgb, var(--s2) 50%, #e9e9ee)); }
+.cs-compare-before { background: var(--stage); clip-path: inset(0 calc(100% - var(--pos)) 0 0); }
+.cs-compare-box img { display: block; border-radius: 12px; box-shadow: 0 22px 50px color-mix(in srgb, var(--ink) 22%, transparent); pointer-events: none; }
+.cs-compare-label { position: absolute; top: 16px; padding: 8px 14px; border-radius: 999px; background: color-mix(in srgb, var(--ink) 82%, transparent); color: #fff; font-size: 14px; font-weight: 500; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); pointer-events: none; z-index: 1; }
+.cs-compare-label--a { left: 16px; } .cs-compare-label--b { right: 16px; }
+.cs-compare-handle { position: absolute; top: 0; bottom: 0; left: var(--pos); width: 2px; translate: -1px 0; background: #fff; box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 12%, transparent); pointer-events: none; }
+.cs-compare-handle i { position: absolute; left: 50%; top: 50%; translate: -50% -50%; width: 44px; height: 44px; border-radius: 50%; background: #fff; box-shadow: 0 8px 24px color-mix(in srgb, var(--ink) 30%, transparent); }
+.cs-compare-handle i::before, .cs-compare-handle i::after { content: ""; position: absolute; top: 50%; width: 8px; height: 8px; border-top: 2px solid var(--ink); border-left: 2px solid var(--ink); }
+.cs-compare-handle i::before { left: 11px; translate: 0 -50%; rotate: -45deg; }
+.cs-compare-handle i::after { right: 11px; translate: 0 -50%; rotate: 135deg; }
+.cs-compare-range { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: ew-resize; }
+.cs-compare-box:has(.cs-compare-range:focus-visible) { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+/* stack: веер телефонов на той же сцене */
+.cs-stack-fan { --ar: 1.9; display: flex; justify-content: center; align-items: flex-end; padding-top: var(--stage-pad); }
+.cs-stack-fan .cs-stack-phone { --mid: calc((var(--n) - 1) / 2); --o: calc(var(--i) - var(--mid)); position: relative; min-width: 0; flex: none; height: 92%; aspect-ratio: 402 / 874; width: auto; margin: 0 clamp(-36px, -2.4cqw, -12px); padding: 0; border: 6px solid #15181d; border-radius: 30px; overflow: hidden; background: #15181d; cursor: zoom-in; rotate: calc(var(--o) * 7deg); translate: 0 calc(var(--o) * var(--o) * 4% + 9%); box-shadow: 0 26px 50px color-mix(in srgb, var(--ink) 34%, transparent); transition: translate 0.5s var(--ease), rotate 0.5s var(--ease), scale 0.5s var(--ease); }
+.cs-stack-fan .cs-stack-phone:hover, .cs-stack-fan .cs-stack-phone:focus-visible { rotate: 0deg; translate: 0 4%; scale: 1.03; z-index: 2; }
+.cs-stack-phone img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+.cs-stack-fan .cs-stack-phone.is-device { border: 0; border-radius: 0; background: none; overflow: visible; box-shadow: none; aspect-ratio: 1300 / 2642; filter: drop-shadow(0 26px 36px color-mix(in srgb, var(--ink) 34%, transparent)); }
+
+/* у экранов с точками и у закреплённого экрана картинку открывает кнопка в углу сцены */
+.cs-stage-zoom { position: absolute; right: 14px; bottom: 14px; z-index: 3; display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 50%; background: color-mix(in srgb, var(--ink) 82%, transparent); color: #fff; cursor: zoom-in; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); transition: background 0.25s var(--ease), scale 0.25s var(--ease); }
+.cs-stage-zoom:hover { background: var(--ink); scale: 1.06; }
+.cs-stage-zoom svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+/* в узкой колонке веер телефонов получает сцену повыше, иначе телефоны выходят с ноготь */
+@container (max-width: 640px) { .cs-stack-fan { --ar: 0.95; } }
+
+/* сетка остальных экранов: те же сцены, только меньше */
+.cs-bento { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: clamp(16px, 2vw, 28px); align-items: start; }
+.cs-bento--inline { grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
+.cs-bento .cs-fig--inline { --stage-h: clamp(220px, 44svh, 400px); }
+
+/* Окно просмотра во весь экран: кадр вписан целиком, прокрутки нет. Раньше окно растягивало картинку
+   по своей ширине, и вертикальный экран телефона уходил вниз на три тысячи пикселей. Размеры заданы
+   явно — у окна сброшены поля, и без этого браузер ставил его в левый верхний угол. */
+.cs-lightbox {
+  inset: 0; width: 100%; max-width: none; height: 100%; max-height: none; margin: 0;
+  padding: 0; border: 0; border-radius: 0; overflow: hidden;
+  background: rgba(9, 11, 14, 0.95); color: #fff;
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+/* display только у открытого окна. Авторский стиль сильнее браузерного dialog:not([open]) { display: none },
+   поэтому безусловный display: grid оставлял закрытый диалог на экране — почти чёрный слой поверх кейса. */
+.cs-lightbox[open] { display: grid; }
+.cs-lightbox::backdrop { background: rgba(9, 11, 14, 0.9); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+/* Поле, в котором живёт кадр. touch-action снят: иначе щипок уедет в масштаб страницы, а не картинки. */
+.cs-lb-view { position: relative; display: flex; align-items: center; justify-content: center; min-height: 0; overflow: hidden; padding: clamp(12px, 2.4vw, 40px); touch-action: none; cursor: zoom-in; }
+.cs-lb-view.is-zoom { cursor: grab; }
+.cs-lb-view.is-drag { cursor: grabbing; }
+.cs-lightbox img {
+  display: block; max-width: 100%; max-height: 100%; width: auto; height: auto;
+  object-fit: contain; border-radius: 10px; user-select: none; -webkit-user-drag: none;
+  transform-origin: 50% 50%; will-change: transform;
+}
+.cs-lightbox img.is-eased { transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.cs-lb-cap { padding: 12px 22px calc(16px + env(safe-area-inset-bottom)); font-size: 14px; line-height: 1.45; color: rgba(255, 255, 255, 0.72); text-align: center; }
+.cs-lightbox-close, .cs-sheet-close { position: sticky; top: 12px; float: right; margin: 12px 12px -52px 0; width: 40px; height: 40px; border: 0; border-radius: 50%; background: rgba(29, 29, 31, 0.88); color: #fff; font-size: 22px; line-height: 1; cursor: pointer; z-index: 2; }
+/* у полноэкранного окна кнопка стоит в углу поля, а не плывёт в потоке */
+.cs-lightbox-close { position: absolute; top: max(14px, env(safe-area-inset-top)); right: 14px; float: none; margin: 0; background: rgba(255, 255, 255, 0.14); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.cs-lightbox-close:hover { background: rgba(255, 255, 255, 0.26); }
+
+/* ── развитие, выводы, цитата ──────────────────────────────────────────── */
+.cs-roadmap { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr)); gap: 12px; }
+.cs-roadmap article { display: grid; align-content: start; gap: 10px; padding: 28px; border-radius: 28px; background: var(--tile); }
+.cs-roadmap b { font-size: clamp(21px, 1.7vw, 25px); line-height: 1.2; letter-spacing: -0.012em; }
+.cs-roadmap p:not(.cs-mini) { font-size: 16px; line-height: 1.55; color: var(--soft); }
+.cs-roadmap .cs-mini { color: var(--accent); }
+.cs-takeaway { max-width: 22em; font-size: clamp(28px, 3vw, 46px); font-weight: 600; line-height: 1.16; letter-spacing: -0.02em; text-wrap: balance; }
+.cs-learn { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 12px; }
+.cs-learn li { padding: 26px 28px; border-radius: 24px; background: var(--tile); font-size: 17px; font-weight: 500; line-height: 1.5; }
+.cs-quote { position: relative; padding: 30px 32px 30px 70px; border-radius: 28px; background: var(--stage); color: var(--ink); font-size: clamp(19px, 1.6vw, 24px); font-weight: 500; line-height: 1.42; max-width: 44em; }
+.cs-quote::before { content: "“"; position: absolute; left: 24px; top: 14px; font-family: var(--serif); font-style: italic; font-size: 72px; line-height: 1; color: var(--accent); }
+
+/* ── следующий кейс: большая сцена в его цвет ──────────────────────────── */
+.cs-next {
+  position: relative; display: grid; align-content: space-between; min-height: clamp(300px, 46svh, 440px); margin-top: clamp(88px, 15vh, 168px);
+  padding: clamp(28px, 4vw, 56px); border-radius: 32px; overflow: hidden; isolation: isolate; container-type: inline-size;
+  background: linear-gradient(180deg, var(--s1), var(--s2)); color: var(--ink); text-decoration: none;
+}
+.cs-next .cs-mini { color: var(--accent); }
+.cs-next-text { position: relative; z-index: 2; display: grid; gap: 10px; max-width: min(34em, 56%); }
+.cs-next-text b { font-size: clamp(34px, 4.6vw, 72px); line-height: 1.02; letter-spacing: -0.026em; text-wrap: balance; }
+.cs-next-sub { font-size: clamp(16px, 1.3vw, 19px); font-weight: 500; line-height: 1.4; color: color-mix(in srgb, var(--ink) 64%, transparent); }
+.cs-next-obj { position: absolute; z-index: 1; right: -4%; bottom: -14%; width: min(56%, 640px); aspect-ratio: var(--oar, 1.2); display: block; pointer-events: none; transform-origin: 60% 80%; transition: scale 1s var(--ease), rotate 1s var(--ease); filter: drop-shadow(0 30px 40px color-mix(in srgb, var(--ink) 28%, transparent)); }
+.cs-next-obj img { display: block; width: 100%; height: 100%; }
+.cs-next .cs-go { position: relative; z-index: 2; width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--ink); color: #fff; transition: rotate 0.5s var(--ease); }
+.cs-next .cs-go svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.cs-next:hover .cs-next-obj { scale: 1.05; rotate: -1.5deg; }
+.cs-next:hover .cs-go { rotate: 45deg; }
+
+/* плашка лёгкой версии поверх кейса не нужна: она закрывала оглавление и нижний лист */
+body.case-open .lite-bar { opacity: 0; pointer-events: none; }
+
+/* ── капсула оглавления ──────────────────────────────────────────────────
+   Плавает внизу по центру на любом экране: иконка списка, номер и название раздела, в котором сейчас читают.
+   Кольцо справа — сколько страницы прочитано. По клику — лист с оглавлением. */
+.cs-toc-btn {
+  position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom)); translate: -50% 0; z-index: 8; display: inline-flex; align-items: center; gap: 12px;
+  height: 50px; max-width: min(92vw, 460px); padding: 0 12px 0 18px; border: 0; border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 86%, transparent); color: #fff; font: 500 15px/1 var(--font);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6); backdrop-filter: blur(20px) saturate(1.6);
+  box-shadow: 0 16px 40px color-mix(in srgb, var(--ink) 34%, transparent); cursor: pointer; transition: scale 0.3s var(--ease), background 0.3s var(--ease);
+}
+.cs-toc-btn:hover { scale: 1.03; background: var(--ink); }
+.cs-toc-btn:active { scale: 0.98; }
+.cs-toc-btn .ic { width: 17px; height: 17px; opacity: 0.8; }
+.cs-toc-now { display: inline-flex; align-items: baseline; gap: 9px; min-width: 0; }
+.cs-toc-now b { font-weight: 500; font-variant-numeric: tabular-nums; opacity: 0.6; }
+.cs-toc-now em { font-style: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cs-toc-ring { flex: none; width: 28px; height: 28px; border-radius: 50%; background: conic-gradient(#fff calc(var(--p, 0) * 360deg), rgba(255, 255, 255, 0.2) 0); -webkit-mask: radial-gradient(circle, transparent 9.5px, #000 10px); mask: radial-gradient(circle, transparent 9.5px, #000 10px); }
+
+.cs-sheet[hidden] { display: none; }
+.cs-sheet { position: fixed; inset: 0; z-index: 20; display: grid; align-items: end; justify-items: center; background: rgba(10, 12, 16, 0.36); animation: cs-fade 0.25s ease; }
+.cs-sheet-panel { width: min(100%, 460px); max-height: min(76vh, 640px); margin-bottom: calc(84px + env(safe-area-inset-bottom)); overflow-y: auto; padding: 6px 12px 14px; border-radius: 28px; background: color-mix(in srgb, #fff 92%, transparent); -webkit-backdrop-filter: blur(24px) saturate(1.6); backdrop-filter: blur(24px) saturate(1.6); box-shadow: 0 30px 80px rgba(10, 12, 16, 0.3); animation: cs-rise 0.45s var(--ease); }
+.cs-sheet-head { position: sticky; top: 0; display: flex; align-items: center; justify-content: space-between; padding: 12px 8px 10px 12px; z-index: 1; }
+.cs-sheet-head b { font-size: 17px; }
+.cs-sheet-close { position: static; float: none; margin: 0; width: 34px; height: 34px; font-size: 20px; background: color-mix(in srgb, var(--ink) 8%, transparent); color: var(--ink); }
+.cs-toc { display: grid; gap: 1px; }
+.cs-toc a { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 14px; color: var(--ink); font-size: 16px; font-weight: 500; line-height: 1.3; text-decoration: none; transition: background 0.2s var(--ease); }
+.cs-toc a .ic { width: 18px; height: 18px; color: var(--faint); }
+.cs-toc a span { min-width: 20px; font-size: 14px; color: var(--faint); font-variant-numeric: tabular-nums; }
+.cs-toc a em { font-style: normal; }
+.cs-toc a:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.cs-toc a.is-on { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.cs-toc a.is-on .ic, .cs-toc a.is-on span { color: var(--accent); }
+.cs-toc ol { display: grid; gap: 0; padding: 0 0 4px 62px; }
+.cs-toc ol a { padding: 8px 12px; font-size: 15px; font-weight: 400; color: var(--soft); }
+.cs-toc ol a.is-on { color: var(--accent); }
+@keyframes cs-fade { from { opacity: 0; } }
+@keyframes cs-rise { from { translate: 0 30px; opacity: 0; } }
+
+@media (max-width: 1100px) {
+  .cs-hero-stage { grid-template-columns: 1fr; padding-right: clamp(28px, 4vw, 64px); padding-bottom: 0; min-height: 0; }
+  .cs-hero .ya { height: clamp(260px, 52vw, 460px); margin-right: calc(clamp(28px, 4vw, 64px) * -1); }
+  .cs-facts--hero { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cs-mistake-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cs-mistake-grid > div:nth-child(3) { padding-left: 0; border-left: 0; }
+  .cs-mistake-grid > div:nth-child(n + 3) { border-top: 1px solid var(--line); }
+  .cs-outcomes li { grid-template-columns: 56px 1fr; }
+  .cs-outcomes li > div { grid-column: 2; }
+  .cs-persona-card { grid-template-columns: auto 1fr; }
+  .cs-persona-card > div:nth-child(n + 3) { grid-column: 1 / -1; }
+  .cs-decision:has(.cs-decision-img) { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 760px) {
+  .cs { font-size: 16px; }
+  .cs-top { grid-template-columns: auto 1fr auto; gap: 8px; padding: 10px 0; }
+  .cs-top-title { min-width: 0; padding: 8px 14px 9px; }
+  .cs-top-count { display: none; }
+  .cs-back { padding: 0 14px; }
+  .cs-hero-stage { border-radius: 26px; padding: 26px 22px 0; }
+  .cs-hero .ya { margin-right: -22px; }
+  .cs-facts--hero { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .cs-facts--hero div { grid-template-columns: 1fr; gap: 4px; padding: 14px 16px; border-radius: 18px; }
+  .cs-facts--hero .ic { grid-row: auto; margin-bottom: 4px; }
+  .cs-facts--hero dd { font-size: 15px; }
+  .cs-methods, .cs-flow, .cs-fdw--2 { grid-template-columns: 1fr; }
+  /* v65: minmax(0, 1fr), а не 1fr: типограф склеивает цепочки вроде «new → assessment → approval» неразрывными пробелами,
+     колонка 1fr росла по самой длинной строке и текст уезжал за правый край телефона */
+  .cs-constraints li, .cs-props li, .cs-levels li { grid-template-columns: 34px minmax(0, 1fr); }
+  .cs-constraints li p, .cs-props li p, .cs-levels li p, .cs-levels li b { overflow-wrap: anywhere; }
+  .cs-constraints li p, .cs-props li p, .cs-levels li p { grid-column: 2; }
+  .cs-levels li { margin-left: 0; }
+  .cs-rules div { grid-template-columns: 1fr; gap: 4px; }
+  .cs-hyp li { grid-template-columns: 34px 1fr; }
+  .cs-hyp em { grid-column: 2; justify-self: start; }
+  .cs-matrix-list li { grid-template-columns: 34px 1fr; }
+  .cs-matrix-list em { grid-column: 2; justify-self: start; }
+  .cs-matrix { aspect-ratio: 4 / 3; }
+  .cs-matrix-dot em { display: none; }
+  .cs-mistake-grid { grid-template-columns: 1fr; }
+  .cs-mistake-grid > div, .cs-mistake-grid > div + div { padding: 16px 0 4px; border-left: 0; }
+  .cs-mistake-grid > div + div { border-top: 1px solid var(--line); }
+  .cs-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .cs-kpi { padding: 18px 16px 20px; border-radius: 20px; }
+  /* «2 платформы» и «169,4 тыс.» должны помещаться в половину экрана целиком, без переноса посреди слова */
+  .cs-kpi b { font-size: clamp(24px, 7.4vw, 40px); white-space: normal; overflow-wrap: break-word; }
+  .cs-kpi--long b { font-size: clamp(20px, 5.6vw, 30px); }
+  .cs-method, .cs-decision, .cs-mistake { padding: 22px; border-radius: 24px; }
+  .cs-outcomes li { padding: 22px; border-radius: 24px; grid-template-columns: 1fr; }
+  .cs-outcomes li > div { grid-column: 1; }
+  .cs-deep summary { grid-template-columns: 1fr auto; padding: 18px 20px; }
+  .cs-deep summary > .cs-num { display: none; }
+  .cs-next { min-height: 380px; border-radius: 26px; padding: 26px 22px; }
+  .cs-next-text { max-width: 100%; }
+  .cs-next-obj { width: 92%; right: -16%; bottom: -10%; }
+  .cs-spot-dot { width: 24px; height: 24px; font-size: 12px; }
+  .cs-spot-dot em { display: none; }
+  .cs-stage { border-radius: 22px; }
+  .cs-stack-fan .cs-stack-phone { border-width: 4px; border-radius: 20px; }
+  .cs-funnel li { width: 100%; }
+  .cs-quote { padding: 26px 24px 26px 58px; }
+  .cs-sheet-panel { width: 100%; margin-bottom: 0; border-radius: 26px 26px 0 0; padding-bottom: calc(18px + env(safe-area-inset-bottom)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cs-spot-dot { animation: none; }
+  .cs-deep-body, .cs-sheet, .cs-sheet-panel { animation: none; }
+  .cs-stack-fan .cs-stack-phone, .cs-stage-media, .cs-method, .cs-top-title, .cs-next-obj, .cs-toc-btn { transition: none; }
+}
+
+/* ── сетка раздела (широкий экран) ───────────────────────────────────────
+   Приём из журнальной вёрстки: узкая левая колонка для подписей и широкая правая для содержания. Заголовок раздела
+   и сетки карточек идут во всю ширину; абзацы и блоки с подписью встают в правую колонку, а сама подпись блока
+   («Откуда пришла задача», «Ограничения») уходит влево, на поле. Текст получает удобную длину строки, а у страницы
+   появляется вертикаль, по которой выстроены все разделы. */
+@media (min-width: 1100px) {
+  .cs-sec { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 3fr); column-gap: clamp(24px, 3vw, 48px); }
+  .cs-sec > * { grid-column: 1 / -1; min-width: 0; }
+  .cs-sec > .cs-text, .cs-sec > .cs-summary, .cs-sec > .cs-points, .cs-sec > .cs-takeaway, .cs-sec > .cs-why--wide,
+  .cs-sec > .cs-legend, .cs-sec > .cs-quote, .cs-sec > .cs-card, .cs-sec > .cs-rejected, .cs-sec > .cs-nodata, .cs-sec > .cs-honesty { grid-column: 2; }
+  .cs-sec > .cs-block:not(.cs-card, .cs-rejected, .cs-nodata, .cs-honesty) { display: grid; grid-template-columns: subgrid; row-gap: 14px; }
+  .cs-sec > .cs-block:not(.cs-card, .cs-rejected, .cs-nodata, .cs-honesty) > * { grid-column: 2; margin-top: 0; min-width: 0; }
+  .cs-sec > .cs-block:not(.cs-card, .cs-rejected, .cs-nodata, .cs-honesty) > .cs-mini { grid-column: 1; grid-row: 1; padding-top: 3px; color: var(--ink); }
+}
+
+/* ── фотография-разделитель между главами (v68) ────────────────────────────
+   Кейс читают скроллом, и длинная страница без пауз утомляет. Полоса во всю ширину колонки — вдох между
+   главами: не иллюстрация к тексту, а смена дыхания, как пустая страница между частями книги.
+   Фото тёмное и не в фокусе, поэтому не спорит с экранами продукта и не тянет внимание на себя.
+   Высота фиксирована и картинка кадрируется по месту: важна полоса, а не композиция снимка. */
+.cs-interlude {
+  position: relative; margin: clamp(28px, 5vh, 56px) 0; border-radius: 24px; overflow: hidden;
+  background: #0b0d11; line-height: 0;
+}
+.cs-interlude img {
+  display: block; width: 100%; height: clamp(200px, 34svh, 340px); object-fit: cover; object-position: var(--focus, 50% 47%);
+  user-select: none;
+}
+/* мягкие края: полоса не выглядит вставленной встык */
+/* фирменная композиция продумана целиком — ей полоса выше, иначе от кадра остаётся обрезок */
+.cs-interlude--brand img { height: clamp(260px, 46svh, 460px); }
+@media (max-width: 760px) { .cs-interlude--brand img { height: clamp(190px, 32svh, 280px); } }
+.cs-interlude::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg, rgba(11, 13, 17, 0.5), transparent 18%, transparent 82%, rgba(11, 13, 17, 0.5));
+}
+@media (max-width: 760px) {
+  .cs-interlude { margin: 26px 0; border-radius: 18px; }
+  .cs-interlude img { height: clamp(150px, 26svh, 220px); }
+}
+
+/* ── знак продукта у заголовка (v68) ───────────────────────────────────────
+   Знаки лежали в public/cases/brands и нигде не показывались. А знак отвечает «что это за продукт» быстрее,
+   чем прочитан заголовок: рекрутёр узнаёт Сбер или Mos.ru с одного взгляда. Высоту задаём здесь, поэтому
+   широкое слово «Сбербанк» и квадратные иконки стоят в ряду одинаково. */
+.cs-brand { display: block; height: 30px; width: auto; max-width: 180px; margin: 0 0 16px; object-fit: contain; object-position: left center; }
+@media (max-width: 760px) { .cs-brand { height: 26px; margin-bottom: 12px; } }
+
+
+@media (prefers-reduced-motion: reduce) {
+  .cs-lightbox img.is-eased { transition: none; }
+}
+
+/* v74.2: ссылка на сайт продукта в тексте кейса — цвет кейса и тонкое подчёркивание */
+.cs-link { color: var(--accent); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.18em; transition: text-decoration-color 0.2s ease; }
+.cs-link:hover { text-decoration-thickness: 2px; }

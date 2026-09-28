@@ -1,0 +1,164 @@
+<!-- Первый экран: сцена холма и интерфейс поверх неё (фрагмент index.html портфолио).
+     Стили — hero.css + hero-enter.css, поведение — heroUi.ts. Подписи на английском; в портфолио их подменяет i18n. -->
+<main class="hero" id="hero">
+  <canvas id="scene" aria-label="A chair on a grassy hill at sunset"></canvas>
+  <div class="scene-cover" aria-hidden="true"></div>
+  <!-- компьютер: подсказка у курсора и управление, пока камера у экрана -->
+  <span class="pc-tip" aria-hidden="true">Read the magazine</span>
+  <div class="pc-hud">
+    <button class="pc-back" type="button"><span aria-hidden="true">←</span> <span>Back to the hill</span></button>
+    <p class="pc-hint">Scroll to read · <kbd>Esc</kbd> to leave</p>
+  </div>
+
+  <div class="dock-wrap">
+    <nav class="dock" style="--pd:5" aria-label="Primary">
+      <a class="dock-item dock-mark" data-dock data-nav="home" href="#" style="--d:120ms" aria-label="Nikita Gorbachev: back to the start">
+        <!-- v76: знак — «N» из бренда v2 (Logo/v2): ножки — система, дуга вместо диагонали — путь без рывка.
+             Заменил кита-горбача: игра слов «Горбачёв → горб» из бренда убрана. Тот же знак в public/favicon.svg -->
+        <svg viewBox="-35 -25 150 150" aria-hidden="true">
+          <path d="M0 100H20V74.538C30.615 90.372 44.633 100 60 100H80V0H60V82.704C40.662 82.704 24.437 55.963 20 19.897V0H0Z"/>
+        </svg>
+      </a>
+      <!-- v45: «Холм» заменён на «Обо мне» — пункт ведёт к экрану About; в начало возвращает знак -->
+      <a class="dock-item" data-dock data-nav="about" href="#about" style="--d:180ms">
+        <span class="glyph" aria-hidden="true">
+          <svg viewBox="0 0 16 16"><circle cx="8" cy="5.4" r="2.7"/><path d="M2.800 13.800c.7-2.700 2.500-4.100 5.200-4.100s4.500 1.400 5.200 4.100"/></svg>
+        </span>
+        <span>About</span>
+      </a>
+      <a class="dock-item" data-dock data-nav="work" href="#work" style="--d:230ms">
+        <span class="glyph" aria-hidden="true">
+          <svg viewBox="0 0 16 16"><rect x="2.200" y="2.600" width="11.600" height="8.400" rx="1.400"/><path d="M5.600 13.600h4.800"/></svg>
+        </span>
+        <span>Work</span>
+      </a>
+      <!-- v45: «Заметки» → «Эксперименты»: пункт ведёт к своим WebGL-проектам после кейсов -->
+      <a class="dock-item" data-dock data-nav="lab" href="#notes" style="--d:280ms">
+        <span class="glyph" aria-hidden="true">
+          <svg viewBox="0 0 16 16"><path d="M6.200 2.300h3.600M6.900 2.300v3.900l-3.500 5.900a1.300 1.300 0 0 0 1.100 2h7a1.300 1.300 0 0 0 1.100-2L9.100 6.200V2.300"/><path d="M5 10.400h6"/></svg>
+        </span>
+        <span>Experiments</span>
+      </a>
+      <a class="dock-item dock-item--enter" data-dock data-nav="contact" href="#contact" style="--d:330ms">
+        <span class="glyph" aria-hidden="true">
+          <svg viewBox="0 0 16 16"><path d="M2.400 4.200h11.200v7.600H2.400z"/><path d="m2.600 4.500 5.400 4.200 5.400-4.200"/></svg>
+        </span>
+        <span>Say hi</span>
+      </a>
+      <!-- v27: язык страницы; подпись — язык, на который переключит (src/ui/langToggle.ts) -->
+      <button class="dock-item dock-lang" data-dock type="button" style="--d:355ms" aria-label="Читать по-русски">
+        <span class="glyph" aria-hidden="true">
+          <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M2.200 8h11.600"/><path d="M8 2.100c1.700 1.700 2.600 3.700 2.600 5.900S9.700 12.200 8 13.900C6.300 12.200 5.400 10.200 5.400 8s.9-4.200 2.600-5.900Z"/></svg>
+        </span>
+        <span class="dock-lang-l">RU</span>
+      </button>
+    </nav>
+  </div>
+
+  <div class="stage" id="stage">
+
+    <div class="guides rise-fade" style="--d:900ms" aria-hidden="true">
+      <!-- v68: направляющие встали на вертикали золотого сечения кадра 1600u: 0.382 и 0.618 -->
+      <i style="left:calc(611 * var(--u))"></i>
+      <i style="left:calc(989 * var(--u))"></i>
+    </div>
+
+
+
+    <h1 class="headline" style="--pd:18; --pr:1.2">
+      <span><i style="--d:260ms">Nikita Gorbachev,</i></span>
+      <span><i style="--d:360ms">product designer</i></span>
+    </h1>
+
+    <p class="lede rise" style="--d:480ms; --pd:14; --pr:1">I make complex products and AI services simple, from research to final screens, numbers and growth. Scroll down, the computer will explain.</p>
+
+    <!-- «Смотреть кейсы»: металлическая кнопка, блик идёт за курсором -->
+    <div class="cta-wrap rise" style="--d:600ms; --pd:15">
+      <button class="cta metal" type="button" data-action="explore">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 5.5h13"/><path d="M3.5 10h13"/><path d="M3.5 14.5h8"/></svg>
+        <span class="lbl">See the work</span>
+      </button>
+    </div>
+
+    <!-- «Позвать ветер»: круглая металлическая кнопка в тонком кольце -->
+    <span class="play-wrap rise-round" style="--d:900ms; --pd:20">
+      <button class="gust metal" type="button" aria-label="Call the wind" data-action="gust">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6.4 4.9c0-.9 1-1.4 1.7-.9l7.1 4.9c.6.4.6 1.4 0 1.9l-7.1 4.9c-.7.5-1.7 0-1.7-.9z"/></svg>
+      </button>
+      <span class="gust-ring" aria-hidden="true"></span>
+    </span>
+
+    <dl class="stat stat--a rise" style="--d:700ms; --pd:12">
+      <span class="mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8 27q1-8 -3-15"/><path d="M13 27q-.5-11 4-19"/><path d="M19 27q.5-7 6-12"/><path d="M5 27h22"/>
+        </svg>
+      </span>
+      <div><dt>Blades of grass</dt><dd data-stat="blades">520k, all real</dd></div>
+    </dl>
+
+    <dl class="stat stat--b rise" style="--d:770ms; --pd:13" role="button" tabindex="0" data-action="weather" aria-label="Change the weather">
+      <span class="mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21a5 5 0 0 1 .6-10 7 7 0 0 1 13.2 1.6A4.2 4.2 0 0 1 22.5 21z"/><path d="M6 25.5h11"/><path d="M20 25.5h4"/>
+        </svg>
+      </span>
+      <div><dt><span>Weather</span> <span class="stat-hint" aria-hidden="true">· tap to change</span></dt><dd data-stat="wind">clear, gentle breeze</dd></div>
+    </dl>
+
+    <!-- v58: заметки — одна карточка, четыре страницы. Картинка с названием и стеклянной кнопкой демо, под ней шеврон
+         раскрывает описание. Тексты, картинку, цифры и значок подставляет src/ui/fieldNote.ts, стили — src/ui/hero/note-card.css -->
+    <article class="card card--stove rise" style="--d:880ms; --pd:22; --pr:2.4" data-note="hill" aria-roledescription="carousel">
+      <figure class="note-hero portal">
+        <span class="portal-media"><img src="/ui/card-windcrest.webp" data-note-img alt="The crest of a hill under a grey sky, grass bent by a strong wind" loading="eager" decoding="async"><video data-note-video muted loop playsinline preload="none" aria-hidden="true" tabindex="-1"></video></span>
+        <div class="note-deck" role="group" aria-label="Notes">
+          <button class="note-deck__btn" type="button" data-step="-1" aria-label="Previous note">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5"/></svg>
+          </button>
+          <span class="note-deck__count" aria-live="polite"><b>01</b>/04</span>
+          <button class="note-deck__btn" type="button" data-step="1" aria-label="Next note">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5"/></svg>
+          </button>
+        </div>
+        <!-- v68: стеклянной кнопки «Открыть демо» больше нет — кликабельна сама картинка карточки.
+             Ссылка осталась на названии: с клавиатуры, из читалки экрана и «открыть в новой вкладке»
+             это по-прежнему настоящая ссылка, а не обработчик клика. -->
+        <figcaption class="note-cap">
+          <span class="note-cap__text">
+            <h2 class="note-cap__title"><a class="note-cap__link" data-note-demo href="https://kloserock97-tech.github.io/windcrest/" target="_blank" rel="noopener"><span data-note-title>Windcrest</span></a></h2>
+            <span class="note-cap__label" data-note-label>Side project 01</span>
+          </span>
+          <span class="note-cap__go" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M3 9 9 3"/><path d="M4.2 3H9v4.8"/></svg></span>
+        </figcaption>
+      </figure>
+      <div class="card-note" id="field-note" aria-hidden="true">
+        <div class="card-note__in">
+          <div class="note-head">
+            <div class="note-head__text">
+              <h3 class="note-kind" data-note-kind>A field of grass in the wind</h3>
+              <p class="note-meta" data-note-meta>three.js · GLSL · 2026</p>
+            </div>
+            <span class="note-glyph" data-note-glyph aria-hidden="true"></span>
+          </div>
+          <dl class="note-stats" data-note-stats>
+            <div><dd>380k</dd><dt>blades of grass</dt></div>
+            <div><dd>7</dd><dt>vertices a blade</dt></div>
+            <div><dd>5</dd><dt>ready-made looks</dt></div>
+          </dl>
+          <div class="note-body" data-note-points>
+            <p>The grass from the first screen of this site as a demo of its own. The graphics card draws 380,000 real blades with one command (instancing), and the processor rests.</p>
+            <p>Wind comes in gusts, grass grows in tufts, and the cursor leaves a trail like a hand on a carpet. The graphics card does all of it (in a vertex shader).</p>
+            <p>To keep far grass from shimmering, a blade is never thinner than a pixel and gets wider with distance. You can play with everything on a panel, and the link keeps your settings.</p>
+          </div>
+          <p class="note-links" data-note-links hidden></p>
+        </div>
+      </div>
+      <button class="knob knob--note" type="button" aria-label="Open note: Windcrest" aria-expanded="false" aria-controls="field-note">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4.5 7.5 10 13l5.5-5.5"/></svg>
+      </button>
+    </article>
+
+    <a class="scroll rise" style="--d:1040ms; --pd:9" href="#work"><span>Discover</span><span class="track"></span></a>
+
+  </div>
+</main>

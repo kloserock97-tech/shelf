@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Portal Door</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="hud.css">
+<style>
+  html, body { height: 100%; margin: 0; background: #1e2418; overflow: hidden; }
+  #stage { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  #fallback[hidden] { display: none; }
+  #fallback { position: fixed; inset: 0; display: grid; place-items: center; font: 500 14px/20px Onest, system-ui, sans-serif; color: #f5f5f7; }
+</style>
+</head>
+<body>
+<canvas id="stage" aria-label="A glass door appears in a dim meadow, a golden-hour hill opens behind it, and the camera passes through."></canvas>
+<p id="fallback" hidden>This demo needs WebGL2.</p>
+<aside class="hud" aria-label="Controls">
+  <button class="hud__head" type="button" aria-expanded="true">Portal door
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+  </button>
+  <div class="hud__body">
+    <div class="hud__pair">
+      <button class="hud__btn" type="button" data-name="play" aria-pressed="true">Pause</button>
+      <label class="hud__row" style="grid-template-columns: 1fr 34px"><input type="range" name="progress" min="0" max="1" step="0.01" value="0" aria-label="Progress"><output></output></label>
+    </div>
+    <label class="hud__row"><span>Corners</span><input type="range" name="corner" min="0" max="1" step="0.01" value="0.14"><output></output></label>
+    <div class="hud__row" style="grid-template-columns: 70px 1fr"><span>Refraction</span>
+      <div class="seg" role="group" aria-label="Refraction" data-name="refraction">
+        <button type="button" value="on" aria-pressed="true">On</button>
+        <button type="button" value="off" aria-pressed="false">Off</button>
+      </div>
+    </div>
+    <p class="hud__hint">Frosted glass first, then the hill opens behind it, then the camera goes through.</p>
+  </div>
+</aside>
+<script src="hud.js"></script>
+<script src="../variants/js/portal-door.js"></script>
+<script src="scene.js"></script>
+</body>
+</html>

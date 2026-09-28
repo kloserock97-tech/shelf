@@ -1,0 +1,95 @@
+/* Sound Button: the corner sound toggle from Portfolio 3D TS2 (hill-ui.css .sound-fab, v45).
+   Off: a speaker with a cross and "Turn sound on". On: waves leave the speaker, the bars dance, "Sound is on".
+   The label is open for the first seconds (.is-intro), for 3 s after every change (.is-tell) and under
+   the cursor or focus; the rest of the time the button is a round icon and does not compete with the content.
+   The state lives in aria-pressed, so screen readers and CSS read the same thing. */
+.sound-fab {
+  --h: 46px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: var(--h);
+  min-width: var(--h);
+  padding: 0;
+  margin: 0;
+  border: 1px solid rgba(248, 250, 240, 0.14);
+  border-radius: 999px;
+  cursor: pointer;
+  background: rgba(30, 36, 27, 0.8);
+  color: rgba(244, 241, 234, 0.82);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  box-shadow: 0 10px 28px rgba(12, 17, 9, 0.22);
+  transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+.sound-fab:hover, .sound-fab:focus-visible { color: #fff; border-color: rgba(248, 250, 240, 0.32); }
+.sound-fab:focus-visible { outline: 2px solid var(--sound-focus, #fff); outline-offset: 3px; }
+.sound-fab[aria-pressed="true"] { background: #eef1e7; border-color: #eef1e7; color: #1f231c; }
+
+.sound-fab__ico { flex: none; display: grid; place-items: center; width: var(--h); height: var(--h); margin: -1px; }
+.sound-fab__ico svg { width: 52%; height: 52%; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.sound-fab .sf-spk { fill: currentColor; stroke-width: 1.2; }
+.sound-fab .sf-w { opacity: 0; }
+.sound-fab .sf-x { transition: opacity 0.25s ease; }
+.sound-fab[aria-pressed="true"] .sf-x { opacity: 0; }
+.sound-fab[aria-pressed="true"] .sf-w { animation: sound-wave 1.6s ease-out infinite; }
+.sound-fab[aria-pressed="true"] .sf-w2 { animation-delay: 0.22s; }
+@keyframes sound-wave { 0% { opacity: 0; translate: -2px 0; } 30% { opacity: 1; translate: 0 0; } 75% { opacity: 1; } 100% { opacity: 0; translate: 1.5px 0; } }
+
+/* the label opens by width, so the button grows away from its corner */
+.sound-fab__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-width 0.55s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.35s ease, padding 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.sound-fab__label kbd { display: none; padding: 3px 6px; border-radius: 6px; font-family: inherit; font-size: 11px; font-weight: 400; line-height: 1; background: rgba(127, 127, 127, 0.22); }
+@media (hover: hover) and (pointer: fine) { .sound-fab__label kbd { display: inline-block; } }
+.sound-fab:hover .sound-fab__label,
+.sound-fab:focus-visible .sound-fab__label,
+.sound-fab.is-tell .sound-fab__label { max-width: 220px; opacity: 1; padding-right: 16px; }
+/* the first seconds: the label opens by itself once (sound-button.js drops .is-intro when it ends) */
+.sound-fab.is-intro .sound-fab__label { animation: sound-intro 7.5s 1.2s both; }
+@keyframes sound-intro { 0%, 100% { max-width: 0; opacity: 0; padding-right: 0; } 8%, 88% { max-width: 220px; opacity: 1; padding-right: 16px; } }
+
+/* bars only while sound plays */
+.sound-fab__bars { display: inline-flex; align-items: center; gap: 2.5px; height: 14px; width: 0; overflow: hidden; opacity: 0; transition: width 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease, margin 0.45s ease; }
+.sound-fab[aria-pressed="true"] .sound-fab__bars { width: 20px; opacity: 0.9; margin-right: 14px; }
+.sound-fab__bars i { flex: none; display: block; width: 2.5px; height: 100%; border-radius: 1px; background: currentColor; transform: scaleY(0.28); transform-origin: 50% 50%; }
+.sound-fab[aria-pressed="true"] .sound-fab__bars i { animation: sound-bar 1.1s ease-in-out infinite alternate; }
+.sound-fab[aria-pressed="true"] .sound-fab__bars i:nth-child(2) { animation-duration: 0.8s; animation-delay: -0.3s; }
+.sound-fab[aria-pressed="true"] .sound-fab__bars i:nth-child(3) { animation-duration: 1.3s; animation-delay: -0.6s; }
+.sound-fab[aria-pressed="true"] .sound-fab__bars i:nth-child(4) { animation-duration: 0.95s; animation-delay: -0.2s; }
+@keyframes sound-bar { from { transform: scaleY(0.25); } to { transform: scaleY(1); } }
+
+/* until the button has ever been used, a ring calls four times (sound-button.js drops .is-new) */
+.sound-fab.is-new::after {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  box-sizing: border-box;
+  width: var(--h);
+  height: var(--h);
+  border-radius: 50%;
+  border: 1px solid var(--sound-ring, rgba(238, 241, 231, 0.7));
+  opacity: 0;
+  pointer-events: none;
+  animation: sound-ring 4.5s 3s ease-out 4;
+}
+@keyframes sound-ring { 0% { opacity: 0.8; scale: 1; } 35%, 100% { opacity: 0; scale: 1.7; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .sound-fab[aria-pressed="true"] .sf-w { animation: none; opacity: 1; }
+  .sound-fab[aria-pressed="true"] .sound-fab__bars i { animation: none; transform: scaleY(0.8); }
+  .sound-fab.is-new::after { animation: none; }
+  .sound-fab, .sound-fab__label, .sound-fab__bars { transition: none; }
+}

@@ -1,0 +1,34 @@
+<!-- --ar is the screen's width / height. The image alt doubles as the viewer caption;
+     the figcaption shows the same text with a run-in (first sentence in ink). -->
+<div class="bento">
+  <h3 class="bento-title">More screens</h3>
+  <div class="bento-grid">
+    <figure class="bento-item">
+      <div class="bento-stage" style="--ar: 1.6">
+        <button type="button" class="bento-media" data-zoom aria-label="Open full size: Board">
+          <img src="board.png" alt="Board. Columns follow the real workflow." width="1440" height="900" loading="lazy" decoding="async">
+        </button>
+      </div>
+      <figcaption><b class="bento-run">Board.</b> Columns follow the real workflow.</figcaption>
+    </figure>
+    <figure class="bento-item">
+      <div class="bento-stage" style="--ar: 0.4621">
+        <button type="button" class="bento-media" data-zoom aria-label="Open full size: Today">
+          <img src="today.png" alt="Today on a phone. Progress first, then the list." width="390" height="844" loading="lazy" decoding="async">
+        </button>
+      </div>
+      <figcaption><b class="bento-run">Today on a phone.</b> Progress first, then the list.</figcaption>
+    </figure>
+  </div>
+
+  <dialog class="lb" aria-label="Screens">
+    <div class="lb-view"><img alt="" draggable="false"></div>
+    <p class="lb-cap"></p>
+    <button type="button" class="lb-btn lb-prev" aria-label="Previous screen"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6"/></svg></button>
+    <button type="button" class="lb-btn lb-next" aria-label="Next screen"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7.5 4 6 6-6 6"/></svg></button>
+    <button type="button" class="lb-btn lb-close" aria-label="Close" autofocus>×</button>
+  </dialog>
+</div>
+
+<link rel="stylesheet" href="bento-lightbox.css">
+<script src="bento-lightbox.js" defer></script>

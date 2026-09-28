@@ -6,7 +6,7 @@ import Icon from './Icon.astro';
 import {
   variantsOf, promptFor, itemUrl, posterUrl, demoUrl, isExternal, isPrivate, subtitle, type Item
 } from '../lib/items';
-import { highlight } from '../lib/highlight';
+import { highlight, codeStyles } from '../lib/highlight';
 import { typeOf, typeLabel, typeOne } from '../lib/taxonomy';
 import { url, lurl } from '../lib/url';
 import { t, formatDate, type Lang } from '../lib/i18n';
@@ -129,6 +129,7 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
               <button class="sh-btn sh-btn--sm sh-btn--plain" type="button" data-copy-prompt data-toast={t(lang, 'promptCopied')}><Icon name="MessageSquareCode" /><span class="sh-btn__label">{t(lang, 'copyPrompt')}</span></button>
             </div>
           </div>
+          <Fragment set:html={`<style>${codeStyles()}</style>`} />
           <div class="sh-code" id="code">
             {panes.map((v, vi) => (
               <div class="sh-code__variant" data-variant={v.id} hidden={vi !== 0}>

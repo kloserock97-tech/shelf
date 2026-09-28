@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Bento Lightbox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400..700&display=swap">
+<link rel="stylesheet" href="../variants/html/bento-lightbox.css">
+<style>
+  :root { color-scheme: light dark; }
+  html, body { margin: 0; background: transparent; }
+  body { font: 400 16px/1.5 "Onest", Arial, sans-serif; font-feature-settings: "ss01" on; -webkit-font-smoothing: antialiased; }
+  main { box-sizing: border-box; max-width: 1000px; margin: 0 auto; padding: clamp(20px, 4vw, 48px) clamp(16px, 3.4vw, 48px) 80px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="bento">
+    <h3 class="bento-title">More screens</h3>
+    <div class="bento-grid">
+      <figure class="bento-item">
+        <div class="bento-stage" style="--ar: 1.6">
+          <button type="button" class="bento-media" data-zoom aria-label="Open full size: Overview">
+            <img src="screens/overview.svg" alt="Overview. Four numbers, one chart and the tasks that need attention." width="1440" height="900" loading="lazy" decoding="async">
+          </button>
+        </div>
+        <figcaption><b class="bento-run">Overview.</b> Four numbers, one chart and the tasks that need attention.</figcaption>
+      </figure>
+      <figure class="bento-item">
+        <div class="bento-stage" style="--ar: 1.6">
+          <button type="button" class="bento-media" data-zoom aria-label="Open full size: Board">
+            <img src="screens/board.svg" alt="Board. Columns follow the real workflow, and a late card says how late it is." width="1440" height="900" loading="lazy" decoding="async">
+          </button>
+        </div>
+        <figcaption><b class="bento-run">Board.</b> Columns follow the real workflow, and a late card says how late it is.</figcaption>
+      </figure>
+      <figure class="bento-item">
+        <div class="bento-stage" style="--ar: 0.4621">
+          <button type="button" class="bento-media" data-zoom aria-label="Open full size: Today">
+            <img src="screens/today.svg" alt="Today on a phone. The day's progress first, then the list in the order it gets done." width="390" height="844" loading="lazy" decoding="async">
+          </button>
+        </div>
+        <figcaption><b class="bento-run">Today on a phone.</b> The day's progress first, then the list in the order it gets done.</figcaption>
+      </figure>
+      <figure class="bento-item">
+        <div class="bento-stage" style="--ar: 0.4621">
+          <button type="button" class="bento-media" data-zoom aria-label="Open full size: Task">
+            <img src="screens/task.svg" alt="Task. Owner, due time and status at a glance; the checklist shows what is left." width="390" height="844" loading="lazy" decoding="async">
+          </button>
+        </div>
+        <figcaption><b class="bento-run">Task.</b> Owner, due time and status at a glance; the checklist shows what is left.</figcaption>
+      </figure>
+    </div>
+
+    <dialog class="lb" aria-label="Screens">
+      <div class="lb-view"><img alt="" draggable="false"></div>
+      <p class="lb-cap"></p>
+      <button type="button" class="lb-btn lb-prev" aria-label="Previous screen"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6"/></svg></button>
+      <button type="button" class="lb-btn lb-next" aria-label="Next screen"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7.5 4 6 6-6 6"/></svg></button>
+      <button type="button" class="lb-btn lb-close" aria-label="Close" autofocus>×</button>
+    </dialog>
+  </div>
+</main>
+<script src="../variants/html/bento-lightbox.js"></script>
+</body>
+</html>

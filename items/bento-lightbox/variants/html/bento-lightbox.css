@@ -1,0 +1,79 @@
+/* Bento grid of screens + a full-screen viewer with zoom.
+   Ported from Portfolio 3D TS2 (src/ui/case-story.css: .cs-bento, .cs-stage, .cs-stage-media, .cs-lightbox).
+   Colours follow the page's color-scheme through light-dark(); the viewer is dark in both schemes. */
+.bento {
+  --bento-ink: light-dark(#1d1d1f, #f5f5f7);
+  --bento-soft: color-mix(in srgb, var(--bento-ink) 62%, transparent);
+  --bento-s1: light-dark(#f0f0f3, #2b2b2f);
+  --bento-s2: light-dark(#e2e2e7, #1e1e21);
+  --bento-shade: light-dark(#1d1d1f, #000);
+  --bento-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* smaller stages than a single screen gets: never taller than --stage-h, never wider than the column */
+  --stage-h: clamp(220px, 44svh, 400px);
+  --stage-pad: clamp(14px, 1.8vw, 26px);
+  color: var(--bento-ink);
+}
+.bento-title { margin: 0 0 16px; max-width: 26em; font-size: clamp(22px, 1.9vw, 28px); font-weight: 600; line-height: 1.2; letter-spacing: -0.012em; }
+.bento-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: clamp(16px, 2vw, 28px); align-items: start; }
+.bento-item { container-type: inline-size; min-width: 0; margin: 0; }
+.bento-stage {
+  position: relative; display: grid; place-items: center; width: 100%; overflow: hidden; border-radius: 22px;
+  height: min(var(--stage-h), calc((100cqw - 2 * var(--stage-pad)) / var(--ar, 1.6) + 2 * var(--stage-pad)));
+  background: linear-gradient(180deg, var(--bento-s1), var(--bento-s2));
+}
+/* the screen size is computed, not a percentage: a percentage breaks while the image is still loading */
+.bento-media {
+  position: relative; display: block; width: auto; min-width: 0; padding: 0; border: 0; background: none;
+  aspect-ratio: var(--ar, 1.6); height: min(calc(var(--stage-h) - 2 * var(--stage-pad)), calc((100cqw - 2 * var(--stage-pad)) / var(--ar, 1.6)));
+  border-radius: 12px; overflow: hidden; cursor: zoom-in;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--bento-shade) 8%, transparent), 0 22px 50px color-mix(in srgb, var(--bento-shade) 22%, transparent);
+  transition: scale 0.6s var(--bento-ease);
+}
+.bento-media img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.bento-media:hover { scale: 1.012; }
+.bento-media:focus-visible { outline: 2px solid var(--bento-ink); outline-offset: 3px; }
+/* a screenshot that already has a device frame: no rounding, a shadow that follows its outline */
+.bento-media.is-device { border-radius: 0; overflow: visible; box-shadow: none; filter: drop-shadow(0 22px 32px color-mix(in srgb, var(--bento-shade) 30%, transparent)); }
+.bento-item figcaption { padding: 14px 4px 0; max-width: 46em; font-size: 15px; line-height: 1.45; color: var(--bento-soft); text-wrap: pretty; }
+/* run-in: the first sentence in ink, the rest in grey */
+.bento-run { color: var(--bento-ink); font-weight: 600; }
+
+/* ── viewer: the frame fits whole, no page scroll behind it ── */
+.lb {
+  inset: 0; width: 100%; max-width: none; height: 100%; max-height: none; margin: 0; padding: 0; border: 0; border-radius: 0;
+  overflow: hidden; background: rgb(9 11 14 / 0.95); color: #fff; font: inherit; grid-template-rows: minmax(0, 1fr) auto;
+}
+/* display only on the open dialog: an unconditional display: grid beats dialog:not([open]) { display: none } */
+.lb[open] { display: grid; }
+.lb::backdrop { background: rgb(9 11 14 / 0.9); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+/* touch-action: none, or a pinch zooms the page instead of the picture */
+.lb-view { position: relative; display: flex; align-items: center; justify-content: center; min-height: 0; overflow: hidden; padding: clamp(12px, 2.4vw, 40px); touch-action: none; cursor: zoom-in; }
+.lb-view.is-zoom { cursor: grab; }
+.lb-view.is-drag { cursor: grabbing; }
+.lb-view img {
+  display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; border-radius: 10px;
+  user-select: none; -webkit-user-drag: none; transform-origin: 50% 50%; will-change: transform;
+}
+.lb-view img.is-eased { transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.lb-cap { margin: 0; padding: 12px 22px calc(16px + env(safe-area-inset-bottom)); font-size: 14px; line-height: 1.45; color: rgb(255 255 255 / 0.72); text-align: center; }
+.lb-cap span { margin-right: 10px; color: rgb(255 255 255 / 0.5); font-variant-numeric: tabular-nums; }
+.lb-btn {
+  position: absolute; z-index: 2; display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 50%;
+  background: rgb(38 38 42 / 0.62); box-shadow: inset 0 0 0 0.5px rgb(255 255 255 / 0.2); color: #fff; font: inherit; font-size: 22px; line-height: 1; cursor: pointer;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); transition: background 0.2s ease;
+}
+/* dark glass, not the 14% white of TS2: over a zoomed light screen a white button disappears */
+.lb-btn:hover { background: rgb(62 62 68 / 0.8); }
+.lb-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.lb-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.lb-close { top: max(14px, env(safe-area-inset-top)); right: 14px; }
+.lb-prev, .lb-next { top: 50%; translate: 0 -50%; }
+.lb-prev { left: 14px; }
+.lb-next { right: 14px; }
+.lb-prev[hidden], .lb-next[hidden] { display: none; }
+
+@media (max-width: 760px) { .bento-stage { border-radius: 18px; } }
+@media (prefers-reduced-motion: reduce) {
+  .bento-media { transition: none; }
+  .lb-view img.is-eased { transition: none; }
+}

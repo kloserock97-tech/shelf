@@ -1,0 +1,156 @@
+/* Metal Button: smoky glass pill from the Portfolio 3D TS2 hero (hero.css, v37 → v79).
+   Numbers are pixels of the 1600 × 880 hero frame; --metal-u scales them all at once. */
+.metal {
+  --metal-u: 1px;
+  --metal-ease: cubic-bezier(0.25, 0.7, 0.3, 1);
+  --metal-ease-out: cubic-bezier(0.2, 0.9, 0.25, 1);
+  --metal-focus: rgba(255, 255, 255, 0.85);
+  --mx: 30%;
+  --my: 0%;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  cursor: pointer;
+  color: #f7f8f2;
+  font-family: inherit;
+  font-weight: 500;
+  line-height: 1;
+  text-shadow: 0 1px 10px rgba(10, 14, 8, 0.35);
+  -webkit-tap-highlight-color: transparent;
+  /* glow under the cursor, top light, smoky fill, 1px light edge */
+  background:
+    radial-gradient(90% 160% at var(--mx) var(--my), rgba(245, 251, 230, 0.34), rgba(245, 251, 230, 0) 58%) padding-box,
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.015) 48%, rgba(159, 227, 139, 0.08)) padding-box,
+    linear-gradient(rgba(25, 31, 22, 0.5), rgba(20, 26, 18, 0.58)) padding-box,
+    linear-gradient(rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.24)) border-box;
+  -webkit-backdrop-filter: blur(20px) saturate(1.35);
+  backdrop-filter: blur(20px) saturate(1.35);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+    0 calc(12 * var(--metal-u)) calc(34 * var(--metal-u)) rgba(20, 24, 16, 0.24),
+    0 0 0 1px rgba(218, 235, 192, 0.06);
+  transition: scale 0.22s var(--metal-ease-out), box-shadow 0.3s var(--metal-ease), background-color 0.3s var(--metal-ease);
+}
+
+/* Light running along the rim. The gradient stands still; a layer under a ring mask rotates,
+   so the compositor animates it and style recalc is not touched (an @property angle cost ~2 ms a frame).
+   The ring sits on the inner edge of the border: overflow: hidden clips the border itself. */
+.metal > .metal-rim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  padding: 1px;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+.metal-rim::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 160%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  background: conic-gradient(rgba(255, 255, 255, 0.34), rgba(214, 240, 170, 0.95) 7%, rgba(255, 255, 255, 0.22) 18%, rgba(255, 255, 255, 0.16) 62%, rgba(255, 255, 255, 0.5) 82%, rgba(255, 255, 255, 0.34));
+  animation: metal-spin 9s linear infinite;
+}
+/* Without JS the rim speeds up by duration (the angle jumps once); metal-button.js changes the playback rate instead */
+.metal:not(.has-rim-rate):hover .metal-rim::before { animation-duration: 3.2s; }
+@keyframes metal-spin { to { rotate: 360deg; } }
+
+/* Sheen: a light diagonal band crosses the glass on hover and every 7 s by itself.
+   The layer is 2.5 button widths wide and moves by translate, so it stays on the compositor. */
+.metal::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 250%;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.34) 48%, rgba(255, 255, 255, 0.08) 54%, transparent 64%);
+  translate: -78% 0;
+  animation: metal-sheen 7s var(--metal-ease) 2.4s infinite;
+}
+.metal:hover::before { animation: metal-sheen-once 0.9s var(--metal-ease-out) both; }
+@keyframes metal-sheen { 0%, 78% { translate: -78% 0; } 100% { translate: 18% 0; } }
+@keyframes metal-sheen-once { from { translate: -78% 0; } to { translate: 18% 0; } }
+
+.metal > * { position: relative; z-index: 2; }
+
+.metal:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.36),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.08),
+    0 calc(14 * var(--metal-u)) calc(34 * var(--metal-u)) rgba(28, 24, 12, 0.3),
+    0 0 calc(24 * var(--metal-u)) rgba(214, 232, 170, 0.22);
+}
+.metal:active { scale: 0.97; }
+
+/* Press: a ring closes in from the edge (the class is restarted by metal-button.js) */
+.metal::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 0 rgba(214, 232, 170, 0.55);
+  opacity: 0;
+}
+.metal.is-rippling::after { animation: metal-ring 0.7s var(--metal-ease-out); }
+@keyframes metal-ring {
+  0% { opacity: 1; box-shadow: inset 0 0 0 calc(30 * var(--metal-u)) rgba(214, 232, 170, 0.35); }
+  100% { opacity: 0; box-shadow: inset 0 0 0 0 rgba(214, 232, 170, 0); }
+}
+
+.metal:focus-visible { outline: 2px solid var(--metal-focus); outline-offset: calc(5 * var(--metal-u)); }
+.metal svg { display: block; flex: none; }
+
+/* Sizes. lg is the hero "See the work" button, md the same button on a phone, icon the round wind button. */
+.metal--lg {
+  height: calc(60 * var(--metal-u));
+  padding: 0 calc(28 * var(--metal-u)) 0 calc(20 * var(--metal-u));
+  gap: calc(12 * var(--metal-u));
+  font-size: calc(16.5 * var(--metal-u));
+  white-space: nowrap;
+}
+.metal--lg svg { width: calc(18 * var(--metal-u)); height: calc(18 * var(--metal-u)); fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+.metal--lg .metal__label { translate: 0 calc(1 * var(--metal-u)); }
+.metal--md {
+  height: 48px;
+  padding: 0 22px 0 16px;
+  gap: 10px;
+  font-size: 15px;
+  white-space: nowrap;
+}
+.metal--md:not(:has(svg)) { padding: 0 22px; }
+.metal--md svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+.metal--icon {
+  width: calc(60 * var(--metal-u));
+  height: calc(60 * var(--metal-u));
+}
+.metal--icon svg { width: 34%; height: 34%; fill: currentColor; }
+/* the play triangle looks off-centre when centred by its box */
+.metal--icon .metal__play { margin-left: 4.5%; }
+
+/* Touch screens: no backdrop blur. Over a live WebGL canvas it re-blurred the canvas every frame
+   (about 12 ms of an iPhone 11 frame); over a sky the blur is barely visible anyway. */
+@media (hover: none) and (pointer: coarse) {
+  .metal { -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .metal::before, .metal:hover::before, .metal-rim::before { animation: none; }
+}

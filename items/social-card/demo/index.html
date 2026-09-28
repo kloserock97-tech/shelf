@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Social Card</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600&display=swap">
+<link rel="stylesheet" href="../variants/html/og-card.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  body { min-height: 100vh; box-sizing: border-box; display: grid; place-items: center; padding: 16px; font-family: Onest, system-ui, sans-serif; }
+  /* the card as a link preview: the image on top, what og:title and og:description say below it */
+  .preview {
+    width: min(1100px, 100%, (100vh - 150px) * 1.905); margin: 0; overflow: hidden; border-radius: 16px;
+    background: light-dark(#ffffff, #1c1c1e); color: light-dark(#1d1d1f, #f5f5f7);
+    box-shadow: 0 14px 40px #00000024, inset 0 0 0 .5px light-dark(#0000001f, #ffffff24);
+  }
+  .preview figcaption { display: grid; gap: 3px; padding: 12px 16px 14px; font-size: 13px; line-height: 1.35; }
+  .preview .site { color: light-dark(#6e6e73, #a1a1a6); font-size: 12px; }
+  .preview figcaption b { font-weight: 600; font-size: 14px; }
+  .preview .desc { color: light-dark(#424245, #c7c7cc); }
+</style>
+</head>
+<body>
+<figure class="preview">
+  <div class="og-frame">
+    <article class="og" aria-label="Alex Morgan, product designer">
+      <div class="og__art"></div>
+      <div class="og__veil"></div>
+      <div class="og__mark" aria-hidden="true">AM</div>
+      <div class="og__wrap">
+        <p class="og__kicker">Product designer</p>
+        <div>
+          <h1>Alex <b>Morgan</b></h1>
+          <p class="og__role">Complex products and AI services, from research to final screens.</p>
+        </div>
+        <div class="og__foot">
+          <span class="og__chip">Research</span><span class="og__chip">Design systems</span><span class="og__chip">AI products</span><span class="og__chip">Prototyping</span>
+          <span class="og__url">example.com</span>
+        </div>
+      </div>
+    </article>
+  </div>
+  <figcaption>
+    <span class="site">example.com</span>
+    <b>Alex Morgan — Product Designer</b>
+    <span class="desc">Complex products and AI services, from research to final screens.</span>
+  </figcaption>
+</figure>
+</body>
+</html>

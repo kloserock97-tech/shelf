@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Sticky Film Screen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../variants/html/film.css">
+<style>
+  :root { --ink: #1d1d1f; --soft: #6e6e73; --bar: rgba(245, 245, 247, 0.78); --line: rgba(0, 0, 0, 0.09); }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink: #f5f5f7; --soft: #a1a1a6; --bar: rgba(22, 22, 24, 0.72); --line: rgba(255, 255, 255, 0.12); }
+    .fig { --s1: #2c2c30; --s2: #1c1c1f; }
+  }
+  html, body { margin: 0; background: transparent; }
+  body { font-family: Onest, system-ui, sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; }
+  .bar {
+    position: sticky; top: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    height: 64px; padding: 0 clamp(16px, 3.4vw, 56px); box-sizing: border-box;
+    background: var(--bar); border-bottom: 1px solid var(--line);
+    -webkit-backdrop-filter: blur(20px) saturate(1.8); backdrop-filter: blur(20px) saturate(1.8);
+  }
+  .bar b { font-size: 15px; font-weight: 600; }
+  .bar span { font-size: 14px; font-weight: 500; color: var(--soft); }
+  main { max-width: 1100px; margin: 0 auto; padding: 28px clamp(16px, 3.4vw, 56px) 45vh; }
+  .intro { margin-bottom: clamp(24px, 4vh, 40px); }
+  .intro p { margin: 0; font-size: 14px; font-weight: 600; color: var(--soft); }
+  .intro h1 { margin: 10px 0 0; max-width: 20em; font-size: clamp(28px, 3.4vw, 44px); font-weight: 700; line-height: 1.08; letter-spacing: -0.025em; text-wrap: balance; }
+  .fig + .fig { margin-top: clamp(56px, 9vh, 104px); }
+  .end { margin: 64px 0 0; font-size: 15px; color: var(--soft); text-align: center; }
+</style>
+</head>
+<body>
+<header class="bar"><b>Team updates</b><span>Case study</span></header>
+<main>
+  <div class="intro">
+    <p>Film gallery</p>
+    <h1>A tall screen, read at the speed you scroll</h1>
+  </div>
+
+  <figure class="fig film">
+    <h3 class="fig-title">The whole feed, top to bottom</h3>
+    <div class="film-pin">
+      <div class="film-sticky">
+        <div class="stage film-stage">
+          <div class="film-track">
+            <img src="feed.svg" width="800" height="2300" alt="Team updates feed: posts, a release checklist, a poll, a chart and an event" decoding="async" draggable="false">
+          </div>
+        </div>
+        <figcaption><b>Team updates.</b> The stage stays pinned under the bar, the screen moves exactly as far as the page does.</figcaption>
+      </div>
+      <div class="film-run" aria-hidden="true"></div>
+    </div>
+  </figure>
+
+  <figure class="fig">
+    <h3 class="fig-title">For comparison: a regular stage fits it whole</h3>
+    <div class="stage" style="--ar:0.3478">
+      <div class="stage-media"><img src="feed.svg" width="800" height="2300" alt="The same feed, fitted into the stage" loading="lazy" decoding="async"></div>
+    </div>
+    <figcaption><b>Fit to stage.</b> Right for most screens, too small to read for a tall one.</figcaption>
+  </figure>
+  <p class="end">End of the page</p>
+</main>
+<script src="../variants/html/film.js"></script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Before After Slider</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400..700&display=swap">
+<link rel="stylesheet" href="../variants/html/before-after.css">
+<style>
+  :root { color-scheme: light dark; }
+  html, body { margin: 0; background: transparent; }
+  body { font: 400 16px/1.5 "Onest", Arial, sans-serif; font-feature-settings: "ss01" on; -webkit-font-smoothing: antialiased; }
+  main { box-sizing: border-box; max-width: 1080px; margin: 0 auto; padding: clamp(20px, 4vw, 48px) clamp(16px, 3.4vw, 48px) 80px; }
+</style>
+</head>
+<body>
+<main>
+  <figure class="ba">
+    <h3 class="ba-title">Overview before and after</h3>
+    <div class="ba-box" style="--ar: 1.6; --pos: 50%">
+      <div class="ba-after"><img src="screens/overview.svg" alt="After: four numbers, one chart of planned and done tasks, team load and the next tasks" width="1440" height="900" draggable="false"></div>
+      <div class="ba-before"><img src="screens/overview-before.svg" alt="Before: a filter form, three small charts and a long table of tasks" width="1440" height="900" draggable="false"></div>
+      <span class="ba-label ba-label--a">Before</span>
+      <span class="ba-label ba-label--b">After</span>
+      <div class="ba-handle" aria-hidden="true"><i></i></div>
+      <input class="ba-range" type="range" min="0" max="100" value="50" aria-label="Drag to compare">
+    </div>
+    <figcaption>Before: a filter form, three charts and a table of 212 rows. After: four numbers, one chart and the tasks that need attention. A made-up team planner.</figcaption>
+  </figure>
+</main>
+<script src="../variants/html/before-after.js"></script>
+</body>
+</html>

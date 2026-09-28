@@ -1,0 +1,53 @@
+/* "Camera" over a screenshot. Ported from Portfolio 3D TS2: src/ui/caseScreenMotion.css, src/ui/case-v37.css (.dm-*). */
+
+/* the block: a stage in the page's colour, the window, a caption with a live dot and "Play again" */
+.dm-wrap { --s1: #f0f0f3; --s2: #e2e2e7; margin: 0; max-width: 100%; }
+.dm-stage { position: relative; isolation: isolate; overflow: hidden; border-radius: 28px; padding: clamp(14px, 2.4vw, 32px); background: linear-gradient(180deg, var(--s1), var(--s2)); }
+.dm-wrap figcaption { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 14px 4px 0; font-size: 15px; color: var(--soft, #6e6e73); }
+.dm-live { display: inline-flex; align-items: center; gap: 8px; }
+.dm-live i { width: 8px; height: 8px; border-radius: 50%; background: var(--accent, #1d1d1f); box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent, #1d1d1f) 60%, transparent); }
+.dm-wrap.is-playing .dm-live i { animation: dm-pulse 1.6s ease-out infinite; }
+@keyframes dm-pulse { to { box-shadow: 0 0 0 8px transparent; } }
+.dm-replay { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 14px; border: 0; border-radius: 999px; background: #fff; color: #1d1d1f; font: inherit; font-size: 14.5px; font-weight: 500; cursor: pointer; }
+.dm-replay svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+/* the window is always light, like the screenshots in it */
+.sm {
+  --camera: translate(0, 0) scale(1);
+  --sm-ink: #1d1d1f; --sm-dot: #e2e2e7;
+  width: 100%; max-width: 1000px; margin: auto; overflow: hidden; border-radius: 18px; background: #fff;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--sm-ink) 8%, transparent), 0 24px 55px color-mix(in srgb, var(--sm-ink) 24%, transparent);
+}
+.sm-viewport { position: relative; aspect-ratio: 1.6; overflow: hidden; isolation: isolate; background: #f3f3f5; }
+/* the camera: one transform from the top-left corner; translate is in % of the screen, so a preset
+   stays right at any width. For a focus whose top-left corner is at (x, y) of the screen: translate(−s·x, −s·y) scale(s) */
+.sm-camera { position: absolute; inset: 0; transform: var(--camera); transform-origin: 0 0; transition: transform 1.5s cubic-bezier(0.22, 1, 0.36, 1); will-change: transform; }
+.sm-screen { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity 0.7s ease; pointer-events: none; }
+.sm-screen.is-current { opacity: 1; }
+.sm-director { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 18px 22px; background: #fff; border-top: 1px solid color-mix(in srgb, var(--sm-ink) 9%, transparent); color: var(--sm-ink); }
+.sm-caption { max-width: 36em; margin: 0; font-size: 16px; font-weight: 500; line-height: 1.45; }
+.sm-controls { display: flex; flex-shrink: 0; gap: 8px; }
+.sm-controls button { position: relative; display: flex; align-items: center; gap: 8px; min-width: 44px; min-height: 44px; padding: 10px; border: 0; border-radius: 12px; background: color-mix(in srgb, var(--sm-ink) 6%, transparent); color: color-mix(in srgb, var(--sm-ink) 60%, transparent); font-family: inherit; font-size: 13px; font-weight: 600; line-height: 1; cursor: pointer; }
+.sm-controls button[aria-pressed="true"] { background: var(--sm-ink); color: #fff; }
+.sm-controls i { display: block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.3; }
+.sm-controls button[aria-pressed="true"] i { opacity: 1; color: var(--sm-dot); }
+.sm-controls button:focus-visible { outline: 2px solid var(--sm-ink); outline-offset: 3px; }
+
+/* presets for the demo screens (1280 × 800) */
+.sm[data-focus="late"] { --camera: translate(-6.5%, -49.4%) scale(1.5); }
+.sm[data-focus="refund"] { --camera: translate(-40%, -39.8%) scale(1.8); }
+
+/* phone: a squarer window; the screen keeps its 1.6 and sits a little below the top, the presets are re-aimed */
+@media (max-width: 640px) {
+  .sm-director { display: grid; gap: 12px; padding: 16px; }
+  .sm-caption { min-height: 42px; font-size: 14px; }
+  .sm-controls { justify-content: center; }
+  .sm-viewport { aspect-ratio: 1.05; }
+  .sm-camera { top: 16%; bottom: auto; height: auto; aspect-ratio: 1.6; }
+  .sm[data-focus="late"] { --camera: translate(-10.3%, -32%) scale(1.6); }
+  .sm[data-focus="refund"] { --camera: translate(-70%, -67.9%) scale(2.4); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sm-camera, .sm-screen { transition: none; }
+  .sm-camera { will-change: auto; }
+}

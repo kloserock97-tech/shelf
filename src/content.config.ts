@@ -16,7 +16,7 @@ const items = defineCollection({
     status: z.enum(['stable', 'draft']).default('draft'),
     summary: z.string(),
     tech: z.array(z.string()).default([]),
-    tags: z.array(z.string()).default([]),
+    tags: z.array(z.coerce.string()).default([]),
     added: z.coerce.date(),
     updated: z.coerce.date().optional(),
     origin: z.enum(['own', 'adapted', 'third-party']).default('own'),

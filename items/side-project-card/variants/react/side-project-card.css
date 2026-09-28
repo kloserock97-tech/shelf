@@ -1,0 +1,335 @@
+/* Side Project Card: the notes card from the Portfolio 3D TS2 hero (note-card.css v58, hero.css .card, hill-ui.css).
+   A picture on top with the title, a caption and a pager; a chevron below opens the description
+   (grid rows 0fr → 1fr). Numbers are pixels of the 1600 × 880 hero frame; --u scales them. */
+.note-card {
+  --u: 1px;
+  --nc-pad: calc(12 * var(--u));
+  --nc-fig: calc(214 * var(--u));
+  --nc-chev: calc(46 * var(--u));
+  --nc-r: calc(36 * var(--u));
+  --card: #f2f3ef;
+  --card-ink: #23261f;
+  --card-label: #7c8177;
+  --ease-open: cubic-bezier(0.7, 0, 0.2, 1);
+  --ease-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+  position: relative;
+  box-sizing: border-box;
+  width: calc(312 * var(--u));
+  padding: var(--nc-pad) var(--nc-pad) 0;
+  display: flex;
+  flex-direction: column;
+  margin-top: calc(var(--note-lift, 0) * -1px);
+  border-radius: calc(46 * var(--u));
+  background: var(--card);
+  color: var(--card-ink);
+  font-family: inherit;
+  box-shadow: 0 calc(30 * var(--u)) calc(70 * var(--u)) rgba(60, 52, 28, 0.2);
+  transition: width 0.7s var(--ease-open), margin-top 0.7s var(--ease-open), box-shadow 0.8s ease;
+}
+.note-card *, .note-card *::before, .note-card *::after { box-sizing: border-box; }
+.note-card:hover { box-shadow: 0 calc(38 * var(--u)) calc(84 * var(--u)) rgba(60, 52, 28, 0.26); }
+/* closed it is a little smaller; open, the picture and the width return to full size */
+.note-card.is-open { width: calc(352 * var(--u)); --nc-fig: calc(246 * var(--u)); }
+
+/* ── picture with the caption ───────────────────────────────────────────── */
+.note-hero {
+  position: relative;
+  flex: none;
+  margin: 0;
+  height: calc(var(--nc-fig) - var(--note-shrink, 0px));
+  transition: height 0.7s var(--ease-open);
+  border-radius: var(--nc-r);
+  overflow: hidden;
+  isolation: isolate;
+  background: #dfe0d8;
+  box-shadow: 0 calc(14 * var(--u)) calc(26 * var(--u)) rgba(20, 24, 16, 0.22);
+}
+.note-hero::after {
+  content: "";
+  position: absolute;
+  inset: 38% 0 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(12, 15, 10, 0), rgba(12, 15, 10, 0.5) 52%, rgba(12, 15, 10, 0.86));
+}
+.note-media { position: absolute; inset: 0; display: block; }
+.note-media img { display: block; width: 100%; height: 100%; object-fit: cover; scale: 1.06; transition: scale 1.2s cubic-bezier(0.2, 0.9, 0.25, 1); }
+.note-card:hover .note-media img { scale: 1.11; }
+/* the preview clip fades in over its poster once it really plays */
+.note-media video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  opacity: 0;
+  transform: scale(1.08);
+  transition: opacity 0.35s ease, transform 1.25s var(--ease-soft);
+  pointer-events: none;
+}
+.note-card.is-playing .note-media video { opacity: 1; }
+.note-card:hover .note-media video { transform: scale(1.13); }
+
+.note-cap {
+  position: absolute;
+  z-index: 2;
+  left: calc(24 * var(--u));
+  right: calc(20 * var(--u));
+  bottom: calc(22 * var(--u));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(12 * var(--u));
+}
+.note-cap__text { min-width: 0; display: grid; gap: calc(3 * var(--u)); }
+.note-cap__title {
+  margin: 0;
+  font-size: max(14px, calc(17 * var(--u)));
+  line-height: 1.15;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.note-cap__label {
+  margin: 0;
+  font-size: max(10.5px, calc(11.5 * var(--u)));
+  line-height: 1.2;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.72);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* the whole picture opens the demo; the real link is the title (keyboard, screen readers, new tab) */
+.note-cap__link { color: inherit; text-decoration: none; }
+.note-cap__link:hover { text-decoration: underline; text-underline-offset: 3px; }
+.note-cap__link:focus-visible { outline: 2px solid #fff; outline-offset: 3px; border-radius: 4px; }
+/* glass button: the arrow says the tap leads out of the page */
+.note-cap__go {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: max(34px, calc(38 * var(--u)));
+  height: max(34px, calc(38 * var(--u)));
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  backdrop-filter: blur(14px) saturate(1.2);
+  transition: background 0.25s ease, scale 0.35s var(--ease-soft);
+}
+.note-cap__go svg { width: max(11px, calc(13 * var(--u))); height: max(11px, calc(13 * var(--u))); fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; transition: translate 0.3s ease; }
+.note-card.has-demo .note-hero { cursor: pointer; }
+.note-card.has-demo .note-hero:hover .note-cap__go { background: rgba(255, 255, 255, 0.32); }
+.note-card.has-demo .note-hero:hover .note-cap__go svg { translate: 1.5px -1.5px; }
+.note-card:not(.has-demo) .note-cap__go { display: none; }
+
+/* ── pager on the picture: ‹ 01/04 › ─────────────────────────────────────── */
+.note-deck {
+  position: absolute;
+  z-index: 3;
+  top: calc(14 * var(--u));
+  right: calc(14 * var(--u));
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 2px;
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(18, 22, 15, 0.34);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+.note-deck__count {
+  min-width: 3em;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: max(11px, calc(12 * var(--u)));
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+.note-deck__count b { font-weight: 500; color: #fff; }
+.note-deck__btn {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  width: max(28px, calc(30 * var(--u)));
+  height: max(28px, calc(30 * var(--u)));
+  border-radius: 50%;
+  background: transparent;
+  color: #fff;
+  transition: background 0.25s ease, transform 0.35s var(--ease-soft);
+}
+.note-deck__btn svg { width: 52%; height: 52%; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.note-deck__btn:hover { background: rgba(255, 255, 255, 0.2); }
+.note-deck__btn:active { transform: scale(0.92); }
+.note-deck__btn:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+
+/* touch screens: no backdrop blur (on the site a WebGL canvas lies under the card) */
+@media (hover: none) and (pointer: coarse) {
+  .note-cap__go, .note-deck { -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .note-deck { background: rgba(18, 22, 15, 0.5); }
+  .note-cap__go { background: rgba(20, 24, 18, 0.34); }
+}
+
+/* ── chevron: open and close ─────────────────────────────────────────────── */
+.note-knob {
+  order: 3;
+  flex: none;
+  align-self: stretch;
+  height: var(--nc-chev);
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  color: var(--card-ink);
+  border-radius: 0 0 var(--nc-r) var(--nc-r);
+}
+.note-knob svg {
+  width: max(16px, calc(18 * var(--u)));
+  height: max(16px, calc(18 * var(--u)));
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: rotate 0.55s var(--ease-soft), translate 0.35s ease;
+}
+.note-knob:hover svg { translate: 0 2px; }
+.note-card.is-open .note-knob svg { rotate: 180deg; }
+.note-card.is-open .note-knob:hover svg { translate: 0 -2px; }
+.note-knob:focus-visible { outline: 2px solid rgba(28, 34, 22, 0.9); outline-offset: -6px; }
+
+/* ── description: height from content, opens by grid rows 0fr → 1fr ─────── */
+.note-more {
+  order: 2;
+  display: grid;
+  grid-template-rows: 0fr;
+  min-height: 0;
+  color: var(--card-ink);
+  transition: grid-template-rows 0.7s var(--ease-open);
+}
+.note-card.is-open .note-more { grid-template-rows: 1fr; }
+.note-more__in {
+  min-height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  padding: 0 calc(16 * var(--u));
+  opacity: 0;
+  translate: 0 -6px;
+  transition: opacity 0.25s ease, translate 0.3s ease, visibility 0s linear 0.7s;
+}
+.note-card.is-open .note-more__in {
+  visibility: visible;
+  opacity: 1;
+  translate: 0 0;
+  transition: opacity 0.5s ease 0.25s, translate 0.6s var(--ease-soft) 0.25s, visibility 0s;
+}
+/* the card could not rise enough (a very low window): the description scrolls inside */
+.note-card.is-tight.is-open .note-more__in { max-height: var(--note-max, none); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: rgba(35, 38, 31, 0.25) transparent; }
+
+.note-head { display: flex; align-items: center; gap: calc(14 * var(--u)); padding-top: calc(20 * var(--u)); }
+.note-head__text { flex: 1; min-width: 0; }
+.note-kind { margin: 0; font-size: max(13px, calc(14.5 * var(--u))); line-height: 1.2; font-weight: 500; letter-spacing: -0.01em; }
+.note-meta { margin: calc(4 * var(--u)) 0 0; font-size: max(10.5px, calc(11 * var(--u))); line-height: 1.3; font-weight: 300; color: var(--card-label); }
+.note-glyph {
+  flex: none;
+  align-self: center;
+  display: grid;
+  place-items: center;
+  width: calc(64 * var(--u));
+  height: calc(52 * var(--u));
+  border-radius: calc(18 * var(--u));
+  background: rgba(35, 38, 31, 0.055);
+  color: var(--card-ink);
+}
+.note-glyph svg { width: 74%; height: 86%; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.note-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: calc(12 * var(--u));
+  margin: calc(14 * var(--u)) 0 0;
+  padding-top: calc(12 * var(--u));
+  border-top: 1px solid rgba(35, 38, 31, 0.14);
+}
+.note-stats div { min-width: 0; display: flex; flex-direction: column; }
+.note-stats dt { order: 2; margin: calc(2 * var(--u)) 0 0; font-size: max(9.5px, calc(9.5 * var(--u))); line-height: 1.2; font-weight: 300; color: var(--card-label); }
+.note-stats dd { margin: 0; font-size: max(13px, calc(15 * var(--u))); line-height: 1.15; font-weight: 500; letter-spacing: -0.01em; white-space: nowrap; }
+.note-body { display: grid; gap: calc(9 * var(--u)); margin-top: calc(18 * var(--u)); }
+.note-body p { margin: 0; font-size: max(11.5px, calc(12.2 * var(--u))); line-height: 1.45; font-weight: 300; color: #565b50; }
+.note-links { display: flex; flex-wrap: wrap; gap: calc(8 * var(--u)) calc(14 * var(--u)); margin: calc(14 * var(--u)) 0 0; }
+.note-links[hidden] { display: none; }
+.note-links a {
+  font-size: max(12px, calc(12.5 * var(--u)));
+  font-weight: 500;
+  color: var(--card-ink);
+  text-decoration: underline;
+  text-decoration-color: rgba(35, 38, 31, 0.3);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.2s ease;
+}
+.note-links a:hover { text-decoration-color: currentColor; }
+
+/* ── page change: picture, caption and text fade and slide toward the flip ── */
+.note-media, .note-cap, .note-more__in > * { transition: opacity 0.24s ease, translate 0.36s var(--ease-soft); }
+.note-card.is-swapping .note-media, .note-card.is-swapping .note-cap {
+  opacity: 0;
+  translate: calc(var(--swap-dir, 1) * -14px) 0;
+  transition: opacity 0.18s ease, translate 0.2s ease;
+}
+
+/* ── narrow screens: the card takes the width and simply grows down ──────── */
+@media (max-width: 900px) {
+  .note-card {
+    --u: calc(100vw / 760);
+    --nc-pad: max(10px, calc(16 * var(--u)));
+    --nc-fig: max(210px, calc(430 * var(--u)));
+    --nc-chev: max(44px, calc(60 * var(--u)));
+    --nc-r: max(20px, calc(34 * var(--u)));
+    width: 100%;
+    margin-top: 0;
+    border-radius: calc(40 * var(--u));
+    touch-action: pan-y;
+  }
+  .note-card.is-open { width: 100%; --nc-fig: max(210px, calc(430 * var(--u))); }
+  .note-cap { left: max(16px, calc(26 * var(--u))); right: max(14px, calc(22 * var(--u))); bottom: max(16px, calc(24 * var(--u))); gap: 10px; }
+  .note-cap__title { font-size: max(16px, calc(26 * var(--u))); }
+  .note-cap__label { font-size: max(11.5px, calc(17 * var(--u))); }
+  .note-cap__go { width: 44px; height: 44px; }
+  .note-deck { top: max(10px, calc(16 * var(--u))); right: max(10px, calc(16 * var(--u))); padding: 0; }
+  .note-deck__btn { width: 44px; height: 44px; }
+  .note-deck__count { font-size: max(12px, calc(17 * var(--u))); min-width: 2.6em; }
+  .note-more__in { padding: 0 max(8px, calc(14 * var(--u))); }
+  .note-head { gap: 14px; padding-top: max(18px, calc(28 * var(--u))); }
+  .note-kind { font-size: max(15px, calc(24 * var(--u))); }
+  .note-meta { font-size: max(12px, calc(17 * var(--u))); margin-top: 4px; }
+  .note-stats { margin-top: 12px; padding-top: 12px; gap: 10px; }
+  .note-stats dd { font-size: max(15px, calc(24 * var(--u))); }
+  .note-stats dt { font-size: max(11px, calc(15 * var(--u))); margin-top: 2px; }
+  .note-glyph { width: max(64px, calc(110 * var(--u))); height: max(52px, calc(90 * var(--u))); border-radius: max(16px, calc(28 * var(--u))); }
+  .note-hero { transition: none; }
+  .note-body { gap: 10px; margin-top: 18px; }
+  .note-body p { font-size: max(13.5px, calc(19 * var(--u))); line-height: 1.5; }
+  .note-links { margin-top: 14px; }
+  .note-links a { font-size: max(13px, calc(19 * var(--u))); padding: 6px 0; }
+  /* the finger drags the card sideways: picture and caption follow it */
+  .note-card.is-dragging .note-media, .note-card.is-dragging .note-cap { translate: calc(var(--drag, 0) * 1px) 0; transition: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .note-card, .note-more, .note-more__in, .note-card.is-open .note-more__in, .note-hero { transition: none; }
+  .note-media img { scale: 1 !important; transition: none !important; }
+  .note-card.is-swapping .note-media, .note-card.is-swapping .note-cap { translate: none; }
+}

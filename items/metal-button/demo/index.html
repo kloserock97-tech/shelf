@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Metal Button</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@300..600&display=swap">
+<link rel="stylesheet" href="../variants/html/metal-button.css">
+<style>
+  html, body { min-height: 100%; margin: 0; background: transparent; }
+  body {
+    display: grid; place-items: center; min-height: 100vh; padding: 24px 16px; box-sizing: border-box;
+    font-family: "Onest", system-ui, sans-serif;
+  }
+  .swatches {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 16px;
+    width: min(980px, 100%);
+  }
+  /* Something for the glass to blur: a sky, a low sun and a hill line */
+  .swatch {
+    position: relative; overflow: hidden; border-radius: 28px; min-height: 360px;
+    display: flex; flex-wrap: wrap; align-content: center; justify-content: center; align-items: center; gap: 18px;
+    padding: 32px 20px 72px; box-sizing: border-box;
+  }
+  .swatch::before, .swatch::after { content: ""; position: absolute; pointer-events: none; z-index: 0; }
+  .swatch::before { width: 240px; height: 240px; right: 8%; top: 18%; border-radius: 50%; filter: blur(2px); }
+  .swatch::after { left: -20%; right: -20%; bottom: -62%; height: 110%; border-radius: 50%; }
+  .swatch > * { z-index: 1; }
+  .swatch--light { background: linear-gradient(180deg, #d9dcd6 0%, #efe9dc 45%, #f1d9ab 70%, #e8e3d3 100%); }
+  .swatch--light::before { background: radial-gradient(circle, rgba(255, 244, 214, 0.95), rgba(255, 226, 170, 0) 68%); }
+  .swatch--light::after { background: radial-gradient(ellipse at 50% 20%, #6f8f4a, #3f5a2c 60%); }
+  .swatch--dark { background: linear-gradient(180deg, #2c2740 0%, #5b4256 48%, #b77b5c 100%); }
+  .swatch--dark::before { background: radial-gradient(circle, rgba(255, 196, 140, 0.8), rgba(255, 160, 110, 0) 68%); }
+  .swatch--dark::after { background: radial-gradient(ellipse at 50% 20%, #34422a, #1d2518 60%); }
+  .swatch--light .metal { --metal-focus: rgba(30, 34, 25, 0.9); }
+</style>
+</head>
+<body>
+<main class="swatches">
+  <section class="swatch swatch--light" aria-label="On a light sky">
+    <button class="metal metal--lg" type="button">
+      <i class="metal-rim" aria-hidden="true"></i>
+      <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 5.5h13"/><path d="M3.5 10h13"/><path d="M3.5 14.5h8"/></svg>
+      <span class="metal__label">See the work</span>
+    </button>
+    <button class="metal metal--md" type="button">
+      <i class="metal-rim" aria-hidden="true"></i>
+      <span class="metal__label">Say hello</span>
+    </button>
+    <button class="metal metal--icon" type="button" aria-label="Play">
+      <i class="metal-rim" aria-hidden="true"></i>
+      <svg class="metal__play" viewBox="0 0 20 20" aria-hidden="true"><path d="M6.4 4.9c0-.9 1-1.4 1.7-.9l7.1 4.9c.6.4.6 1.4 0 1.9l-7.1 4.9c-.7.5-1.7 0-1.7-.9z"/></svg>
+    </button>
+  </section>
+  <section class="swatch swatch--dark" aria-label="On a dusk sky">
+    <button class="metal metal--lg" type="button">
+      <i class="metal-rim" aria-hidden="true"></i>
+      <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 5.5h13"/><path d="M3.5 10h13"/><path d="M3.5 14.5h8"/></svg>
+      <span class="metal__label">See the work</span>
+    </button>
+    <button class="metal metal--md" type="button">
+      <i class="metal-rim" aria-hidden="true"></i>
+      <span class="metal__label">Say hello</span>
+    </button>
+    <button class="metal metal--icon" type="button" aria-label="Play">
+      <i class="metal-rim" aria-hidden="true"></i>
+      <svg class="metal__play" viewBox="0 0 20 20" aria-hidden="true"><path d="M6.4 4.9c0-.9 1-1.4 1.7-.9l7.1 4.9c.6.4.6 1.4 0 1.9l-7.1 4.9c-.7.5-1.7 0-1.7-.9z"/></svg>
+    </button>
+  </section>
+</main>
+<script src="../variants/html/metal-button.js"></script>
+</body>
+</html>

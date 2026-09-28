@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Swipe Strip</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@300..700&display=swap">
+<link rel="stylesheet" href="../variants/ts/swipe-strip.css">
+<style>
+  :root {
+    --fg: #1d1d1f; --fg2: rgba(29, 29, 31, 0.58); --line: rgba(29, 29, 31, 0.14);
+    --font: "Onest", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --fg: #f5f5f7; --fg2: rgba(245, 245, 247, 0.6); --line: rgba(245, 245, 247, 0.18); }
+  }
+  html, body { margin: 0; background: transparent; }
+  body { font-family: var(--font); color: var(--fg); -webkit-font-smoothing: antialiased; }
+
+  /* the stage stays put; the tall spacer below is the page scroll that drives it */
+  .ss {
+    position: fixed; inset: 0; display: flex; flex-direction: column; justify-content: center;
+    gap: clamp(12px, 2.4svh, 28px); padding: max(16px, env(safe-area-inset-top)) 0 max(18px, env(safe-area-inset-bottom));
+    box-sizing: border-box;
+  }
+  .ss-spacer { width: 1px; }
+  .ss-head { padding: 0 24px; }
+  .ss-kicker { margin: 0; font-size: clamp(28px, 4.6vw, 44px); font-weight: 300; line-height: 1; letter-spacing: -0.02em; }
+  .ss-kicker sup { font-size: 0.36em; font-weight: 400; vertical-align: top; position: relative; top: 0.3em; margin-left: 0.2em; opacity: 0.7; }
+  .ss-meta { margin: 8px 0 0; font-size: 14px; font-weight: 300; color: var(--fg2); }
+
+  /* the card: a light scene in the card's colours, text on top, an object cut out below */
+  .case {
+    display: block; border-radius: 28px; overflow: hidden; isolation: isolate; container-type: size;
+    background: linear-gradient(180deg, var(--s1), var(--s2)); color: var(--ink); text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .case:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; }
+  .case-text { position: absolute; z-index: 3; inset: 7.4cqw 7.4cqw auto; display: flex; flex-direction: column; }
+  .case-tag { font-size: clamp(11px, 3.7cqw, 14px); font-weight: 600; line-height: 1.2; letter-spacing: 0.01em; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+  .case-title { margin-top: 2.4cqw; font-size: clamp(20px, 8.2cqw, 32px); font-weight: 600; line-height: 1.1; letter-spacing: -0.018em; }
+  .case-sub { margin-top: 2.6cqw; font-size: clamp(12.5px, 4.15cqw, 16px); line-height: 1.38; color: color-mix(in srgb, var(--ink) 66%, transparent); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+  .case-obj {
+    position: absolute; z-index: 2; left: var(--ox); bottom: var(--oy); width: var(--ow); height: auto; aspect-ratio: var(--oar);
+    pointer-events: none; user-select: none; -webkit-user-drag: none;
+    filter: drop-shadow(0 7cqw 7cqw color-mix(in srgb, var(--ink) 26%, transparent));
+  }
+
+  .ss-foot { display: flex; align-items: center; gap: 16px; width: min(100% - 48px, 760px); margin: 0 auto; }
+  .ss-count { display: flex; align-items: baseline; gap: 8px; font-weight: 300; }
+  .ss-now { font-size: 34px; line-height: 1; font-variant-numeric: tabular-nums; }
+  .ss-of { font-size: 14px; color: var(--fg2); }
+  /* two axes, two bars: the strip bar moves with the strip, the page bar with the page scroll */
+  .ss-bars { flex: 1; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 7px 10px; min-width: 0; }
+  .ss-bars span { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--fg2); }
+  .ss-bar { position: relative; height: 2px; background: var(--line); overflow: hidden; }
+  .ss-bar i { position: absolute; inset: 0; transform-origin: left; transform: scaleX(0); }
+  .ss-bar--strip i { background: #d9603b; }
+  .ss-bar--page i { background: #1f8a4c; }
+  .ss-steps { display: none; gap: 8px; }
+  .ss-step {
+    display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 50%; cursor: pointer;
+    background: var(--line); color: var(--fg); transition: scale 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .ss-step svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+  .ss-step[data-d="1"] svg { rotate: 180deg; }
+  .ss-step:hover { scale: 1.06; }
+  .ss-step:active { scale: 0.96; }
+  .ss-step:focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; }
+  @media (hover: hover) and (pointer: fine) { .ss-steps { display: flex; } }
+  .ss-hint { display: none; margin: 0; font-size: 12.5px; font-weight: 300; letter-spacing: 0.02em; white-space: nowrap; color: var(--fg2); transition: opacity 0.5s ease; }
+  @media (pointer: coarse) { .ss-hint { display: block; } .ss.is-swiped .ss-hint { opacity: 0; } }
+
+  /* what synced what */
+  .ss-log {
+    align-self: center; display: inline-flex; align-items: center; gap: 8px; min-height: 18px; margin: 0; padding: 0 24px;
+    font: 500 12px/1.4 ui-monospace, "SFMono-Regular", Consolas, monospace; color: var(--fg2);
+    opacity: 0; transition: opacity 0.4s ease;
+  }
+  .ss-log.is-on { opacity: 1; transition-duration: 0.1s; }
+  .ss-log::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #1f8a4c; }
+  .ss-log[data-dir="strip"]::before { background: #d9603b; }
+</style>
+</head>
+<body>
+<main class="ss" aria-label="Case studies">
+  <header class="ss-head">
+    <p class="ss-kicker">Case studies<sup></sup></p>
+    <p class="ss-meta">Scroll the page or swipe the strip: both stay on one card</p>
+  </header>
+  <div class="ss-strip" role="list"></div>
+  <div class="ss-foot">
+    <div class="ss-count" aria-hidden="true"><span class="ss-now">01</span><span class="ss-of"></span></div>
+    <div class="ss-bars" aria-hidden="true">
+      <span>Strip</span><div class="ss-bar ss-bar--strip"><i></i></div>
+      <span>Page</span><div class="ss-bar ss-bar--page"><i></i></div>
+    </div>
+    <div class="ss-steps">
+      <button class="ss-step" type="button" data-d="-1" aria-label="Previous card"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg></button>
+      <button class="ss-step" type="button" data-d="1" aria-label="Next card"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg></button>
+    </div>
+    <p class="ss-hint" aria-hidden="true">Swipe sideways</p>
+  </div>
+  <p class="ss-log" aria-live="polite"></p>
+</main>
+<div class="ss-spacer"></div>
+<script type="module" src="app.js"></script>
+</body>
+</html>

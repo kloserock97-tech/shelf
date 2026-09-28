@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Retro Desktop Screen</title>
+<style>
+  html, body { height: 100%; margin: 0; background: transparent; overflow: hidden; }
+  #scene { position: fixed; inset: 0 0 56px; width: 100%; height: calc(100% - 56px); display: block; touch-action: none; outline: none; }
+  #scene:focus-visible { box-shadow: inset 0 0 0 2px #0a64d8; }
+  .hint { position: fixed; top: 14px; left: 0; right: 0; margin: 0; text-align: center; font: 13px/1.3 "Segoe UI", system-ui, sans-serif; color: CanvasText; opacity: .6; }
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"}}</script>
+</head>
+<body>
+<canvas id="scene" tabindex="0" aria-label="A retro computer screen with a home page. Scroll it with the wheel, a finger or Page Up and Page Down."></canvas>
+<p class="hint">Click the buttons, scroll the page</p>
+<script type="module" src="app.js"></script>
+</body>
+</html>

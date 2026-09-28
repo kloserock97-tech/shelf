@@ -1,0 +1,28 @@
+<!-- Every link points at a section heading id; nested links point at <details> deep dives inside that section. -->
+<button type="button" class="toc-capsule" aria-controls="toc-sheet" aria-haspopup="dialog" aria-expanded="false"
+        aria-label="Contents" data-offset="84" data-edge="150">
+  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M3 4.5h10M3 8h10M3 11.5h7"/></svg>
+  <span class="toc-now"><b>01</b><em>Contents</em></span>
+  <i class="toc-ring" aria-hidden="true"></i>
+</button>
+
+<div class="toc-sheet" id="toc-sheet" role="dialog" aria-modal="true" aria-label="Contents" hidden>
+  <div class="toc-panel">
+    <div class="toc-head"><b>Contents</b><button type="button" class="toc-close" aria-label="Close">×</button></div>
+    <ol class="toc-list">
+      <li><a href="#brief" data-n="01"><span>01</span><em>In brief</em></a></li>
+      <li><a href="#context" data-n="02"><span>02</span><em>Context</em></a></li>
+      <li>
+        <a href="#decisions" data-n="03"><span>03</span><em>Decisions</em></a>
+        <ol>
+          <li><a href="#dd-first">First deep dive</a></li>
+          <li><a href="#dd-second">Second deep dive</a></li>
+        </ol>
+      </li>
+      <li><a href="#outcome" data-n="04"><span>04</span><em>Outcome</em></a></li>
+    </ol>
+  </div>
+</div>
+
+<link rel="stylesheet" href="toc-capsule.css">
+<script src="toc-capsule.js" defer></script>

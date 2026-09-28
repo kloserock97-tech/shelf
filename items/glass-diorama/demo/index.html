@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Glass Diorama</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400..600&display=swap">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"}}</script>
+<style>
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  /* a dusk field instead of the live meadow: the scene adds light, so it needs a dark, warm background */
+  body {
+    background:
+      radial-gradient(60% 50% at 52% 46%, #4a3d24 0%, transparent 70%),
+      radial-gradient(120% 70% at 50% 115%, #3b4424 0%, transparent 60%),
+      linear-gradient(180deg, #1d1f17 0%, #14160f 60%, #10120b 100%);
+    background-color: #10120b;
+    font-family: "Onest", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  #scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  .replay {
+    position: fixed; left: 50%; bottom: 18px; translate: -50% 0; height: 36px; padding: 0 16px; border: 0; border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.85); font: 500 13px/1 inherit; font-family: inherit; cursor: pointer;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18); opacity: 0; transition: opacity 0.4s ease, background 0.2s ease;
+  }
+  .is-ready .replay { opacity: 1; }
+  .replay:hover { background: rgba(255, 255, 255, 0.18); }
+  .replay:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+</style>
+</head>
+<body>
+<canvas id="scene" aria-hidden="true"></canvas>
+<button class="replay" type="button">Replay entrance</button>
+<script type="module" src="app.js"></script>
+</body>
+</html>

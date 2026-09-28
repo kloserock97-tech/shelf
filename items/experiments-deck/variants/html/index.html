@@ -1,0 +1,34 @@
+<!-- Experiments deck. Every .deck-card carries its own text in .deck-body (hidden on the card);
+     the panel beside the deck shows the current one. data-step: screens of scroll per card (0.7 by default),
+     data-lead: screens for the cards to rise in before the fan starts (0 = the deck is there from the start). -->
+<section class="deck" aria-label="Side projects">
+  <div class="deck-stage">
+    <header class="deck-head"><h2 class="deck-title">WebGL experiments</h2></header>
+    <div class="deck-cards" role="list">
+      <article class="deck-card" role="listitem">
+        <span class="deck-media"><img src="windcrest.webp" alt="A hill of grass bent by the wind" loading="lazy" decoding="async"></span>
+        <div class="deck-body">
+          <p class="deck-label">Side project 01</p>
+          <h3 class="deck-name">Windcrest</h3>
+          <ul class="deck-points">
+            <li>380,000 real blades of grass drawn with one command.</li>
+            <li>Wind comes in gusts, grass grows in tufts.</li>
+          </ul>
+          <p class="deck-links"><a href="https://example.com/demo" target="_blank" rel="noopener">Open the live demo ↗</a><a href="https://example.com/repo" target="_blank" rel="noopener">Source ↗</a></p>
+        </div>
+      </article>
+      <!-- …one article per project -->
+    </div>
+    <aside class="deck-info" aria-live="polite"></aside>
+    <div class="deck-pager">
+      <div class="deck-count" aria-hidden="true"><span class="deck-now">01</span><span class="deck-of"></span></div>
+      <div class="deck-steps">
+        <button type="button" class="deck-step" data-d="-1" aria-label="Previous project"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg></button>
+        <button type="button" class="deck-step deck-step--next" data-d="1" aria-label="Next project"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7"/></svg></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<link rel="stylesheet" href="experiments-deck.css">
+<script src="experiments-deck.js" defer></script>

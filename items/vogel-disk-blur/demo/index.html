@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Vogel Disk Blur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="hud.css">
+<style>
+  html, body { height: 100%; margin: 0; background: #14151c; overflow: hidden; }
+  #stage { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  #fallback[hidden] { display: none; }
+  #fallback { position: fixed; inset: 0; display: grid; place-items: center; font: 500 14px/20px Onest, system-ui, sans-serif; color: #f5f5f7; }
+  .split { position: fixed; top: 0; bottom: 0; width: 44px; margin-left: -22px; cursor: ew-resize; touch-action: none; outline: none; z-index: 1; }
+  .split::before { content: ""; position: absolute; left: 21.5px; top: 0; bottom: 0; width: 1px; background: rgba(255, 255, 255, 0.7); }
+  .split::after { content: ""; position: absolute; left: 12px; top: 50%; width: 20px; height: 20px; margin-top: -10px; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4); }
+  .split:focus-visible::after { box-shadow: 0 0 0 2px #14151c, 0 0 0 4px #2997ff; }
+  .split span { position: absolute; top: 64px; font: 600 12px/16px Onest, system-ui, sans-serif; color: #fff; white-space: nowrap; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6); }
+  .split span:first-child { right: 34px; }
+  .split span:last-child { left: 34px; }
+</style>
+</head>
+<body>
+<canvas id="stage" aria-label="A dusk meadow with bright flowers and fireflies, blurred two ways side by side."></canvas>
+<p id="fallback" hidden>This demo needs WebGL2.</p>
+<div class="split" id="split" role="slider" tabindex="0" aria-label="Divider between the two versions" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"><span>Two rings</span><span>Vogel disk</span></div>
+<aside class="hud" aria-label="Controls">
+  <button class="hud__head" type="button" aria-expanded="true">Disk blur
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+  </button>
+  <div class="hud__body">
+    <label class="hud__row"><span>Radius</span><input type="range" name="radius" min="0" max="0.06" step="0.001" value="0.03"><output></output></label>
+    <label class="hud__row"><span>Samples</span><input type="range" name="samples" min="4" max="64" step="1" value="16"><output></output></label>
+    <div class="hud__row" style="grid-template-columns: 70px 1fr"><span>Noise</span>
+      <div class="seg" role="group" aria-label="Per-pixel rotation" data-name="noise">
+        <button type="button" value="on" aria-pressed="true">On</button>
+        <button type="button" value="off" aria-pressed="false">Off</button>
+      </div>
+    </div>
+    <div class="hud__row" style="grid-template-columns: 70px 1fr"><span>Buffer</span>
+      <div class="seg" role="group" aria-label="Blur resolution" data-name="buffer">
+        <button type="button" value="quarter" aria-pressed="true">¼</button>
+        <button type="button" value="half" aria-pressed="false">½</button>
+      </div>
+    </div>
+    <p class="hud__hint">Drag the divider. On the left each flower spreads into a ring, on the right into a soft disk.</p>
+  </div>
+</aside>
+<script src="hud.js"></script>
+<script src="../variants/js/vogel-blur.js"></script>
+<script src="scene.js"></script>
+</body>
+</html>

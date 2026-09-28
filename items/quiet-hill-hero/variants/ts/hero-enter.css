@@ -1,0 +1,79 @@
+/* Вход интерфейса первого экрана — фрагмент src/ui/hill-ui.css портфолио (строки «показ сцены и вход интерфейса»).
+   Классы is-ready и intro-done ставит heroUi.ts (ready()). */
+/* ── показ сцены и вход интерфейса ────────────────────────────────────
+   Сцена не ждёт интерфейс: канвас проявляется, как только выбрано качество.
+   Вход элементов — по принципам Emil Kowalski (animations.dev):
+   · ease-out с резким стартом cubic-bezier(.23, 1, .32, 1) — движение сразу
+     отвечает и долго, мягко садится;
+   · короткие дистанции (8–22 px) и масштаб от 0.96, а не от нуля;
+   · лёгкий blur, который растворяется быстрее движения — «фокусировка»;
+   · каскад с шагом ~50–70 мс, а не одновременное появление;
+   · при prefers-reduced-motion — только прозрачность.
+   Сдвиг и масштаб — через свойства translate/scale, чтобы не спорить
+   с transform параллакса. */
+:root { --ease-enter: cubic-bezier(0.23, 1, 0.32, 1); }
+
+/* Канвас никогда не прячем через opacity: Chrome на гибридной графике (RTX + Intel)
+   не выводит невидимый WebGL-канвас, кадры встают в очередь, и калибровка качества
+   замирала. Вместо этого поверх лежит заливка цвета неба и растворяется. */
+#scene, .js #scene, .is-ready #scene { opacity: 1 !important; transition: none; }
+.scene-cover {
+  position: fixed; inset: 0; z-index: 3; pointer-events: none;
+  background: linear-gradient(180deg, #d9dcd6 0%, #efe9dc 45%, #f1d9ab 70%, #e8e3d3 100%);
+  transition: opacity 0.8s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+.scene-ready .scene-cover { opacity: 0; }
+
+.js .rise,
+.js .rise-round {
+  clip-path: none !important;
+  opacity: 0;
+  translate: 0 14px;
+  filter: blur(6px);
+}
+.js .card.rise { translate: 0 22px; scale: 0.96; }
+.js .rise-round { translate: 0 0; scale: 0.9; }
+.js .rise-fade { opacity: 0; }
+.is-ready .rise-fade { opacity: 1; transition: opacity 1.2s var(--ease-enter) var(--d, 0ms); }
+.is-ready .rise,
+.is-ready .rise-round,
+.is-ready .card.rise {
+  opacity: 1;
+  translate: 0 0;
+  scale: 1;
+  filter: blur(0);
+  transition:
+    opacity 0.45s var(--ease-enter) calc(var(--d, 0ms) * 0.6),
+    translate 0.8s var(--ease-enter) calc(var(--d, 0ms) * 0.6),
+    scale 0.8s var(--ease-enter) calc(var(--d, 0ms) * 0.6),
+    filter 0.5s var(--ease-enter) calc(var(--d, 0ms) * 0.6);
+}
+
+.js .dock-item { clip-path: none !important; opacity: 0; translate: 0 -8px; filter: blur(4px); }
+.is-ready .dock-item {
+  opacity: 1;
+  translate: 0 0;
+  filter: blur(0);
+  transition:
+    opacity 0.4s var(--ease-enter) calc(var(--d, 0ms) * 0.5),
+    translate 0.6s var(--ease-enter) calc(var(--d, 0ms) * 0.5),
+    filter 0.4s var(--ease-enter) calc(var(--d, 0ms) * 0.5),
+    color 0.18s var(--ease), border-color 0.2s var(--ease), background 0.2s var(--ease);
+}
+
+.js .headline span i { opacity: 0; transform: translateY(calc(16 * var(--u))); filter: blur(8px); }
+.is-ready .headline span i {
+  opacity: 1; transform: none; filter: blur(0);
+  transition:
+    opacity 0.7s var(--ease-enter) calc(var(--d, 0ms) * 0.6),
+    transform 0.9s var(--ease-enter) calc(var(--d, 0ms) * 0.6),
+    filter 0.6s var(--ease-enter) calc(var(--d, 0ms) * 0.6);
+}
+
+/* после входа blur снимаем совсем — фильтр на карточках стоил бы кадров при параллаксе */
+.intro-done .rise, .intro-done .rise-round, .intro-done .dock-item, .intro-done .headline span i { filter: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .js .rise, .js .rise-round, .js .card.rise, .js .dock-item { translate: none; scale: none; filter: none; }
+  .js .headline span i { filter: none; }
+}

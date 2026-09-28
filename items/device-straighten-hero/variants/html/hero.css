@@ -1,0 +1,88 @@
+/* Device-straighten hero: a real product screen in a device, turned in perspective. The turn melts away
+   while the hero scrolls off (--hs 0…1), and the device and the object drift apart after the mouse
+   (--px, --py −1…1): a "camera" without WebGL. The stage cuts the device at its right and bottom edge.
+   Ported from Portfolio 3D TS2 v64: src/ui/caseHero.css (removed in v74), src/ui/case-story.css (.cs-hero). */
+
+.hero {
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --tile: #fff; --tile-ink: #1d1d1f; --tile-soft: #86868b;  /* fact tiles under the stage */
+  display: grid; gap: clamp(20px, 3vh, 32px);
+}
+.hero-stage {
+  --s1: #f1eef9; --s2: #dbd3ee;                              /* stage in the product's colour */
+  --ink: #1d1d1f; --soft: color-mix(in srgb, #1d1d1f 62%, transparent); --accent: #6b55c9;
+  position: relative; display: grid; grid-template-columns: minmax(0, 0.86fr) minmax(0, 1fr); gap: clamp(16px, 3vw, 48px);
+  min-height: clamp(460px, 68svh, 680px); padding: clamp(28px, 4vw, 64px); padding-right: 0;
+  border-radius: 32px; overflow: hidden; isolation: isolate; background: linear-gradient(180deg, var(--s1), var(--s2));
+}
+/* soft light from the top left: the stage isn't flat */
+.hero-stage::before { content: ""; position: absolute; inset: 0; z-index: -1; background: radial-gradient(60% 70% at 18% 8%, rgba(255, 255, 255, 0.75), transparent 70%); }
+.hero-text { position: relative; z-index: 2; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+.hero-kicker { margin: 0; font-size: clamp(14px, 1.15vw, 17px); font-weight: 600; color: var(--accent); }
+.hero-text h1 { margin: 16px 0 0; font-size: clamp(40px, 5.4vw, 84px); font-weight: 700; line-height: 1.02; letter-spacing: -0.028em; color: var(--ink); text-wrap: balance; }
+.hero-tagline { margin: clamp(16px, 2.4vh, 26px) 0 0; max-width: 22em; font-size: clamp(18px, 1.6vw, 24px); font-weight: 500; line-height: 1.36; letter-spacing: -0.005em; color: var(--soft); text-wrap: pretty; }
+
+/* the art column; the stage does the cutting, the art itself clips nothing */
+.hero-art { position: relative; align-self: stretch; min-width: 0; min-height: 0; margin: 0; container-type: size; }
+
+/* browser window */
+.hero-device {
+  position: absolute; left: 6%; top: 12%; width: 118%;
+  border-radius: 1.6cqw; overflow: hidden; background: #fff;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 10%, transparent), 0 5cqw 9cqw color-mix(in srgb, var(--ink) 30%, transparent);
+  transform-origin: 0% 60%;
+  transform: perspective(1800px) translate3d(calc(var(--px, 0) * -0.8cqw), calc(var(--py, 0) * -0.6cqw), 0)
+    rotateY(calc(-15deg + var(--hs, 0) * 11deg)) rotateX(calc(5deg - var(--hs, 0) * 4deg)) rotateZ(calc(1.2deg - var(--hs, 0) * 1.2deg));
+  transition: transform 0.9s var(--ease);
+  animation: hero-in 1.4s var(--ease) both;
+}
+.hero-bar { display: flex; align-items: center; gap: 0.75cqw; height: 3.4cqw; padding: 0 1.5cqw; background: color-mix(in srgb, var(--ink) 6%, #fff); border-bottom: 1px solid color-mix(in srgb, var(--ink) 8%, transparent); }
+.hero-bar i { width: 1cqw; height: 1cqw; border-radius: 50%; background: color-mix(in srgb, var(--ink) 20%, transparent); }
+.hero-screen { display: block; width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
+
+/* phone: stands almost upright, cut by the bottom of the stage */
+.hero-art--phone .hero-device {
+  left: auto; right: 12%; top: 8%; width: auto; height: 118%; aspect-ratio: 402 / 874;
+  border-radius: 5.6cqw; border: 0.9cqw solid #12161c; background: #12161c; transform-origin: 50% 70%;
+  transform: perspective(1800px) translate3d(calc(var(--px, 0) * -0.8cqw), calc(var(--py, 0) * -0.6cqw), 0)
+    rotateY(calc(-16deg + var(--hs, 0) * 12deg)) rotateX(calc(6deg - var(--hs, 0) * 5deg)) rotateZ(calc(5deg - var(--hs, 0) * 4deg));
+}
+.hero-art--phone .hero-screen { width: 100%; height: 100%; object-fit: cover; object-position: top; border-radius: 4.6cqw; }
+
+/* the object: in front of the device, bottom left; floats, rises with the scroll and follows the mouse further */
+.hero-obj {
+  position: absolute; left: -17%; bottom: -12%; width: 56%; aspect-ratio: var(--oar, 1.2); display: block; pointer-events: none;
+  translate: calc(var(--px, 0) * 1.6cqw) calc(var(--py, 0) * 1.2cqw + var(--hs, 0) * -4cqw);
+  transition: translate 0.9s var(--ease);
+  filter: drop-shadow(0 3cqw 4cqw color-mix(in srgb, var(--ink) 30%, transparent));
+}
+.hero-obj img { display: block; width: 100%; height: 100%; animation: hero-float 9s ease-in-out infinite; }
+.hero-art--phone .hero-obj { left: -2%; bottom: -4%; width: 62%; }
+.hero-art.is-paused .hero-obj img { animation-play-state: paused; }
+
+@keyframes hero-in { from { opacity: 0; transform: perspective(1800px) translate3d(6cqw, 5cqw, 0) rotateY(-26deg) rotateX(9deg) rotateZ(2deg); } }
+@keyframes hero-float { 50% { translate: 0 -1.4cqw; rotate: 1deg; } }
+
+/* facts under the stage: they are part of the hero, so its height (and the straightening run) includes them */
+.hero-facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 0; }
+.hero-facts div { display: grid; gap: 3px; align-content: start; padding: 18px 20px; border-radius: 20px; background: var(--tile); }
+.hero-facts dt { font-size: 14px; font-weight: 500; color: var(--tile-soft); }
+.hero-facts dd { margin: 0; font-size: 16px; font-weight: 500; line-height: 1.35; color: var(--tile-ink); }
+
+@media (max-width: 1100px) {
+  .hero-stage { grid-template-columns: 1fr; padding-right: clamp(28px, 4vw, 64px); padding-bottom: 0; min-height: 0; }
+  .hero-art { height: clamp(260px, 52vw, 460px); margin-right: calc(clamp(28px, 4vw, 64px) * -1); }
+  .hero-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .hero-stage { border-radius: 26px; padding: 26px 22px 0; }
+  .hero-art { margin-right: -22px; }
+  .hero-facts { gap: 8px; }
+  .hero-facts div { padding: 14px 16px; border-radius: 18px; }
+  .hero-facts dd { font-size: 15px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-device, .hero-art--phone .hero-device { animation: none; transition: none; transform: perspective(1800px) rotateY(-8deg) rotateX(3deg); }
+  .hero-obj { transition: none; translate: none; }
+  .hero-obj img { animation: none; }
+}

@@ -1,0 +1,92 @@
+/* Object card — the Apple "Get to know" layout: a tall tile, radius 28, no borders; a tag and a title on top,
+   one large object without a background below, cut by the edge; a round button bottom right.
+   The scene is light and takes the card's own colours (--s1 → --s2), and so do the ink and the accent.
+   Light on purpose: the objects are cut from light covers, and semi-transparent glass reads clean on a light
+   scene but gets a halo on a dark one.
+
+   Every size inside is a share of the card width (cqw): the card may be 220 or 400 px wide, and the composition
+   "text on top, object below" has to stay the same. */
+.case {
+  --w: 300px;
+  --case-shadow: 0 30px 60px rgba(0, 0, 0, 0.34);
+  position: relative; display: block; width: var(--w); aspect-ratio: 0.7; flex: none;
+  border-radius: 28px; overflow: hidden; isolation: isolate; container-type: size;
+  background: linear-gradient(180deg, var(--s1, #f1f1ee), var(--s2, #dcdcd6)); color: var(--ink, #1d1d1f); text-decoration: none;
+  /* Apple has no shadows, but there the tile sits on a flat page; over a live scene a soft shadow separates it */
+  box-shadow: var(--case-shadow);
+  -webkit-tap-highlight-color: transparent;
+}
+/* light under the cursor: it lies on the scene, under the object */
+.case::after {
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; transition: opacity 0.5s ease;
+  background: radial-gradient(70cqw circle at var(--mx, 50%) var(--my, 40%), rgba(255, 255, 255, 0.55), transparent 62%);
+}
+.case:hover::after { opacity: 1; }
+
+.case-text { position: absolute; z-index: 3; inset: 7.4cqw 7.4cqw auto; display: flex; flex-direction: column; }
+.case-tag {
+  font-size: clamp(11px, 3.7cqw, 14px); font-weight: 600; line-height: 1.2; letter-spacing: 0.01em; color: var(--accent);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums;
+}
+.case-title {
+  margin-top: 2.4cqw; font-size: clamp(20px, 8.2cqw, 32px); font-weight: 600; line-height: 1.1; letter-spacing: -0.018em;
+  text-wrap: balance;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; padding-bottom: 0.08em;
+}
+.case-sub {
+  margin-top: 2.6cqw; font-size: clamp(12.5px, 4.15cqw, 16px); font-weight: 400; line-height: 1.38;
+  color: color-mix(in srgb, var(--ink) 66%, transparent); text-wrap: pretty;
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden;
+}
+
+/* The object. left/bottom/width are shares of the card, set per card. It is "lifted" above the card: it shifts with
+   the card's turn in a row (--tilt, −1…1) and with the cursor (--px, --py). Real depth through preserve-3d is not
+   possible here: overflow: hidden on the card flattens nested layers. */
+.case-obj {
+  position: absolute; z-index: 2; left: var(--ox, -8%); bottom: var(--oy, -4%); width: var(--ow, 120%); aspect-ratio: var(--oar, 1.2);
+  display: block; pointer-events: none;
+  translate: calc(var(--tilt, 0) * 5.5cqw + var(--px, 0) * 1.8cqw) calc(var(--py, 0) * 1.4cqw);
+  transform-origin: 50% 80%;
+  transition: translate 0.7s cubic-bezier(0.2, 0.8, 0.2, 1), scale 0.9s cubic-bezier(0.2, 0.8, 0.2, 1), rotate 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+  filter: drop-shadow(0 7cqw 7cqw color-mix(in srgb, var(--ink) 26%, transparent));
+}
+.case-obj img { display: block; width: 100%; height: 100%; user-select: none; -webkit-user-drag: none; }
+.case:hover .case-obj, .case:focus-visible .case-obj { scale: 1.045; rotate: -1.2deg; }
+
+/* the button: a circle with an arrow; on the active card and under the cursor it opens into "View case" */
+.case-go {
+  position: absolute; z-index: 4; right: 5.2cqw; bottom: 5.2cqw;
+  display: inline-grid; grid-template-columns: 0fr auto; align-items: center;
+  height: clamp(34px, 11.4cqw, 44px); border-radius: 999px; background: var(--ink); color: #fff;
+  transition: grid-template-columns 0.55s cubic-bezier(0.2, 0.8, 0.2, 1), background 0.3s ease;
+}
+.case-cta-l {
+  min-width: 0; overflow: hidden; white-space: nowrap; font-size: clamp(12px, 3.9cqw, 14.5px); font-weight: 500; line-height: 1;
+  padding-left: 0; opacity: 0; transition: opacity 0.3s ease, padding 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.case-go svg {
+  width: clamp(34px, 11.4cqw, 44px); height: clamp(34px, 11.4cqw, 44px); padding: 27%; box-sizing: border-box;
+  fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+  transition: rotate 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.case.is-active .case-go, .case:hover .case-go, .case:focus-visible .case-go { grid-template-columns: 1fr auto; }
+.case.is-active .case-cta-l, .case:hover .case-cta-l, .case:focus-visible .case-cta-l { opacity: 1; padding-left: 4.6cqw; }
+.case:hover .case-go svg { rotate: 45deg; }
+.case:focus-visible { outline: 2px solid var(--focus, currentColor); outline-offset: 4px; }
+
+/* a card on its side (a phone in landscape): text on the left, object on the right */
+@container (min-aspect-ratio: 1.2) {
+  .case-text { inset: 5cqw auto auto 5cqw; width: 48cqw; }
+  .case-tag { font-size: clamp(11px, 2.4cqw, 14px); }
+  .case-title { margin-top: 1.4cqw; font-size: clamp(20px, 5cqw, 30px); }
+  .case-sub { margin-top: 1.6cqw; font-size: clamp(12.5px, 2.7cqw, 15px); }
+  .case-obj { left: auto; right: -4%; bottom: -10%; width: 56%; filter: drop-shadow(0 3cqw 3cqw color-mix(in srgb, var(--ink) 26%, transparent)); }
+  .case-go { right: 3cqw; bottom: 3cqw; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .case-obj { translate: none; transition: none; }
+  .case:hover .case-obj, .case:focus-visible .case-obj { scale: 1; rotate: none; }
+  .case-go, .case-cta-l, .case-go svg { transition: none; }
+  .case:hover .case-go svg { rotate: none; }
+}

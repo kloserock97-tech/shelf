@@ -1,9 +1,10 @@
 // Takes a poster (4:3 WebP) of an item's demo in real Chrome with the GPU on:
-//   npm run capture -- <slug> [--wait 2500] [--url https://...] [--size 1200x900]
+//   npm run capture -- <slug> [--wait 2500] [--url https://...] [--size 1200x900] [--query "?lang=en"]
 // Headless Chromium's default renderer is SwiftShader (CPU); WebGL scenes need ANGLE on the GPU.
+// Local demos are served over http from a throwaway server: Chrome does not load ES modules from file://.
 import fs from 'node:fs';
+import http from 'node:http';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright-core';
 import { readItems } from './lib/items.mjs';
 
@@ -19,7 +20,22 @@ if (!item) {
   process.exit(1);
 }
 const d = item.data;
-const target = flag('url', d.demo?.url ?? (d.demo?.path ? pathToFileURL(path.join(item.dir, d.demo.path)).href : null));
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json',
+  '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.avif': 'image/avif', '.mp4': 'video/mp4',
+  '.webm': 'video/webm', '.mp3': 'audio/mpeg', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.glb': 'model/gltf-binary' };
+let server = null;
+async function serveItem() {
+  const root = item.dir;
+  server = http.createServer((req, res) => {
+    const file = path.join(root, decodeURIComponent(new URL(req.url, 'http://x').pathname));
+    if (!file.startsWith(root) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) { res.writeHead(404); return res.end(); }
+    res.writeHead(200, { 'Content-Type': TYPES[path.extname(file).toLowerCase()] ?? 'application/octet-stream' });
+    fs.createReadStream(file).pipe(res);
+  });
+  await new Promise((ok) => server.listen(0, '127.0.0.1', ok));
+  return `http://127.0.0.1:${server.address().port}/${d.demo.path.replaceAll('\\', '/')}${flag('query', '')}`;
+}
+const target = flag('url', null) ?? d.demo?.url ?? (d.demo?.path ? await serveItem() : null);
 if (!target) {
   console.error(`${slug} has no demo to capture`);
   process.exit(1);
@@ -60,6 +76,7 @@ const webp = await page.evaluate(async (b64) => {
   return c.toDataURL('image/webp', 0.86).split(',')[1];
 }, png.toString('base64'));
 await browser.close();
+server?.close();
 
 const file = path.join(item.dir, 'poster.webp');
 fs.writeFileSync(file, Buffer.from(webp, 'base64'));

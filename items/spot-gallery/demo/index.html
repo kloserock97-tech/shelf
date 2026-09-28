@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Spot Gallery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400..700&display=swap">
+<link rel="stylesheet" href="../variants/html/spot-gallery.css">
+<style>
+  :root { color-scheme: light dark; }
+  html, body { margin: 0; background: transparent; }
+  body { font: 400 16px/1.5 "Onest", Arial, sans-serif; font-feature-settings: "ss01" on; -webkit-font-smoothing: antialiased; }
+  main { box-sizing: border-box; max-width: 1240px; margin: 0 auto; padding: clamp(20px, 4vw, 48px) clamp(16px, 3.4vw, 48px) 80px; }
+</style>
+</head>
+<body>
+<main>
+  <figure class="spot">
+    <h3 class="spot-title">Overview: four numbers, one chart, one list</h3>
+    <div class="spot-layout">
+      <div class="spot-fig">
+        <div class="spot-stage" style="--ar: 1.6">
+          <div class="spot-img">
+            <img src="screens/overview.svg" alt="Overview of a team planner: filters, four numbers, a chart of planned and done tasks, team load and the next tasks" width="1440" height="900" draggable="false">
+            <button type="button" class="spot-dot" style="--x: 30; --y: 14" data-spot="1" aria-label="Point 1: Filters sit in one row above the numbers"><span>1</span><em>Filters sit in one row above the numbers</em></button>
+            <button type="button" class="spot-dot" style="--x: 66.7; --y: 24.2" data-spot="2" aria-label="Point 2: Overdue is a number of its own"><span>2</span><em>Overdue is a number of its own, in red</em></button>
+            <button type="button" class="spot-dot" style="--x: 60.8; --y: 45.7" data-spot="3" aria-label="Point 3: Planned and done on one axis"><span>3</span><em>Planned and done on one axis</em></button>
+            <button type="button" class="spot-dot" style="--x: 75.3; --y: 77.3" data-spot="4" aria-label="Point 4: Late tasks rise to the top"><span>4</span><em>Late tasks rise to the top and say by how much</em></button>
+          </div>
+        </div>
+        <figcaption>Overview after the redesign: a made-up team planner.</figcaption>
+      </div>
+      <ol class="spot-cards">
+        <li class="spot-card" data-spot="1"><button type="button"><i>1</i><b>Filters in one row</b><span>Status, owner and date sit above the numbers. Nobody opens a panel to narrow the page.</span></button></li>
+        <li class="spot-card" data-spot="2"><button type="button"><i>2</i><b>Late work can't hide</b><span>Overdue gets its own number, next to the three figures people check every morning.</span></button></li>
+        <li class="spot-card" data-spot="3"><button type="button"><i>3</i><b>One chart instead of three</b><span>Planned and done share an axis, so the gap between the lines is the story.</span></button></li>
+        <li class="spot-card" data-spot="4"><button type="button"><i>4</i><b>The list sorts itself</b><span>Late tasks move to the top of Up next and say how late they are.</span></button></li>
+      </ol>
+    </div>
+  </figure>
+</main>
+<script src="../variants/html/spot-gallery.js"></script>
+</body>
+</html>

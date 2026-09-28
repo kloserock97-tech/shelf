@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Weather Particles</title>
+<style>
+  html, body { height: 100%; margin: 0; background: #d9d4c4; overflow: hidden; }
+  #scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  .bar {
+    position: fixed; top: 14px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; padding: 4px;
+    border-radius: 999px; background: #f6f3eacc; box-shadow: 0 6px 20px #0000002e, inset 0 0 0 1px #ffffff80;
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); font: 500 13px/1 "Segoe UI", system-ui, sans-serif;
+  }
+  .bar button { font: inherit; color: #2a2a26; padding: 8px 13px; border: 0; border-radius: 999px; background: transparent; cursor: pointer; }
+  .bar button[aria-pressed="true"] { background: #2a2a26; color: #f6f3ea; }
+  .bar .sep { width: 1px; margin: 6px 2px; background: #2a2a2633; }
+  .bar button:focus-visible { outline: 2px solid #0a64d8; outline-offset: 2px; }
+  @media (max-width: 420px) { .bar button { padding: 8px 9px; } }
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"}}</script>
+</head>
+<body>
+<canvas id="scene" aria-label="A meadow on a hill under changing weather"></canvas>
+<div class="bar" role="group" aria-label="Weather">
+  <button type="button" data-weather="clear">Clear</button>
+  <button type="button" data-weather="cloudy">Cloudy</button>
+  <button type="button" data-weather="rain">Rain</button>
+  <button type="button" data-weather="dusk">Dusk</button>
+  <span class="sep"></span>
+  <button type="button" id="gust">Gust</button>
+</div>
+<script type="module" src="app.js"></script>
+</body>
+</html>

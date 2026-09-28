@@ -1,0 +1,20 @@
+<!-- The root gets --px/--py from the script; each .cp-layer moves by its own --pd (px at the window edge). -->
+<div class="hero" data-cursor-parallax>
+  <h1 class="cp-layer" style="--pd:18">Layers drift with the cursor</h1>
+  <p class="cp-layer" style="--pd:14">Every layer moves by its own depth.</p>
+
+  <!-- the card: shifts by its depth, leans towards the cursor, floats; its picture slides the other way -->
+  <div class="cp-layer" style="--pd:22">
+    <figure class="card cp-tilt cp-float" style="--tilt:2.9deg">
+      <div class="cp-window" style="aspect-ratio: 4 / 3; border-radius: 16px">
+        <div class="cp-window__media"><img src="photo.jpg" alt=""></div>
+      </div>
+      <figcaption>Quiet hill</figcaption>
+    </figure>
+  </div>
+
+  <button class="cp-layer" style="--pd:20" type="button">Play</button>
+</div>
+
+<link rel="stylesheet" href="cursor-parallax.css">
+<script src="cursor-parallax.js" defer></script>

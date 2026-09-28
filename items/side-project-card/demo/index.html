@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Side Project Card</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@300..600&display=swap">
+<link rel="stylesheet" href="../variants/html/side-project-card.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  /* the closed card sits in the middle and grows down; near the bottom it rises by itself */
+  body {
+    min-height: 100vh; box-sizing: border-box; display: flex; justify-content: center; align-items: flex-start;
+    padding: max(20px, calc(50vh - 136px)) 16px 24px; font-family: "Onest", system-ui, sans-serif; font-weight: 300;
+  }
+</style>
+</head>
+<body>
+<article class="note-card" aria-roledescription="carousel" aria-label="Side projects">
+  <figure class="note-hero">
+    <span class="note-media">
+      <img data-note-img src="media/card-windcrest.webp" alt="" decoding="async">
+      <video data-note-video muted loop playsinline preload="none" aria-hidden="true" tabindex="-1"></video>
+    </span>
+    <div class="note-deck" role="group" aria-label="Pages">
+      <button class="note-deck__btn" type="button" data-step="-1" aria-label="Previous project">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5 5.5 8l4.5 4.5"/></svg>
+      </button>
+      <span class="note-deck__count" aria-live="polite"><b>01</b>/04</span>
+      <button class="note-deck__btn" type="button" data-step="1" aria-label="Next project">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5 10.5 8 6 12.5"/></svg>
+      </button>
+    </div>
+    <figcaption class="note-cap">
+      <span class="note-cap__text">
+        <h2 class="note-cap__title"><a class="note-cap__link" data-note-demo target="_blank" rel="noopener"><span data-note-title>Windcrest</span></a></h2>
+        <span class="note-cap__label" data-note-label>Side project 01</span>
+      </span>
+      <span class="note-cap__go" aria-hidden="true"><svg viewBox="0 0 12 12"><path d="M3 9 9 3"/><path d="M4.2 3H9v4.8"/></svg></span>
+    </figcaption>
+  </figure>
+  <div class="note-more" id="note-more" aria-hidden="true">
+    <div class="note-more__in">
+      <div class="note-head">
+        <div class="note-head__text">
+          <h3 class="note-kind" data-note-kind></h3>
+          <p class="note-meta" data-note-meta></p>
+        </div>
+        <span class="note-glyph" data-note-glyph aria-hidden="true"></span>
+      </div>
+      <dl class="note-stats" data-note-stats></dl>
+      <div class="note-body" data-note-points></div>
+      <p class="note-links" data-note-links hidden></p>
+    </div>
+  </div>
+  <button class="note-knob" type="button" aria-expanded="false" aria-controls="note-more" aria-label="Open note">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4.5 7.5 10 13l5.5-5.5"/></svg>
+  </button>
+</article>
+<script src="../variants/html/projects.js"></script>
+<script src="../variants/html/side-project-card.js"></script>
+<script>initProjectCard(document.querySelector('.note-card'), window.SIDE_PROJECTS);</script>
+</body>
+</html>

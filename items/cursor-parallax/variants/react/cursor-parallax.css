@@ -1,0 +1,39 @@
+/* Cursor parallax.
+   The script writes --px and --py (−1…1) on the root, smoothed towards the cursor. Everything else is CSS:
+   · .cp-layer   — moves by its own depth --pd (px at the edge of the window), vertically at 0.6 of that.
+                   Only a shift, no turn: a flat collage whose layers lie at different heights.
+   · .cp-window  — a frame whose picture slides the other way, like a view through a window.
+   · .cp-tilt    — a card that leans towards the cursor: the side nearest to it sinks. --tilt is the lean at the edge
+                   of the window; the default 2.9deg is the 0.05 rad of the loader slab on the portfolio.
+   · .cp-float   — a slow float, so a still card still breathes.
+   The root gets .cp-on only when motion is allowed. */
+
+.cp-on .cp-layer {
+  transform: translate3d(calc(var(--px, 0) * var(--pd, 0) * -1px), calc(var(--py, 0) * var(--pd, 0) * -0.6px), 0);
+}
+
+.cp-window { position: relative; overflow: hidden; }
+.cp-window__media { position: absolute; inset: -8px; }
+.cp-on .cp-window__media { transform: translate3d(calc(var(--px, 0) * -8px), calc(var(--py, 0) * -5px), 0); }
+.cp-window__media > img,
+.cp-window__media > svg {
+  display: block; width: 100%; height: 100%; object-fit: cover;
+  scale: 1.06; transition: scale 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.cp-window:hover .cp-window__media > img,
+.cp-window:hover .cp-window__media > svg { scale: 1.11; }
+
+.cp-on .cp-tilt {
+  transform: perspective(900px) rotateX(calc(var(--py, 0) * -1 * var(--tilt, 2.9deg))) rotateY(calc(var(--px, 0) * var(--tilt, 2.9deg)));
+}
+.cp-on .cp-float { animation: cp-float 7s ease-in-out infinite; }
+@keyframes cp-float {
+  0%, 100% { translate: 0 0; rotate: 0deg; }
+  50% { translate: 0 -5px; rotate: 0.35deg; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cp-layer, .cp-window__media, .cp-tilt { transform: none !important; }
+  .cp-float { animation: none !important; }
+  .cp-window__media > img, .cp-window__media > svg { scale: 1 !important; transition: none !important; }
+}

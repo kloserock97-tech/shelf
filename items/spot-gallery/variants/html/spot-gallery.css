@@ -1,0 +1,94 @@
+/* Spot gallery: one screen with numbered points, each tied to a decision card.
+   Ported from Portfolio 3D TS2 (src/ui/case-story.css: .cs-stage, .cs-spot-*). Colours follow the page's color-scheme
+   through light-dark(); the dots and hints sit on the screenshot, so they stay dark in both schemes (--spot-dot). */
+.spot {
+  --spot-ink: light-dark(#1d1d1f, #f5f5f7);
+  --spot-soft: color-mix(in srgb, var(--spot-ink) 62%, transparent);
+  --spot-accent: var(--spot-ink);
+  --spot-tile: light-dark(#fff, #232326);
+  --spot-s1: light-dark(#f0f0f3, #2b2b2f);
+  --spot-s2: light-dark(#e2e2e7, #1e1e21);
+  --spot-shade: light-dark(#1d1d1f, #000);
+  --spot-dot: #1d1d1f;
+  --spot-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* the stage always fits the window: never taller than --stage-h, never wider than its column */
+  --stage-h: clamp(340px, calc(100svh - 230px), 780px);
+  --stage-pad: clamp(16px, 2.6vw, 44px);
+  margin: 0; color: var(--spot-ink);
+}
+.spot-title { margin: 0 0 16px; max-width: 26em; font-size: clamp(22px, 1.9vw, 28px); font-weight: 600; line-height: 1.2; letter-spacing: -0.012em; }
+.spot-layout { display: grid; gap: 18px; }
+@media (min-width: 900px) { .spot-layout { grid-template-columns: minmax(0, 1fr) minmax(250px, 320px); gap: 24px; align-items: center; } }
+.spot-fig { container-type: inline-size; min-width: 0; }
+.spot-stage {
+  position: relative; display: grid; place-items: center; width: 100%; border-radius: 28px;
+  height: min(var(--stage-h), calc((100cqw - 2 * var(--stage-pad)) / var(--ar, 1.6) + 2 * var(--stage-pad)));
+  background: linear-gradient(180deg, var(--spot-s1), var(--spot-s2));
+}
+/* the points live on the screen itself, so the wrapper takes the screen's size — computed, not a percentage:
+   a percentage of the stage breaks while the image is still loading */
+.spot-img {
+  position: relative; width: auto; min-width: 0; aspect-ratio: var(--ar, 1.6);
+  height: min(calc(var(--stage-h) - 2 * var(--stage-pad)), calc((100cqw - 2 * var(--stage-pad)) / var(--ar, 1.6)));
+}
+.spot-img img {
+  position: absolute; inset: 0; display: block; width: 100%; height: 100%; border-radius: 12px; user-select: none;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--spot-shade) 8%, transparent), 0 22px 50px color-mix(in srgb, var(--spot-shade) 22%, transparent);
+}
+.spot-fig figcaption { padding: 14px 4px 0; max-width: 46em; font-size: 15px; line-height: 1.45; color: var(--spot-soft); }
+
+/* ── points ── */
+.spot-dot {
+  position: absolute; left: calc(var(--x) * 1%); top: calc(var(--y) * 1%); translate: -50% -50%;
+  display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 50%;
+  background: var(--spot-dot); color: #fff; font-family: inherit; font-size: 14px; font-weight: 600; line-height: 1; cursor: pointer;
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--spot-dot) 55%, transparent), 0 6px 18px rgb(0 0 0 / 0.3);
+  animation: spot-ping 2.6s ease-out infinite; transition: scale 0.25s var(--spot-ease);
+}
+.spot-dot:hover, .spot-dot:focus-visible, .spot-dot.is-hot { scale: 1.15; animation-play-state: paused; z-index: 2; }
+.spot-dot:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.spot-dot em {
+  position: absolute; left: 50%; bottom: calc(100% + 12px); translate: -50% 6px; width: max-content; max-width: 260px; padding: 10px 14px; border-radius: 14px;
+  background: var(--spot-dot); color: #fff; font-size: 14px; font-weight: 500; line-height: 1.4; font-style: normal; text-align: left;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s var(--spot-ease), translate 0.3s var(--spot-ease);
+}
+.spot-dot:hover em, .spot-dot:focus-visible em, .spot-dot.is-hot em { opacity: 1; translate: -50% 0; }
+/* near the edge of the screen the hint lines up with the point, not its centre, or it runs off the page */
+.spot-dot.is-right em { left: auto; right: -6px; translate: 0 6px; }
+.spot-dot.is-left em { left: -6px; translate: 0 6px; }
+.spot-dot.is-right:is(:hover, :focus-visible, .is-hot) em, .spot-dot.is-left:is(:hover, :focus-visible, .is-hot) em { translate: 0 0; }
+/* near the top the hint opens downwards */
+.spot-dot.is-below em { bottom: auto; top: calc(100% + 12px); }
+@keyframes spot-ping {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--spot-dot) 55%, transparent), 0 6px 18px rgb(0 0 0 / 0.3); }
+  70%, 100% { box-shadow: 0 0 0 16px transparent, 0 6px 18px rgb(0 0 0 / 0.3); }
+}
+
+/* ── decision cards ── */
+.spot-cards { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+@media (max-width: 899px) { .spot-cards { grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); } }
+.spot-card button {
+  display: grid; grid-template-columns: 24px 1fr; gap: 4px 12px; width: 100%; padding: 14px 16px; border: 0; border-radius: 20px;
+  background: var(--spot-tile); color: inherit; font: inherit; text-align: left; cursor: pointer; scroll-margin: 24px;
+  transition: box-shadow 0.6s var(--spot-ease);
+}
+.spot-card i {
+  grid-row: span 2; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--spot-accent); color: light-dark(#fff, #1d1d1f); font-size: 13px; font-weight: 600; font-style: normal; transition: scale 0.25s var(--spot-ease);
+}
+.spot-card b { font-size: 16px; font-weight: 600; line-height: 1.3; }
+.spot-card span { font-size: 14px; line-height: 1.45; color: var(--spot-soft); }
+.spot-card.is-hot button, .spot-card button:focus-visible { box-shadow: 0 0 0 2px var(--spot-accent); outline: none; }
+.spot-card.is-flash button { box-shadow: 0 0 0 3px var(--spot-accent); }
+.spot-card.is-hot i, .spot-card.is-flash i { scale: 1.12; }
+
+@media (max-width: 760px) {
+  .spot-stage { border-radius: 22px; }
+  .spot-dot { width: 24px; height: 24px; font-size: 12px; }
+  /* on a phone the hint would cover the screen: the cards below carry the text */
+  .spot-dot em { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spot-dot { animation: none; transition: none; }
+  .spot-card button, .spot-card i { transition: none; }
+}

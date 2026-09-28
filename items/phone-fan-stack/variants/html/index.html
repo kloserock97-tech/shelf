@@ -1,0 +1,19 @@
+<!-- Phone fan. Any number of phones: fan.js sets --n and --i. A phone whose image already contains
+     a device frame gets .is-device (and the image's own aspect ratio). -->
+<figure class="fan-fig">
+  <div class="fan">
+    <button type="button" class="fan-phone"><img src="phone-welcome.svg" width="402" height="874" alt="Welcome screen" loading="lazy" decoding="async"></button>
+    <button type="button" class="fan-phone is-device"><img src="phone-today-device.svg" width="650" height="1321" alt="Today screen" loading="lazy" decoding="async"></button>
+    <button type="button" class="fan-phone"><img src="phone-plant.svg" width="402" height="874" alt="Plant card" loading="lazy" decoding="async"></button>
+  </div>
+  <figcaption>Welcome · Today · Plant card</figcaption>
+</figure>
+
+<dialog class="fan-view" aria-label="Screen">
+  <img alt="">
+  <p></p>
+  <button type="button" aria-label="Close">×</button>
+</dialog>
+
+<link rel="stylesheet" href="fan.css">
+<script src="fan.js" defer></script>

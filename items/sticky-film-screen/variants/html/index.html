@@ -1,0 +1,27 @@
+<!-- Film gallery. Put it in a scrolling page; --film-top should clear your sticky header. -->
+<figure class="fig film">
+  <h3 class="fig-title">The whole feed, top to bottom</h3>
+  <div class="film-pin">
+    <div class="film-sticky">
+      <div class="stage film-stage">
+        <div class="film-track">
+          <img src="feed.svg" width="800" height="2300" alt="Team updates feed" loading="lazy" decoding="async" draggable="false">
+        </div>
+      </div>
+      <figcaption><b>Team updates.</b> Posts, a release checklist, a poll and a chart in one long screen.</figcaption>
+    </div>
+    <div class="film-run" aria-hidden="true"></div>
+  </div>
+</figure>
+
+<!-- A regular stage: the screen fits whole. --ar is the image ratio (width / height);
+     put --iar on .stage-media when an image differs from its stage. -->
+<figure class="fig">
+  <div class="stage" style="--ar:0.3478">
+    <div class="stage-media"><img src="feed.svg" width="800" height="2300" alt="Team updates feed" loading="lazy" decoding="async"></div>
+  </div>
+  <figcaption>The same screen on a regular stage.</figcaption>
+</figure>
+
+<link rel="stylesheet" href="film.css">
+<script src="film.js" defer></script>

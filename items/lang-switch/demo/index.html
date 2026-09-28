@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="Two languages on one page, switched without a reload.">
+<meta property="og:locale" content="en_US">
+<title>Lang Switch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600&display=swap">
+<style>
+  :root {
+    --ink: #1e2219; --soft: rgba(30, 34, 25, 0.64); --faint: rgba(30, 34, 25, 0.42);
+    --card: #f2f3ef; --line: rgba(30, 34, 25, 0.1); --glass: rgba(30, 36, 27, 0.86); --accent: #3f7d4e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #eef1e7; --soft: rgba(238, 241, 231, 0.66); --faint: rgba(238, 241, 231, 0.42);
+      --card: #1b1f18; --line: rgba(238, 241, 231, 0.1); --glass: rgba(238, 241, 231, 0.1); --accent: #9fe38b;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: transparent; }
+  body { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; font: 300 15px/1.5 Onest, system-ui, sans-serif; color: var(--ink); }
+  .page {
+    width: min(100%, 560px); padding: 22px 26px 24px; border-radius: 32px; background: var(--card);
+    box-shadow: 0 30px 70px rgba(60, 52, 28, 0.16), inset 0 0 0 1px var(--line);
+  }
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 30px; }
+  .brand { font-weight: 500; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--soft); }
+  /* the toggle: a dark glass pill like the dock item it came from */
+  .lang-btn {
+    display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px 0 13px;
+    border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 12px; background: var(--glass); color: #fff;
+    font: 500 12px/1 Onest, system-ui, sans-serif; letter-spacing: 0.14em; cursor: pointer;
+    transition: scale 0.2s cubic-bezier(0.2, 0.9, 0.25, 1), background 0.2s ease;
+  }
+  @media (prefers-color-scheme: dark) { .lang-btn { color: var(--ink); } }
+  .lang-btn:hover { background: rgba(31, 37, 28, 0.95); color: #fff; }
+  .lang-btn:active { scale: 0.96; }
+  .lang-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .lang-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+  .kicker { margin: 0 0 8px; font-size: 12px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); }
+  h1 { margin: 0 0 12px; font-size: clamp(28px, 6vw, 38px); line-height: 1.08; font-weight: 500; letter-spacing: -0.02em; }
+  .lede { margin: 0 0 10px; color: var(--soft); font-size: 16px; }
+  .where { margin: 0; color: var(--soft); }
+  code { font: 500 0.92em/1 ui-monospace, Consolas, monospace; padding: 2px 5px; border-radius: 6px; background: var(--line); color: var(--ink); }
+  .built { margin-top: 24px; padding: 16px 18px; border-radius: 20px; box-shadow: inset 0 0 0 1px var(--line); display: grid; gap: 10px; }
+  .built h2 { margin: 0; font-size: 12px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint); }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .count { font-size: 20px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .add {
+    height: 36px; padding: 0 16px; border: 0; border-radius: 999px; background: var(--ink); color: var(--card);
+    font: 500 13px/1 Onest, system-ui, sans-serif; cursor: pointer;
+  }
+  .add:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .uptime { margin: 0; color: var(--soft); font-variant-numeric: tabular-nums; }
+  .state { margin: 18px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 13px; color: var(--faint); }
+  .state dd { margin: 0; font: 500 13px/1.5 ui-monospace, Consolas, monospace; color: var(--ink); overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<main class="page">
+  <div class="bar">
+    <span class="brand">Studio</span>
+    <button class="lang-btn" type="button" data-i18n-label="nav.lang" aria-label="Читать по-русски">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M2.2 8h11.6"/><path d="M8 2.1c1.7 1.7 2.6 3.7 2.6 5.9S9.7 12.2 8 13.9C6.3 12.2 5.4 10.2 5.4 8s.9-4.2 2.6-5.9Z"/></svg>
+      <span class="lang-l">RU</span>
+    </button>
+  </div>
+  <p class="kicker" data-i18n="hero.kicker">Two languages, one page</p>
+  <h1 data-i18n="hero.title">Switch the language, keep the page</h1>
+  <p class="lede" data-i18n="hero.lede">Static text comes from data-i18n attributes. Anything built by code asks t() for its strings and listens to onLang.</p>
+  <p class="where" data-i18n-html="hero.where">Your choice lives in the address (<code>?lang=</code>) and in localStorage, so a shared link opens the same way.</p>
+  <section class="built" aria-live="polite">
+    <h2 data-i18n="inbox.title">Built by code</h2>
+    <div class="row">
+      <span class="count" data-count></span>
+      <button class="add" type="button" data-add data-i18n="inbox.add" data-i18n-label="inbox.add.label" aria-label="Add a message">Add one</button>
+    </div>
+    <p class="uptime" data-uptime></p>
+  </section>
+  <dl class="state">
+    <dt data-i18n="state.url">Address</dt><dd data-url></dd>
+    <dt data-i18n="state.saved">Saved</dt><dd data-saved></dd>
+  </dl>
+</main>
+<script src="app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Garden Loader</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;650&display=swap">
+<link rel="stylesheet" href="../variants/ts/garden-loader.css">
+<style>
+  html, body { height: 100%; margin: 0; }
+  body { background: #e6e8eb; color: #17181a; font-family: "Onest", "Segoe UI", system-ui, sans-serif; }
+  /* the page the loader reveals: a quiet stand-in */
+  .site { position: fixed; inset: 0; display: grid; place-content: center; gap: 10px; padding: 24px; text-align: center; opacity: 0; transition: opacity .5s ease; }
+  .site.is-shown { opacity: 1; }
+  .site h1 { margin: 0; font-size: clamp(26px, 3vw, 40px); font-weight: 400; letter-spacing: -.03em; }
+  .site__note { margin: 0; color: #4a4d53; font-size: 14px; }
+  /* inside the Shelf stage the preview toolbar sits over the bottom edge: lift the bar above it */
+  .is-embedded .garden-loader__bottom { margin-bottom: max(clamp(12px, 5vh, 64px), 46px); }
+</style>
+<script>if (window.self !== window.top) document.documentElement.classList.add("is-embedded");</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"}}</script>
+</head>
+<body>
+<main class="site">
+  <h1>Ready to explore.</h1>
+  <p class="site__note"></p>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>

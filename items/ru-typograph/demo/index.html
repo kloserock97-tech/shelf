@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>RU Typograph</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --ink: #1c1d1a; --soft: #6b6d66; --line: rgba(28, 29, 26, 0.14); --field: rgba(255, 255, 255, 0.72);
+    --accent: #1f8a5b; --bad: #d4442a; --bad-bg: rgba(212, 68, 42, 0.12); --chip: rgba(28, 29, 26, 0.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #eeeee8; --soft: #9c9e96; --line: rgba(238, 238, 232, 0.16); --field: rgba(255, 255, 255, 0.05);
+      --accent: #5fd39a; --bad: #ff7a5c; --bad-bg: rgba(255, 122, 92, 0.16); --chip: rgba(238, 238, 232, 0.08);
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: transparent; }
+  body {
+    min-height: 100vh; display: grid; place-items: center; padding: 28px 16px;
+    font: 400 15px/1.45 Onest, system-ui, sans-serif; color: var(--ink);
+  }
+  .typo { width: min(100%, 1000px); display: grid; gap: 16px; }
+  .head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+  .head h1 { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+  .head p { margin: 0; color: var(--soft); }
+  textarea {
+    width: 100%; min-height: 92px; resize: vertical; padding: 12px 14px;
+    border: 1px solid var(--line); border-radius: 14px; background: var(--field); color: inherit;
+    font: 400 16px/1.5 Onest, system-ui, sans-serif;
+  }
+  textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    padding: 7px 13px; border: 0; border-radius: 999px; background: var(--chip); color: inherit;
+    font: 500 13px/1 Onest, system-ui, sans-serif; cursor: pointer;
+  }
+  .chip[aria-pressed="true"] { background: var(--ink); color: var(--bg-ink, #fff); }
+  @media (prefers-color-scheme: dark) { .chip[aria-pressed="true"] { --bg-ink: #151613; } }
+  .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .width { display: flex; align-items: center; gap: 12px; color: var(--soft); font-size: 13px; }
+  .width input { flex: 0 1 260px; accent-color: var(--accent); }
+  .width output { min-width: 52px; font-variant-numeric: tabular-nums; color: var(--ink); }
+  .added { margin-left: auto; color: var(--accent); font-weight: 500; }
+  .compare { --col: 300px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .col { padding: 14px 16px 18px; border: 1px solid var(--line); border-radius: 18px; min-width: 0; }
+  .col-head { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 10px; font-size: 13px; color: var(--soft); }
+  .col-head b { color: var(--ink); font-weight: 600; }
+  .col-head [data-before-count] { color: var(--bad); }
+  .col-head [data-after-count] { color: var(--accent); }
+  .text {
+    position: relative; width: min(var(--col), 100%); margin: 0;
+    font-size: 18px; line-height: 1.55; overflow-wrap: break-word; hyphens: none;
+    background: repeating-linear-gradient(90deg, transparent 0 calc(100% - 1px), var(--line) calc(100% - 1px) 100%);
+  }
+  .w.bad { background: var(--bad-bg); color: var(--bad); border-radius: 4px; box-shadow: 0 0 0 2px var(--bad-bg); }
+  /* a non-breaking space stays text; the mark under it is a pseudo-element */
+  .nb { position: relative; }
+  .nb::after {
+    content: ""; position: absolute; left: 50%; bottom: 0.1em; width: 0.42em; height: 0.24em; translate: -50% 0;
+    border: 1.5px solid var(--accent); border-top: 0; border-radius: 0 0 0.3em 0.3em; pointer-events: none;
+  }
+  .legend { margin: 0; color: var(--soft); font-size: 13px; }
+  .legend i { display: inline-block; width: 0.8em; height: 0.45em; margin-right: 6px; border: 1.5px solid var(--accent); border-top: 0; border-radius: 0 0 0.4em 0.4em; }
+  .legend s { text-decoration: none; margin: 0 6px 0 14px; padding: 0 4px; border-radius: 4px; background: var(--bad-bg); color: var(--bad); }
+  @media (max-width: 640px) {
+    .compare { grid-template-columns: 1fr; }
+    .added { margin-left: 0; width: 100%; }
+    .width { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+<main class="typo">
+  <div class="head">
+    <h1>Typograph</h1>
+    <p>Non-breaking spaces for Russian and English text</p>
+  </div>
+  <textarea id="src" spellcheck="false" aria-label="Text to tidy"></textarea>
+  <div class="chips" role="group" aria-label="Examples"></div>
+  <div class="width">
+    <label for="col">Column width</label>
+    <input id="col" type="range" min="160" max="480" step="4" value="296">
+    <output id="col-out" for="col">296 px</output>
+    <span class="added" data-added></span>
+  </div>
+  <div class="compare">
+    <section class="col" aria-label="Before">
+      <div class="col-head"><b>Before</b><span data-before-count></span></div>
+      <p class="text" data-before></p>
+    </section>
+    <section class="col" aria-label="After">
+      <div class="col-head"><b>After tidy()</b><span data-after-count></span></div>
+      <p class="text" data-after></p>
+    </section>
+  </div>
+  <p class="legend"><i></i>non-breaking space<s>в</s>a short word, dash or last word left alone at a line end</p>
+</main>
+<script src="app.js" defer></script>
+</body>
+</html>

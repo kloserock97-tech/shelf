@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Object Card</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400..600&display=swap">
+<link rel="stylesheet" href="../variants/html/object-card.css">
+<style>
+  html, body { height: 100%; margin: 0; background: transparent; }
+  body { display: grid; place-items: center; font-family: "Onest", system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+  .case-row { display: flex; gap: 24px; padding: 32px 32px 48px; max-width: 100%; box-sizing: border-box; }
+  .case-row .case { --w: clamp(200px, min(26vw, calc((100svh - 96px) * 0.7)), 330px); --focus: #0071e3; }
+  /* the source shadow is tuned for a dark live scene; on a light stage it is softer */
+  @media (prefers-color-scheme: light) { .case-row .case { --case-shadow: 0 24px 48px rgba(0, 0, 0, 0.16); } }
+  /* narrow screen: the same row, swiped sideways */
+  @media (max-width: 760px) {
+    body { place-items: center stretch; }
+    .case-row {
+      width: 100%; padding: 32px calc(50% - var(--w) / 2) 48px; --w: min(72vw, 300px);
+      overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
+    }
+    .case-row::-webkit-scrollbar { display: none; }
+    .case-row .case { --w: min(72vw, 300px); scroll-snap-align: center; }
+  }
+</style>
+</head>
+<body>
+<div class="case-row" data-case-row>
+  <a class="case" href="#harbor" style="--s1:#fcefe6;--s2:#f6d9c6;--ink:#3a1d12;--accent:#d9603b;--ow:132%;--ox:-16%;--oy:2%;--oar:1.6453">
+    <span class="case-text">
+      <span class="case-tag">01 · Web platform · 2024</span>
+      <span class="case-title">Harbor</span>
+      <span class="case-sub">A neighbourhood noticeboard people actually read</span>
+    </span>
+    <picture class="case-obj" aria-hidden="true"><img src="objects/harbor.webp" alt="" width="900" height="547" decoding="async" draggable="false"></picture>
+    <span class="case-go"><span class="case-cta-l">View case</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8.5 7H17v8.5"/></svg></span>
+  </a>
+  <a class="case is-active" href="#northwind" style="--s1:#eef3fb;--s2:#d3e1f6;--ink:#14213d;--accent:#2f5fd0;--ow:118%;--ox:-6%;--oy:-3%;--oar:1.0435">
+    <span class="case-text">
+      <span class="case-tag">02 · AI assistant · 2026</span>
+      <span class="case-title">Northwind</span>
+      <span class="case-sub">An assistant that drafts the next step for you</span>
+    </span>
+    <picture class="case-obj" aria-hidden="true"><img src="objects/northwind.webp" alt="" width="888" height="851" decoding="async" draggable="false"></picture>
+    <span class="case-go"><span class="case-cta-l">View case</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8.5 7H17v8.5"/></svg></span>
+  </a>
+  <a class="case" href="#lumen" style="--s1:#edf6f0;--s2:#d2e8da;--ink:#12281c;--accent:#1f8a4c;--ow:114%;--ox:-7%;--oy:-1%;--oar:1.2312">
+    <span class="case-text">
+      <span class="case-tag">03 · Analytics · 2025</span>
+      <span class="case-title">Lumen</span>
+      <span class="case-sub">Alert rules without a single spreadsheet</span>
+    </span>
+    <picture class="case-obj" aria-hidden="true"><img src="objects/lumen.webp" alt="" width="900" height="731" decoding="async" draggable="false"></picture>
+    <span class="case-go"><span class="case-cta-l">View case</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7"/><path d="M8.5 7H17v8.5"/></svg></span>
+  </a>
+</div>
+<script>
+  // demo only: links go nowhere, and on a phone the row opens on the middle card
+  document.querySelectorAll('.case').forEach((a) => a.addEventListener('click', (e) => e.preventDefault()));
+  const row = document.querySelector('.case-row');
+  const mid = row.children[1];
+  if (row.scrollWidth > row.clientWidth) row.scrollLeft = mid.offsetLeft + mid.offsetWidth / 2 - row.clientWidth / 2;
+</script>
+<script src="../variants/html/object-card.js"></script>
+</body>
+</html>

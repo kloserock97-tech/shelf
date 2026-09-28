@@ -1,0 +1,38 @@
+/* Demo control panel: a small glass card in the top-left corner (the stage toolbar sits at the bottom). */
+.hud {
+  position: fixed; top: 12px; left: 12px; z-index: 2;
+  width: 236px; max-width: calc(100vw - 24px);
+  font: 500 12px/16px Onest, system-ui, sans-serif; color: #f5f5f7;
+  background: rgba(20, 20, 22, 0.5);
+  -webkit-backdrop-filter: blur(16px) saturate(1.5); backdrop-filter: blur(16px) saturate(1.5);
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.16), 0 8px 24px rgba(0, 0, 0, 0.16);
+  -webkit-user-select: none; user-select: none;
+}
+.hud__head {
+  all: unset; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between;
+  width: 100%; padding: 9px 12px; font-weight: 600; cursor: pointer; border-radius: 14px;
+}
+.hud__head svg { width: 14px; height: 14px; transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1); }
+.hud__head[aria-expanded="false"] svg { transform: rotate(-90deg); }
+.hud__head:focus-visible, .hud button:focus-visible, .hud input:focus-visible { outline: 2px solid #2997ff; outline-offset: 2px; }
+.hud__body { display: grid; gap: 10px; padding: 2px 12px 12px; }
+.hud__head[aria-expanded="false"] + .hud__body { display: none; }
+.hud__row { display: grid; grid-template-columns: 70px 1fr 34px; align-items: center; gap: 8px; }
+.hud__row output { text-align: right; font-variant-numeric: tabular-nums; color: rgba(245, 245, 247, 0.72); }
+.hud__hint { margin: 0; color: rgba(245, 245, 247, 0.62); font-weight: 400; }
+.hud input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; height: 18px; margin: 0; background: transparent; cursor: pointer; }
+.hud input[type="range"]::-webkit-slider-runnable-track { height: 2px; border-radius: 1px; background: rgba(255, 255, 255, 0.28); }
+.hud input[type="range"]::-moz-range-track { height: 2px; border-radius: 1px; background: rgba(255, 255, 255, 0.28); }
+.hud input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; margin-top: -5px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35); }
+.hud input[type="range"]::-moz-range-thumb { width: 12px; height: 12px; border: 0; border-radius: 50%; background: #fff; }
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; padding: 2px; border-radius: 9px; background: rgba(255, 255, 255, 0.1); }
+.seg button, .hud__btn {
+  all: unset; box-sizing: border-box; text-align: center; padding: 4px 6px; border-radius: 7px; cursor: pointer;
+  color: rgba(245, 245, 247, 0.78); transition: background-color 0.16s, color 0.16s;
+}
+.seg button[aria-pressed="true"] { background: rgba(255, 255, 255, 0.9); color: #1d1d1f; }
+.hud__btn { background: rgba(255, 255, 255, 0.14); color: #f5f5f7; }
+.hud__btn:active, .seg button:active { transform: scale(0.97); }
+.hud__pair { display: grid; grid-template-columns: auto 1fr; gap: 8px; align-items: center; }
+@media (prefers-reduced-motion: reduce) { .hud__head svg { transition: none; } }

@@ -1,0 +1,28 @@
+<!-- Any link or button can be the trigger; the panel is built from the data and appended to <body>. -->
+<nav class="topnav" aria-label="Primary">
+  <a href="#about">About</a>
+  <a href="#work" class="work-trigger">Work</a>
+  <a href="#contact">Say hi</a>
+</nav>
+
+<link rel="stylesheet" href="work-menu.css">
+<script type="module">
+  import { initWorkMenu } from './work-menu.js';
+
+  initWorkMenu({
+    trigger: document.querySelector('.work-trigger'),
+    items: [
+      {
+        id: 'harbor', title: 'Harbor', tag: 'Web platform · 2024', kind: ['web'], href: '/work/harbor',
+        look: { stage: ['#fcefe6', '#f6d9c6'], ink: '#3a1d12', accent: '#d9603b' },
+        object: { src: '/objects/harbor.webp', ratio: 900 / 547 }
+      },
+      {
+        id: 'atlas', title: 'Atlas', tag: 'iOS · Android · 2023', kind: ['mobile'], href: '/work/atlas',
+        look: { stage: ['#e9f4f7', '#cbe3ea'], ink: '#0f2a31', accent: '#15899d' },
+        object: { src: '/objects/atlas.webp', ratio: 900 / 698 }
+      }
+    ],
+    onAll: () => { location.hash = '#work'; }
+  });
+</script>

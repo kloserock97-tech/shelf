@@ -46,15 +46,29 @@ export const langOf = (file: string) => LANG[file.split('.').pop()?.toLowerCase(
 
 let highlighter: Promise<Highlighter> | undefined;
 
+// Tokens share a dozen colour pairs. A short class per pair instead of an inline style on every token makes a
+// code-heavy page several times lighter; codeStyles() prints the pairs once per page. The English and Russian
+// twins of an item page highlight the same files, so results are kept by content.
+const PAIRS = new Map<string, string>();
+const DONE = new Map<string, string>();
+export const codeStyles = () => [...PAIRS].map(([style, cls]) => `.${cls}{${style}}`).join('');
+
 export async function highlight(code: string, file: string) {
+  const key = `${file}\u0000${code}`;
+  const hit = DONE.get(key);
+  if (hit) return hit;
   highlighter ??= createHighlighter({
     themes: [theme('shelf-light', 'light', pick('light')), theme('shelf-dark', 'dark', pick('dark'))],
     langs: [...new Set(Object.values(LANG))].filter((l) => l !== 'text')
   });
   const h = await highlighter;
-  return h.codeToHtml(code.replace(/\s+$/, ''), {
-    lang: langOf(file),
-    themes: { light: 'shelf-light', dark: 'shelf-dark' },
-    defaultColor: false
-  });
+  const html = h
+    .codeToHtml(code.replace(/\s+$/, ''), { lang: langOf(file), themes: { light: 'shelf-light', dark: 'shelf-dark' }, defaultColor: false })
+    .replace(/<span style="([^"]+)">/g, (_, style: string) => {
+      let cls = PAIRS.get(style);
+      if (!cls) { cls = `k${PAIRS.size.toString(36)}`; PAIRS.set(style, cls); }
+      return `<span class="${cls}">`;
+    });
+  DONE.set(key, html);
+  return html;
 }

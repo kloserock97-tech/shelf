@@ -1,0 +1,70 @@
+/* CSS photo studio: a seamless backdrop made of gradients, nothing to download.
+   Layers from the top down:
+   1. vignette: the corners fall off, as they do through a real lens;
+   2. window light: two soft diagonal bands across the wall, the second one weaker;
+   3. floor glow: light pooled where the floor sweeps up into the wall;
+   4. spot: a pool of light behind the object;
+   5. cyclorama: the wall brightens towards the sweep, the floor falls off towards the camera.
+   A preset swaps whole layers through custom properties, `none` switches a layer off.
+   On top sits a few hundred bytes of SVG noise: long low-contrast gradients band without it.
+
+   The base is the grey studio. Add .studio--light or .studio--dark for the other two. */
+.studio {
+  --band: .18;        /* the first band of window light; the second one is 70 % of it */
+  --band-scale: 1;
+  --grain: .5;
+  --vignette: radial-gradient(ellipse 125% 105% at 50% 44%, #1c1d2000 52%, #1c1d2066 100%);
+  --window: linear-gradient(104deg,
+    rgb(255 255 255 / 0) 25%, rgb(255 255 255 / calc(var(--band) * var(--band-scale))) 35%, rgb(255 255 255 / 0) 46%,
+    rgb(255 255 255 / 0) 55%, rgb(255 255 255 / calc(var(--band) * var(--band-scale) * .7)) 63%, rgb(255 255 255 / 0) 74%);
+  --floor-glow: none;
+  --spot: radial-gradient(ellipse 44% 40% at 50% 44%, #d0d1d3e6 0%, #d0d1d300 100%);
+  /* neutral grey with a breath of cool, so whatever stands in the studio carries the colour */
+  --cyclorama: linear-gradient(180deg, #96979a 0%, #a8a9ac 36%, #b6b7b9 60%, #a3a4a7 78%, #8a8b8e 100%);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: var(--vignette), var(--window), var(--floor-glow), var(--spot), var(--cyclorama);
+  color: #17181a;
+}
+
+/* Photographic grain, generated in place. The noise is 50 % grey in linearRGB (the filter default), which lands
+   around 73 % in sRGB, so soft-light lifts the backdrop a little, grain by grain. z-index -1 inside the isolated
+   studio: above its background, below whatever you put in it, no z-index needed on the content. */
+.studio::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: var(--grain);
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* Light: a pale cool wall that brightens down to the floor line at about 68 % of the height, the floor a touch
+   darker near the camera. No vignette and no window bands, a bright strip of floor instead. */
+.studio--light {
+  --vignette: none;
+  --window: none;
+  --floor-glow: radial-gradient(ellipse 62% 20% at 50% 68%, #f8f9fbe6 0%, #f8f9fb00 100%);
+  --spot: radial-gradient(ellipse 46% 42% at 50% 42%, #eef0f3cc 0%, #eef0f300 100%);
+  --cyclorama: linear-gradient(180deg, #d2d5da 0%, #dcdfe3 34%, #e8eaed 58%, #f3f4f6 68%, #e5e7ea 82%, #d5d8dc 100%);
+}
+
+/* Dark: the grey studio's layers with the lights turned down. White bands read much stronger on charcoal, so they
+   drop to a third; the grain goes up, soft-light barely moves near-black. */
+.studio--dark {
+  --band: .06;
+  --grain: .8;
+  --vignette: radial-gradient(ellipse 125% 105% at 50% 44%, #00000000 50%, #0000008c 100%);
+  --floor-glow: radial-gradient(ellipse 60% 18% at 50% 64%, #3a3d4399 0%, #3a3d4300 100%);
+  --spot: radial-gradient(ellipse 44% 40% at 50% 44%, #3d4046d9 0%, #3d404600 100%);
+  --cyclorama: linear-gradient(180deg, #16171a 0%, #1d1f23 36%, #2a2c31 60%, #212226 78%, #131416 100%);
+  color: #e9eaec;
+}
+
+/* On a narrow screen the bands of window light squeeze into streaks and read as brushed metal: keep only a hint. */
+@media (max-width: 700px) {
+  .studio { --band-scale: .33; }
+}

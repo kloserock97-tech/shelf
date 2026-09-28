@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Polaroid Tape</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
+<style>
+  html, body { height: 100%; margin: 0; background: transparent; }
+  body { overflow: hidden; }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+
+  /* handwritten note with an arrow to the card; main.js moves it to the projected top edge of the card */
+  .note {
+    position: fixed; left: 0; top: 0; width: 0; height: 0; pointer-events: none;
+    opacity: 0; visibility: hidden;
+    font-family: Caveat, "Segoe Print", "Comic Sans MS", cursive; color: #2b2a26;
+  }
+  .note-text {
+    position: absolute; right: 38px; bottom: 96px; white-space: nowrap;
+    font-size: clamp(24px, 2.4vw, 36px); font-weight: 600; line-height: 1;
+    rotate: -6deg; display: inline-flex; align-items: center; gap: 0.18em;
+    opacity: 0; translate: 0 6px;
+    transition: opacity 0.5s ease 0.35s, translate 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) 0.35s;
+  }
+  .note-smile { width: 0.95em; height: 0.95em; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; }
+  .note-arrow {
+    position: absolute; right: -26px; bottom: 8px; width: 92px; height: 84px;
+    fill: none; stroke: currentColor; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .note-arc { stroke-dasharray: 160; stroke-dashoffset: 160; }
+  .note-head { stroke-dasharray: 44; stroke-dashoffset: 44; }
+  .note.is-on { opacity: 1; visibility: visible; transition: opacity 0.2s ease; }
+  .note.is-on .note-text { opacity: 1; translate: 0 0; }
+  .note.is-on .note-arc { stroke-dashoffset: 0; transition: stroke-dashoffset 0.7s cubic-bezier(0.5, 0, 0.2, 1) 0.6s; }
+  .note.is-on .note-head { stroke-dashoffset: 0; transition: stroke-dashoffset 0.3s ease-out 1.25s; }
+  @media (max-width: 700px) {
+    .note-text { font-size: 21px; right: 46px; bottom: 34px; rotate: -4deg; }
+    .note-arrow { width: 46px; height: 42px; right: -8px; bottom: 2px; }
+  }
+  @media (prefers-color-scheme: dark) { .note { color: #ece6d8; } }
+  @media (prefers-reduced-motion: reduce) {
+    .note-arc, .note-head { stroke-dashoffset: 0 !important; transition: none !important; }
+    .note-text { translate: none; }
+  }
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"}}</script>
+</head>
+<body>
+<canvas id="stage" aria-label="A polaroid of a lake at dawn, taped to the wall. It turns towards the cursor."></canvas>
+<div class="note" aria-hidden="true">
+  <span class="note-text">and this is the lake <svg class="note-smile" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16"/><path d="M13.5 16.5v.5M26.5 16.5v.5"/><path d="M12.5 23.5c4 6 11 6 15 0"/></svg></span>
+  <svg class="note-arrow" viewBox="0 0 120 110"><path class="note-arc" d="M12 10 C 52 2, 104 26, 88 82"/><path class="note-head" d="M74 70 L 88 84 L 100 66"/></svg>
+</div>
+<script type="module" src="../variants/js/main.js"></script>
+</body>
+</html>

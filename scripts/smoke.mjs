@@ -57,9 +57,10 @@ const check = (ok, what) => { if (!ok) problems.push(`flow: ${what}`); return ok
   await page.screenshot({ path: path.join(out, 'flow-palette.png') });
   await page.keyboard.press('Escape');
   check(await page.locator('#palette').isHidden(), 'Esc does not close the palette');
-  await page.fill('#search', 'toggle');
+  await page.fill('#search', 'spring toggle');
   await page.waitForTimeout(150);
-  check((await page.locator('.sh-card:not([hidden])').count()) === 1, 'searching "toggle" should leave one card');
+  const found = await page.locator('.sh-card:not([hidden])').count();
+  check(found >= 1 && found <= 3 && (await page.locator('.sh-card:not([hidden])[data-slug="spring-toggle"]').count()) === 1, `searching "spring toggle" should find Spring Toggle among a few cards (got ${found})`);
   await page.fill('#search', '');
   await page.waitForTimeout(150);
   await page.locator('.sh-card__thumb[data-loop]').first().hover();

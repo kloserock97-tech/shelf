@@ -1,0 +1,120 @@
+/* Contact Footer: the footer of Portfolio 3D TS2 (hill-ui.css v23 → v76, index.html, footer.ts).
+   White text over a dusk sky, contacts in dark glass like the dock, one accent word in a serif italic.
+   The page sets the photo (background-image on .site-footer); a dusk veil lies over it. Entrance: a cascade on .is-on. */
+.site-footer {
+  position: relative;
+  isolation: isolate;
+  box-sizing: border-box;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 72px;
+  padding: clamp(96px, 16vh, 150px) clamp(20px, 4.4vw, 88px) clamp(20px, 3.4vh, 36px);
+  font-family: inherit;
+  color: #fff;
+  background-color: #2c2740;
+  background-position: 50% 62%;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+/* dusk veil: dark sky for the title, the hill glows through, the bottom darkens again under the links */
+.site-footer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(36, 31, 54, 0.9) 0%, rgba(66, 50, 76, 0.72) 38%, rgba(120, 84, 80, 0.34) 66%, rgba(22, 20, 30, 0.8) 100%);
+}
+
+.sf-kicker, .sf-title > span, .sf-contacts, .sf-bar {
+  opacity: 0;
+  translate: 0 18px;
+  transition: opacity 0.4s ease, translate 0.5s cubic-bezier(0.7, 0, 0.84, 0);
+}
+.site-footer.is-on .sf-kicker, .site-footer.is-on .sf-title > span, .site-footer.is-on .sf-contacts, .site-footer.is-on .sf-bar {
+  opacity: 1;
+  translate: 0 0;
+  transition: opacity 0.8s ease var(--dl, 0ms), translate 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) var(--dl, 0ms);
+}
+.sf-title > span:nth-child(2) { --dl: 90ms; }
+.sf-contacts { --dl: 220ms; }
+.sf-bar { --dl: 340ms; }
+
+.sf-kicker { margin: 0 0 18px; font-size: 15px; font-weight: 300; text-shadow: 0 1px 2px rgba(30, 20, 40, 0.35); }
+.sf-title {
+  margin: 0;
+  max-width: 14em;
+  font-size: clamp(40px, 5.6vw, 104px);
+  font-weight: 300;
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  /* no wide blurred shadow: on DPR 2.25 its raster cost a ~100 ms frame on entrance */
+  text-shadow: 0 1px 2px rgba(30, 20, 40, 0.25);
+}
+.sf-title > span { display: inline-block; }
+/* one accent word: a serif italic inside the grotesque, a touch larger because it looks smaller at the same size */
+.serif-accent { font-family: "Playfair Display", Georgia, "Times New Roman", serif; font-style: italic; font-weight: 400; font-size: 1.06em; letter-spacing: -0.01em; }
+
+.sf-contacts { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: clamp(22px, 4vh, 40px); }
+.sf-pill, .sf-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  height: 52px;
+  padding: 0 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0) 45%), rgba(30, 30, 38, 0.72);
+  color: #fff;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(20, 12, 30, 0.24);
+  transition: background 0.3s ease, translate 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.sf-pill svg, .sf-copy svg { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+.sf-pill:hover, .sf-copy:hover { background: rgba(48, 48, 58, 0.85); translate: 0 -2px; }
+/* the main action is to write; the address next to it is the copy button */
+.sf-pill--go { border-color: transparent; background: #f2f3ef; color: #23261f; }
+.sf-pill--go:hover { background: #fff; }
+.sf-copy { padding: 0 18px; font-size: 14px; color: rgba(255, 255, 255, 0.82); }
+.sf-copy .sf-ic--done, .sf-copy.is-done .sf-ic--copy { display: none; }
+.sf-copy.is-done .sf-ic--done { display: block; }
+.sf-copy.is-done { color: #9fe38b; }
+.sf-status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.sf-pill:focus-visible, .sf-copy:focus-visible, .sf-nav a:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+
+.sf-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 24px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
+  font-size: 14px;
+  font-weight: 300;
+  text-shadow: 0 1px 2px rgba(20, 12, 30, 0.45);
+}
+.sf-copyright { margin: 0; }
+.sf-nav { display: flex; flex-wrap: wrap; gap: 6px 22px; }
+.sf-nav a { color: #fff; text-decoration: none; opacity: 0.88; transition: opacity 0.2s ease; }
+.sf-nav a:hover { opacity: 1; text-decoration: underline; text-underline-offset: 4px; }
+
+@media (max-width: 900px) {
+  .site-footer { padding-top: 96px; padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+  .sf-pill, .sf-copy { height: 46px; padding: 0 16px; font-size: 14px; }
+  .sf-bar { font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sf-kicker, .sf-title > span, .sf-contacts, .sf-bar { translate: none !important; }
+  .sf-pill:hover, .sf-copy:hover { translate: none; }
+}

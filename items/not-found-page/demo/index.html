@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Not Found Page</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#1a2017">
+<!-- A page for addresses that do not exist. GitHub Pages serves /404.html for any unknown path, so the page is
+     self-contained: its own styles and script, no build modules. The site root is worked out from the address
+     (on github.io it is /<repository>/), otherwise links and the photo break on nested paths like /work/old-case.
+     The language is the one the visitor chose on the site (localStorage), otherwise the browser language.
+     Settings: define window.NOT_FOUND = { base, image, font, icon, path, langKey, lang } before the script below. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@200..500&display=swap">
+<style>
+  :root { color-scheme: dark; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    min-height: 100vh; min-height: 100svh; display: grid; place-items: center; padding: clamp(20px, 6vw, 72px);
+    background: #171d14; color: #f4f1ea; overflow-x: hidden;
+    font-family: "Onest 404", "Onest", system-ui, -apple-system, "Segoe UI", sans-serif; font-weight: 300;
+  }
+  /* the photo fades in once it has loaded; the veil keeps the text readable on any frame */
+  .bg { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1.2s ease; }
+  .bg.on { opacity: 0.62; }
+  .veil { position: fixed; inset: 0; background: linear-gradient(180deg, rgba(14, 18, 11, 0.72) 0%, rgba(16, 21, 13, 0.5) 45%, rgba(14, 18, 11, 0.86) 100%); }
+  main { position: relative; width: min(620px, 100%); text-align: left; }
+  .code {
+    font-size: clamp(64px, 14vw, 128px); line-height: 1; letter-spacing: -0.05em; font-weight: 200;
+    font-variant-numeric: tabular-nums; color: #f0eee4; text-shadow: 0 2px 40px rgba(0, 0, 0, 0.5);
+  }
+  h1 {
+    margin-top: clamp(14px, 2.6vw, 22px); font-size: clamp(26px, 4.4vw, 40px); font-weight: 300;
+    line-height: 1.1; letter-spacing: -0.025em; text-shadow: 0 1px 24px rgba(0, 0, 0, 0.45);
+  }
+  p.sub {
+    margin-top: clamp(12px, 2vw, 18px); max-width: 30em; font-size: clamp(15px, 1.9vw, 18px);
+    line-height: 1.5; color: #d8d9cd; text-shadow: 0 1px 18px rgba(0, 0, 0, 0.45);
+  }
+  .links { margin-top: clamp(26px, 4vw, 38px); display: flex; flex-wrap: wrap; gap: 10px 12px; }
+  .links a {
+    display: inline-flex; align-items: center; gap: 9px; min-height: 46px; padding: 0 22px;
+    border-radius: 999px; text-decoration: none; font-size: 16px; font-weight: 400; color: #f0eee4;
+    background: rgba(244, 241, 234, 0.08); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+    transition: background 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .links a:hover { background: rgba(244, 241, 234, 0.16); }
+  .links a:active { transform: scale(0.97); }
+  .links a.go { background: #9fe38b; color: #17200f; box-shadow: none; font-weight: 500; }
+  .links a.go:hover { background: #b2eda0; }
+  .links a:focus-visible { outline: 2px solid #9fe38b; outline-offset: 3px; }
+  .links a svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .path { margin-top: clamp(22px, 3.4vw, 30px); font-size: 13px; letter-spacing: 0.02em; color: #9aa091; word-break: break-all; }
+  @media (prefers-reduced-motion: reduce) { .bg { transition: none; } }
+  .demo-lang { position: fixed; top: 16px; right: 16px; z-index: 2; display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: rgba(244, 241, 234, 0.1); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16); }
+  .demo-lang button { height: 30px; min-width: 40px; padding: 0 10px; border: 0; border-radius: 999px; background: transparent; color: #d8d9cd; font: 500 13px/1 inherit; font-family: inherit; cursor: pointer; }
+  .demo-lang button[aria-pressed="true"] { background: #f4f1ea; color: #17200f; }
+  .demo-lang button:focus-visible { outline: 2px solid #9fe38b; outline-offset: 2px; }
+</style>
+</head>
+<body>
+<img class="bg" alt="" aria-hidden="true">
+<div class="veil" aria-hidden="true"></div>
+
+<div class="demo-lang" role="group" aria-label="Demo language"><button type="button" data-lang="en">EN</button><button type="button" data-lang="ru">RU</button></div>
+
+<main>
+  <p class="code">404</p>
+  <h1 data-en="This path leads off the hill." data-ru="Эта тропа уходит мимо холма.">This path leads off the hill.</h1>
+  <p class="sub" data-en="The page does not exist, or it moved while the site was being rebuilt. Everything else is on the main page."
+     data-ru="Такой страницы нет или она переехала, пока сайт пересобирали. Всё остальное — на главной.">The page does not exist, or it moved while the site was being rebuilt. Everything else is on the main page.</p>
+  <nav class="links">
+    <a class="go" data-to="" data-en="Back to the main page" data-ru="На главную" href="/">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 13.5c1.8-3.6 3.9-5.4 6.5-5.4s4.7 1.8 6.5 5.4"/><path d="M8 8.1V5.3"/><path d="M6.4 6.4h3.2"/></svg>
+      <span>Back to the main page</span>
+    </a>
+    <a data-to="#work" data-en="Selected work" data-ru="Работы" href="/#work">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2.2" y="2.6" width="11.6" height="8.4" rx="1.4"/><path d="M5.6 13.6h4.8"/></svg>
+      <span>Selected work</span>
+    </a>
+    <a href="mailto:hello@example.com" data-en="Write an e-mail" data-ru="Написать письмо">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.4 4.2h11.2v7.6H2.4z"/><path d="m2.6 4.5 5.4 4.2 5.4-4.2"/></svg>
+      <span>Write an e-mail</span>
+    </a>
+  </nav>
+  <p class="path" data-path></p>
+</main>
+
+<script>
+  /* demo settings: the page lives next to its photo, links stay on this page, a sample missing address */
+  window.NOT_FOUND = { lang: "en", base: "./", image: "hill-dusk.webp", font: "", icon: "", path: "/work/old-case", langKey: "shelf-404-demo-lang" };
+</script>
+<script>
+(function () {
+  var cfg = window.NOT_FOUND || {};
+  /* site root: on github.io it is /<repository>/, on your own domain just / */
+  var parts = location.pathname.split("/").filter(Boolean);
+  var base = cfg.base || (/\.github\.io$/i.test(location.hostname) && parts.length ? "/" + parts[0] + "/" : "/");
+
+  /* language: what the visitor chose on the site, otherwise the browser language */
+  var lang = null;
+  try { var saved = localStorage.getItem(cfg.langKey || "site-lang"); if (saved === "ru" || saved === "en") lang = saved; } catch (e) { lang = null; }
+  if (!lang && (cfg.lang === "ru" || cfg.lang === "en")) lang = cfg.lang;
+  if (!lang) lang = (navigator.languages || [navigator.language]).some(function (l) { return /^ru\b/i.test(l || ""); }) ? "ru" : "en";
+  document.documentElement.lang = lang;
+  document.title = lang === "ru" ? "Страница не найдена" : "Page not found";
+
+  /* the site's font lives next to the main page, not next to the address the visitor landed on */
+  var font = cfg.font === undefined ? "fonts/onest-latin.woff2" : cfg.font;
+  if (font && window.FontFace) {
+    var face = new FontFace("Onest 404", 'url("' + base + font + '") format("woff2")', { weight: "100 900", display: "swap" });
+    face.load().then(function (f) { document.fonts.add(f); }).catch(function () { /* the page falls back to Onest from Google Fonts */ });
+  }
+  var iconHref = cfg.icon === undefined ? "favicon.svg" : cfg.icon;
+  if (iconHref) {
+    var icon = document.createElement("link");
+    icon.rel = "icon"; icon.type = "image/svg+xml"; icon.href = base + iconHref;
+    document.head.appendChild(icon);
+  }
+
+  var bg = document.querySelector(".bg");
+  bg.addEventListener("load", function () { bg.classList.add("on"); });
+  bg.src = base + (cfg.image || "img/404.webp");
+
+  document.querySelectorAll("[data-" + lang + "]").forEach(function (el) {
+    var text = el.getAttribute("data-" + lang);
+    var slot = el.querySelector("span");
+    if (slot) slot.textContent = text; else el.textContent = text;
+  });
+  document.querySelectorAll("a[data-to]").forEach(function (a) { a.href = base + a.getAttribute("data-to"); });
+
+  var shown = cfg.path || (location.pathname + location.search + location.hash).replace(base, "/");
+  document.querySelector("[data-path]").textContent = (lang === "ru" ? "Адрес: " : "Address: ") + shown;
+})();
+</script>
+<script>
+  /* demo only: switch the stored language and reload, as if it was chosen on the site */
+  document.querySelectorAll(".demo-lang button").forEach(function (b) {
+    b.setAttribute("aria-pressed", String(b.dataset.lang === document.documentElement.lang));
+    b.addEventListener("click", function () {
+      try { localStorage.setItem(window.NOT_FOUND.langKey, b.dataset.lang); } catch (e) {}
+      location.reload();
+    });
+  });
+</script>
+</body>
+</html>

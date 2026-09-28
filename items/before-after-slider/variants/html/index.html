@@ -1,0 +1,17 @@
+<!-- --ar is the narrower of the two screens' width / height; --iar on an image overrides it for that image.
+     The "before" layer is drawn on top and clipped at --pos; the labels name the left and the right side. -->
+<figure class="ba">
+  <h3 class="ba-title">Overview before and after</h3>
+  <div class="ba-box" style="--ar: 1.6; --pos: 50%">
+    <div class="ba-after"><img src="after.png" alt="After: four numbers, one chart and the next tasks" width="1440" height="900" draggable="false"></div>
+    <div class="ba-before"><img src="before.png" alt="Before: a filter form, three charts and a long table" width="1440" height="900" draggable="false"></div>
+    <span class="ba-label ba-label--a">Before</span>
+    <span class="ba-label ba-label--b">After</span>
+    <div class="ba-handle" aria-hidden="true"><i></i></div>
+    <input class="ba-range" type="range" min="0" max="100" value="50" aria-label="Drag to compare">
+  </div>
+  <figcaption>Before: a filter form, three charts and a long table. After: four numbers, one chart and what needs attention.</figcaption>
+</figure>
+
+<link rel="stylesheet" href="before-after.css">
+<script src="before-after.js" defer></script>

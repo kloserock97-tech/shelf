@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Smooth Wheel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap">
+<style>
+  :root { --ink: #1d1d1f; --soft: #6e6e73; --faint: #a1a1a6; --accent: #3e63dd; --bar: rgba(245, 245, 247, 0.8); --line: rgba(0, 0, 0, 0.09); --tile: #fff; --track: #c7c7cc; }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink: #f5f5f7; --soft: #a1a1a6; --faint: #6e6e73; --accent: #7e9bff; --bar: rgba(22, 22, 24, 0.76); --line: rgba(255, 255, 255, 0.12); --tile: #1c1c1f; --track: #48484a; }
+  }
+  html, body { margin: 0; background: transparent; }
+  body { font-family: Onest, system-ui, sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; }
+  .hud {
+    position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px;
+    padding: 12px clamp(16px, 3.4vw, 40px); background: var(--bar); border-bottom: 1px solid var(--line);
+    -webkit-backdrop-filter: blur(20px) saturate(1.8); backdrop-filter: blur(20px) saturate(1.8);
+  }
+  .sw { display: inline-flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; }
+  .switch { position: relative; width: 44px; height: 26px; padding: 0; border: 0; border-radius: 999px; background: var(--track); cursor: pointer; transition: background-color 0.16s ease; }
+  .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); transition: translate 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .switch[aria-checked="true"] { background: var(--accent); }
+  .switch[aria-checked="true"]::after { translate: 18px 0; }
+  .switch:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .meter { display: inline-flex; align-items: center; gap: 10px; }
+  .meter canvas { width: 180px; height: 36px; border-radius: 8px; background: color-mix(in srgb, var(--ink) 5%, transparent); }
+  .meter b { min-width: 7.5em; font: 600 14px/1 ui-monospace, Consolas, monospace; font-variant-numeric: tabular-nums; }
+  .route { margin: 0; display: inline-flex; align-items: baseline; gap: 8px; font-size: 14px; }
+  .route span { color: var(--soft); font-weight: 500; }
+  .route b { font-weight: 600; }
+  main { max-width: 860px; margin: 0 auto; padding: 0 clamp(16px, 3.4vw, 40px); }
+  .intro { padding: clamp(40px, 8vh, 88px) 0 clamp(32px, 6vh, 64px); }
+  .kicker { margin: 0; font-size: 14px; font-weight: 600; color: var(--accent); }
+  h1 { margin: 12px 0 0; font-size: clamp(34px, 5vw, 64px); font-weight: 700; line-height: 1.04; letter-spacing: -0.03em; text-wrap: balance; }
+  .lead { margin: 20px 0 0; max-width: 34em; font-size: clamp(17px, 1.5vw, 20px); line-height: 1.5; color: var(--soft); }
+  .go { display: inline-flex; align-items: center; gap: 8px; margin-top: 24px; height: 40px; padding: 0 18px; border: 0; border-radius: 999px; background: var(--ink); color: var(--tile); font: 600 14px/1 Onest, system-ui, sans-serif; cursor: pointer; }
+  .go:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .rule { display: grid; grid-template-columns: 64px 1fr; gap: 6px 20px; min-height: 64vh; padding: 40px 0; border-top: 1px solid var(--line); align-content: start; }
+  .rule .n { grid-row: span 2; font-size: 15px; font-weight: 600; color: var(--faint); font-variant-numeric: tabular-nums; padding-top: 8px; }
+  .rule h2 { margin: 0; font-size: clamp(26px, 3.2vw, 40px); font-weight: 650; line-height: 1.1; letter-spacing: -0.02em; }
+  .rule p { margin: 12px 0 0; max-width: 32em; font-size: 17px; line-height: 1.58; color: var(--soft); }
+  .rule .extra { grid-column: 2; margin-top: 20px; }
+  .inner { max-height: 220px; overflow: auto; border-radius: 18px; background: var(--tile); box-shadow: inset 0 0 0 1px var(--line); overscroll-behavior: auto; }
+  .inner ol { margin: 0; padding: 6px 0; list-style: none; counter-reset: v; }
+  .inner li { counter-increment: v; display: flex; justify-content: space-between; gap: 16px; padding: 12px 18px; border-bottom: 1px solid var(--line); font-size: 15px; }
+  .inner li::before { content: "v1." counter(v); color: var(--faint); font-variant-numeric: tabular-nums; }
+  .inner li span { flex: 1; }
+  .end { padding: 48px 0 30vh; text-align: center; font-size: 15px; color: var(--soft); }
+  @media (max-width: 560px) {
+    .meter canvas { width: 120px; }
+    .rule { grid-template-columns: 1fr; }
+    .rule .n { grid-row: auto; padding: 0; }
+    .rule .extra { grid-column: 1; }
+  }
+</style>
+</head>
+<body>
+<header class="hud">
+  <span class="sw"><button id="smooth" class="switch" role="switch" aria-checked="true" aria-labelledby="sw-label"></button><span id="sw-label">Smooth wheel</span></span>
+  <span class="meter"><canvas id="spark" aria-hidden="true"></canvas><b id="speed">0 px/s</b></span>
+  <p class="route"><span>Last input</span><b id="route">scroll to try</b></p>
+</header>
+<main>
+  <section class="intro">
+    <p class="kicker">Smooth wheel · λ = 6.5</p>
+    <h1>Smooth the jolt, keep the distance</h1>
+    <p class="lead">A mouse wheel moves a page in 100 px jumps. Here every jump is eased over about half a second, and the page still lands exactly where the browser would have put it.</p>
+    <button type="button" class="go" data-to="end">Glide to the end ↓</button>
+  </section>
+
+  <section class="rule"><span class="n">01</span><h2>The distance stays 1:1</h2>
+    <p>One notch travels exactly as far as it would without any script. Changing the speed or direction of scrolling is what NN/g calls scrolljacking, and people take it for a broken page.</p></section>
+  <section class="rule"><span class="n">02</span><h2>Only the jolt is smoothed</h2>
+    <p>The position chases the target exponentially: 95% of the way in about 0.46 s. The step is measured in real time, so a slow device with rare frames takes the same half-second. Watch the graph: smooth decay with it on, sharp spikes with it off.</p></section>
+  <section class="rule"><span class="n">03</span><h2>Trackpads keep their own inertia</h2>
+    <p>Small pixel deltas mean a trackpad, which already glides. Smoothing it a second time would feel like rubber, so it scrolls natively. So do fingers.</p></section>
+  <section class="rule"><span class="n">04</span><h2>Keys, scrollbar and find stay native</h2>
+    <p>When something else moves the page (a key, the scrollbar, find-in-page, a script), the smoother drops its target and picks up the new place instead of pulling back.</p></section>
+  <section class="rule"><span class="n">05</span><h2>Inner boxes go first</h2>
+    <p>A scrolling box under the cursor scrolls natively until it reaches its end; only then does the page take over.</p>
+    <div class="extra"><div class="inner" tabindex="0" aria-label="Release notes">
+      <ol>
+        <li><span>Search remembers your last filters</span></li><li><span>Exports keep the column order</span></li><li><span>Dark theme follows the system</span></li>
+        <li><span>Faster first load on slow networks</span></li><li><span>Keyboard shortcuts in the editor</span></li><li><span>Bulk edit for tags</span></li>
+        <li><span>Undo for deleted comments</span></li><li><span>Sharper charts on retina screens</span></li><li><span>Shared links show a preview</span></li>
+        <li><span>Calendar export</span></li><li><span>Fewer emails, one digest a day</span></li><li><span>Two-step sign-in</span></li>
+      </ol>
+    </div></div></section>
+  <section class="rule"><span class="n">06</span><h2>Reduced motion turns it off</h2>
+    <p>With prefers-reduced-motion every wheel scrolls natively, and jumps land at once.</p></section>
+  <section class="rule"><span class="n">07</span><h2>Far jumps: cut closer, then glide</h2>
+    <p>A jump to a far section doesn't slide across the whole page. It cuts to 1.2 screens before the goal and glides the rest with the same motion as the wheel.</p>
+    <div class="extra"><button type="button" class="go" data-to="top">Glide to the top ↑</button></div></section>
+  <p class="end">At the very end the wheel is passed on to the page around this one.</p>
+</main>
+<!-- built from ../variants/ts/main.ts with esbuild; no imports left, so it also runs from file:// -->
+<script src="app.js" defer></script>
+</body>
+</html>

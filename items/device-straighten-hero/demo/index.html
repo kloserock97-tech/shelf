@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Device Straighten Hero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../variants/html/hero.css">
+<style>
+  :root { --page-ink: #1d1d1f; --page-soft: #6e6e73; --seg: rgba(0, 0, 0, 0.06); }
+  @media (prefers-color-scheme: dark) {
+    :root { --page-ink: #f5f5f7; --page-soft: #a1a1a6; --seg: rgba(255, 255, 255, 0.1); }
+    .hero { --tile: #1c1c1f; --tile-ink: #f5f5f7; --tile-soft: #98989d; }
+  }
+  html, body { margin: 0; background: transparent; }
+  body { font-family: Onest, system-ui, sans-serif; color: var(--page-ink); -webkit-font-smoothing: antialiased; }
+  main { max-width: 1240px; margin: 0 auto; padding: 16px clamp(16px, 3.4vw, 56px) 70vh; }
+  .controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; margin-bottom: 14px; }
+  .hint { margin: 0; font-size: 14px; font-weight: 500; color: var(--page-soft); }
+  .hint code { margin-left: 8px; padding: 3px 8px; border-radius: 8px; background: var(--seg); font: 500 13px/1.4 ui-monospace, Consolas, monospace; color: var(--page-ink); }
+  .seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--seg); }
+  .seg button { height: 30px; padding: 0 14px; border: 0; border-radius: 999px; background: none; color: var(--page-soft); font: 500 14px/1 Onest, system-ui, sans-serif; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: #fff; color: #1d1d1f; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); }
+  .seg button:focus-visible { outline: 2px solid #6b55c9; outline-offset: 2px; }
+  .more { max-width: 40em; margin-top: clamp(64px, 12vh, 120px); }
+  .more h2 { margin: 0; font-size: clamp(28px, 3vw, 44px); font-weight: 600; line-height: 1.1; letter-spacing: -0.02em; }
+  .more p { margin: 18px 0 0; font-size: 17px; line-height: 1.58; color: var(--page-soft); }
+</style>
+</head>
+<body>
+<main>
+  <div class="controls">
+    <p class="hint">Scroll down: the device straightens<code>--hs <b id="hs">0.000</b></code></p>
+    <div class="seg" role="group" aria-label="Device">
+      <button type="button" aria-pressed="true" data-kind="browser">Browser</button>
+      <button type="button" aria-pressed="false" data-kind="phone">Phone</button>
+    </div>
+  </div>
+
+  <header class="hero">
+    <div class="hero-stage">
+      <div class="hero-text">
+        <p class="hero-kicker">B2B dashboard · Web · 2026</p>
+        <h1>Review queue</h1>
+        <p class="hero-tagline">One list for everything a moderator checks: what's waiting, what's flagged and why.</p>
+      </div>
+      <figure class="hero-art hero-art--browser" style="--oar:1.1643">
+        <div class="hero-device">
+          <div class="hero-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+          <img class="hero-screen" src="queue.svg" width="1280" height="800" alt="Review queue dashboard: tabs, filters and a table of items waiting for review" decoding="async" fetchpriority="high" draggable="false">
+        </div>
+        <picture class="hero-obj" aria-hidden="true">
+          <source type="image/avif" srcset="lens.avif">
+          <img src="lens.webp" alt="" width="900" height="773" decoding="async" draggable="false">
+        </picture>
+      </figure>
+      <figure class="hero-art hero-art--phone" style="--oar:1.1643" hidden>
+        <div class="hero-device">
+          <img class="hero-screen" src="phone-today.svg" width="402" height="874" alt="Plant care app: the Today screen" decoding="async" draggable="false">
+        </div>
+        <picture class="hero-obj" aria-hidden="true">
+          <source type="image/avif" srcset="lens.avif">
+          <img src="lens.webp" alt="" width="900" height="773" decoding="async" draggable="false">
+        </picture>
+      </figure>
+    </div>
+    <dl class="hero-facts">
+      <div><dt>Role</dt><dd>Product designer</dd></div>
+      <div><dt>Team</dt><dd>Two designers, five engineers</dd></div>
+      <div><dt>Timeline</dt><dd>2026, four months</dd></div>
+      <div><dt>Platform</dt><dd>Web, desktop</dd></div>
+    </dl>
+  </header>
+
+  <section class="more">
+    <h2>The brief</h2>
+    <p>By the time the hero is 80% gone, the device faces you straight. The turn eases in over 0.9 s, so a fast flick still reads as one smooth move.</p>
+    <p>The object in front rises by 4% of the art's width and follows the mouse twice as far as the device: two layers at different depth make the scene feel like it has a camera.</p>
+  </section>
+</main>
+<script src="../variants/html/hero.js"></script>
+<script>
+  // demo only: the device switch and the live --hs readout
+  const stage = document.querySelector('.hero-stage');
+  const out = document.getElementById('hs');
+  new MutationObserver(() => { out.textContent = stage.style.getPropertyValue('--hs') || '0.000'; })
+    .observe(stage, { attributes: true, attributeFilter: ['style'] });
+  document.querySelectorAll('.seg button').forEach((b) => b.addEventListener('click', () => {
+    document.querySelectorAll('.seg button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    document.querySelectorAll('.hero-art').forEach((a) => { a.hidden = !a.classList.contains(`hero-art--${b.dataset.kind}`); });
+  }));
+</script>
+</body>
+</html>

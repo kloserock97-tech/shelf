@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Umbrella Hat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@500&display=swap" rel="stylesheet">
+<style>
+  html, body { height: 100%; margin: 0; }
+  body {
+    overflow: hidden;
+    /* light photo studio: a cool grey wall that brightens towards the floor line, a soft spot of light behind the object */
+    background:
+      radial-gradient(ellipse 62% 20% at 50% 68%, #f8f9fbe6 0%, #f8f9fb00 100%),
+      radial-gradient(ellipse 46% 42% at 50% 42%, #eef0f3cc 0%, #eef0f300 100%),
+      linear-gradient(180deg, #d2d5da 0%, #dcdfe3 34%, #e8eaed 58%, #f3f4f6 68%, #e5e7ea 82%, #d5d8dc 100%);
+    font-family: Onest, "Segoe UI", Roboto, sans-serif;
+  }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; cursor: pointer; }
+  .hud { position: fixed; left: 0; right: 0; bottom: max(18px, env(safe-area-inset-bottom)); display: flex; justify-content: center; pointer-events: none; }
+  .hud button {
+    pointer-events: auto; display: inline-flex; align-items: center; gap: 8px;
+    height: 36px; padding: 0 16px 0 13px; border: 0; border-radius: 999px;
+    font: 500 14px/1 Onest, "Segoe UI", Roboto, sans-serif; color: #1d1d1f;
+    background: rgba(255, 255, 255, 0.72); box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.12), 0 6px 18px rgba(30, 34, 40, 0.1);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); cursor: pointer;
+  }
+  .hud button:hover { background: rgba(255, 255, 255, 0.9); }
+  .hud button:focus-visible { outline: 2px solid #0073e6; outline-offset: 2px; }
+  .hud svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"}}</script>
+</head>
+<body>
+<canvas id="stage" aria-label="A low-poly cap with an umbrella on a stand. Click to drop it again."></canvas>
+<div class="hud">
+  <button type="button" id="replay">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+    Replay
+  </button>
+</div>
+<script type="module" src="../variants/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>CRT Screen Shader</title>
+<style>
+  html, body { margin: 0; min-height: 100%; background: transparent; }
+  body {
+    min-height: 100vh; box-sizing: border-box; padding: 20px 16px 76px;
+    display: flex; flex-wrap: wrap; gap: 20px 28px; align-items: center; justify-content: center;
+    font: 13px/1.3 "Segoe UI", system-ui, sans-serif; color: CanvasText;
+  }
+  /* the plastic around the tube; the corners the shader discards show its dark glass */
+  .bezel {
+    width: min(620px, 100%, calc((100vh - 110px) * 4 / 3)); aspect-ratio: 4 / 3; box-sizing: border-box; padding: 4.2%;
+    border-radius: 22px; background: linear-gradient(160deg, #e3dcc6, #c9c0a4); box-shadow: 0 18px 40px #0000003d, inset 0 2px 0 #fffbe9, inset 0 -3px 6px #00000026;
+  }
+  .glass { width: 100%; height: 100%; border-radius: 16px; background: #101312; box-shadow: inset 0 3px 10px #000000b3; overflow: hidden; }
+  #screen { display: block; width: 100%; height: 100%; }
+  .panel { display: grid; gap: 9px; width: 220px; }
+  .panel label { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; }
+  .panel input { grid-column: 1 / -1; width: 100%; margin: 0; accent-color: #d06a2a; }
+  .panel output { font-variant-numeric: tabular-nums; opacity: .7; }
+  .presets { display: flex; gap: 8px; }
+  .presets button { flex: 1; font: inherit; padding: 6px 10px; border-radius: 8px; border: 1px solid color-mix(in srgb, CanvasText 22%, transparent); background: Canvas; color: CanvasText; cursor: pointer; }
+  .presets button:focus-visible, .panel input:focus-visible { outline: 2px solid #0a64d8; outline-offset: 2px; }
+  @media (max-width: 700px) { .panel { width: min(360px, 100%); grid-template-columns: 1fr 1fr; } .presets { grid-column: 1 / -1; } }
+</style>
+</head>
+<body>
+<div class="bezel"><div class="glass"><canvas id="screen" aria-label="A test picture on a CRT screen"></canvas></div></div>
+<form class="panel" onsubmit="return false">
+  <div class="presets"><button type="button" data-preset="subtle">Subtle</button><button type="button" data-preset="strong">Strong</button></div>
+  <label>Curve <output data-for="curve"></output><input data-param="curve" type="range" min="0" max="0.45" step="0.005"></label>
+  <label>Corners <output data-for="corner"></output><input data-param="corner" type="range" min="0.02" max="0.22" step="0.002"></label>
+  <label>Channel drift <output data-for="chroma"></output><input data-param="chroma" type="range" min="0" max="0.05" step="0.001"></label>
+  <label>Scanlines <output data-for="scan"></output><input data-param="scan" type="range" min="0" max="0.4" step="0.005"></label>
+  <label>Line count <output data-for="scanCount"></output><input data-param="scanCount" type="range" min="200" max="1200" step="10"></label>
+  <label>Flicker <output data-for="flicker"></output><input data-param="flicker" type="range" min="0" max="0.06" step="0.001"></label>
+  <label>Vignette <output data-for="vignette"></output><input data-param="vignette" type="range" min="0.3" max="1.2" step="0.01"></label>
+  <label>Interference <output data-for="static"></output><input data-param="static" type="range" min="0" max="1" step="0.01"></label>
+</form>
+<script type="module">
+  import { createCrt, DEFAULTS } from "../variants/js/crt.js";
+
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  /* the picture on the tube: a small test card drawn here, animated */
+  const picture = document.createElement("canvas");
+  picture.width = 800; picture.height = 600;
+  const g = picture.getContext("2d");
+  function paint(t) {
+    const sky = g.createLinearGradient(0, 0, 0, 380);
+    sky.addColorStop(0, "#1b2f6b"); sky.addColorStop(.6, "#d9744a"); sky.addColorStop(1, "#f4c27a");
+    g.fillStyle = sky; g.fillRect(0, 0, 800, 380);
+    g.fillStyle = "#ffe7a3"; g.beginPath(); g.arc(560, 250 + Math.sin(t * .4) * 12, 54, 0, Math.PI * 2); g.fill();
+    g.fillStyle = "#2c3d22"; g.beginPath(); g.moveTo(0, 380); g.quadraticCurveTo(300, 190, 800, 330); g.lineTo(800, 380); g.fill();
+    g.strokeStyle = "#ffffff26"; g.lineWidth = 1;
+    for (let x = 0; x <= 800; x += 50) { g.beginPath(); g.moveTo(x + .5, 0); g.lineTo(x + .5, 380); g.stroke(); }
+    for (let y = 0; y <= 380; y += 50) { g.beginPath(); g.moveTo(0, y + .5); g.lineTo(800, y + .5); g.stroke(); }
+    const bars = ["#c0c0c0", "#c0c000", "#00c0c0", "#00c000", "#c000c0", "#c00000", "#0000c0", "#101010"];
+    bars.forEach((c, i) => { g.fillStyle = c; g.fillRect(i * 100, 380, 100, 150); });
+    for (let i = 0; i < 16; i++) { const v = Math.round(i / 15 * 255); g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(i * 50, 530, 50, 70); }
+    g.font = "bold 30px Consolas, 'Courier New', monospace"; g.fillStyle = "#fff"; g.textBaseline = "top";
+    const now = new Date();
+    g.fillText(`CH 03  ${now.toTimeString().slice(0, 8)}`, 30, 26);
+    g.font = "bold 64px 'Trebuchet MS', Verdana, sans-serif"; g.fillText("QUIET HILL TV", 30, 70 + Math.round(Math.sin(t * 1.3) * 3));
+  }
+
+  const screen = document.querySelector("#screen");
+  const crt = createCrt(screen, picture);
+  const PRESETS = {
+    subtle: { ...DEFAULTS },
+    strong: { ...DEFAULTS, curve: 0.24, corner: 0.07, chroma: 0.018, scan: 0.16, scanCount: 520, flicker: 0.012, vignette: 0.7 },
+  };
+  const inputs = [...document.querySelectorAll("[data-param]")];
+  const show = () => inputs.forEach((input) => { input.value = crt.params[input.dataset.param]; document.querySelector(`[data-for="${input.dataset.param}"]`).value = Number(input.value).toString(); });
+  const use = (name) => { Object.assign(crt.params, PRESETS[name]); if (reduced) crt.params.flicker = 0; show(); };
+  inputs.forEach((input) => input.addEventListener("input", () => { crt.params[input.dataset.param] = Number(input.value); show(); }));
+  document.querySelectorAll("[data-preset]").forEach((b) => b.addEventListener("click", () => use(b.dataset.preset)));
+  use("strong");
+
+  const start = performance.now();
+  const frame = (now) => {
+    const t = reduced ? 0 : (now - start) / 1000;
+    paint(t);
+    crt.render(t);
+    requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+</script>
+</body>
+</html>

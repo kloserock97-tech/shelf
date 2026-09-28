@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Cursor Parallax</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../variants/html/cursor-parallax.css">
+<style>
+  html, body { height: 100%; margin: 0; background: transparent; }
+  body {
+    display: grid; place-items: center; overflow: hidden;
+    font-family: Onest, "Segoe UI", Roboto, sans-serif; color: #1d1d1f;
+    --muted: #5c5c61; --card: #ffffff; --edge: rgba(0, 0, 0, 0.08); --chip: rgba(255, 255, 255, 0.86);
+  }
+  .scene {
+    position: relative; isolation: isolate;
+    width: min(1040px, 100% - 40px);
+    display: grid; grid-template-columns: 1fr 1.08fr; gap: clamp(28px, 5vw, 72px); align-items: center;
+  }
+  .blob { position: absolute; z-index: -1; border-radius: 50%; pointer-events: none; }
+  .blob--sun { width: 44%; aspect-ratio: 1; right: -2%; top: -14%; background: radial-gradient(circle at 40% 40%, #ffdcae 0%, #f6b27a 45%, rgba(246, 178, 122, 0) 70%); opacity: 0.6; }
+  .blob--ring { width: 88px; aspect-ratio: 1; left: 36%; bottom: -8%; border: 2px solid rgba(0, 115, 230, 0.35); }
+  .blob--dot { width: 18px; aspect-ratio: 1; left: 2%; top: -6%; background: #f09a8c; }
+
+  .copy h1 { margin: 0 0 18px; font-size: clamp(34px, 5.2vw, 60px); line-height: 1.02; letter-spacing: -0.03em; font-weight: 650; }
+  .copy p { margin: 0 0 26px; max-width: 34ch; font-size: clamp(15px, 1.5vw, 17px); line-height: 1.5; color: var(--muted); }
+  .pill {
+    display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 22px; border-radius: 999px;
+    background: #1d1d1f; color: #fff; font-weight: 500; font-size: 15px; text-decoration: none;
+  }
+
+  .card-wrap { position: relative; margin: 0; }
+  .card { margin: 0; padding: 12px; border-radius: 28px; background: var(--card); box-shadow: 0 34px 60px -24px rgba(30, 28, 40, 0.38), 0 0 0 0.5px var(--edge); }
+  .card .cp-window { aspect-ratio: 4 / 3.1; border-radius: 18px; }
+  .card figcaption { display: flex; justify-content: space-between; padding: 12px 6px 4px; font-size: 14px; font-weight: 500; }
+  .card figcaption span:last-child { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  .chip {
+    position: absolute; right: -16px; top: 9%; display: inline-flex; align-items: center; gap: 8px;
+    padding: 9px 14px; border-radius: 999px; background: var(--chip); box-shadow: 0 10px 30px -10px rgba(30, 28, 40, 0.3), 0 0 0 0.5px var(--edge);
+    font-size: 14px; font-weight: 500; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  }
+  .chip svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+  .play {
+    position: absolute; left: -26px; bottom: 24%; width: 66px; aspect-ratio: 1; border: 0; border-radius: 50%; cursor: pointer;
+    display: grid; place-items: center; background: #f2c14e; color: #1d1d1f; box-shadow: 0 16px 30px -12px rgba(120, 80, 0, 0.5);
+  }
+  .play svg { width: 22px; height: 22px; margin-left: 3px; fill: currentColor; }
+  .sticker {
+    position: absolute; left: -20px; top: -26px; width: 74px; aspect-ratio: 1; border-radius: 50%;
+    display: grid; place-items: center; rotate: -12deg; background: #e8604c; color: #fff;
+    font: 600 16px/1 Onest, "Segoe UI", sans-serif; letter-spacing: 0.02em; box-shadow: 0 12px 24px -10px rgba(160, 50, 30, 0.55);
+  }
+
+  @media (max-width: 760px) {
+    .scene { grid-template-columns: 1fr; gap: 34px; width: min(420px, 100% - 44px); }
+    .copy p { margin-bottom: 20px; }
+    .chip { right: -10px; }
+    .play { left: -14px; width: 56px; }
+    .sticker { left: -12px; top: -22px; width: 62px; font-size: 14px; }
+    .blob--sun { width: 80%; right: -20%; top: 38%; }
+  }
+  @media (prefers-color-scheme: dark) {
+    body { color: #f5f5f7; --muted: #a1a1a6; --card: #2c2c2e; --edge: rgba(255, 255, 255, 0.1); --chip: rgba(44, 44, 46, 0.86); }
+    .pill { background: #f5f5f7; color: #000; }
+  }
+</style>
+</head>
+<body>
+<main class="scene" data-cursor-parallax>
+  <span class="blob blob--sun cp-layer" style="--pd:5"></span>
+  <span class="blob blob--ring cp-layer" style="--pd:9"></span>
+  <span class="blob blob--dot cp-layer" style="--pd:26"></span>
+
+  <section class="copy">
+    <h1 class="cp-layer" style="--pd:18">Layers drift with the cursor</h1>
+    <p class="cp-layer" style="--pd:14">Every layer moves by its own depth. The card leans towards the pointer, and the picture inside slides the other way, like a view through a window.</p>
+    <a class="pill cp-layer" style="--pd:15" href="#" onclick="return false">Explore</a>
+  </section>
+
+  <div class="card-wrap">
+    <div class="cp-layer" style="--pd:22">
+      <figure class="card cp-tilt cp-float" style="--tilt:6deg">
+        <div class="cp-window">
+          <div class="cp-window__media">
+            <svg viewBox="0 0 400 310" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+              <defs>
+                <linearGradient id="cp-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fb3d6"/><stop offset="0.58" stop-color="#f1cfa8"/><stop offset="1" stop-color="#f7dcb0"/></linearGradient>
+                <radialGradient id="cp-sun" cx="0.66" cy="0.5" r="0.5"><stop offset="0" stop-color="#fff6e0"/><stop offset="0.14" stop-color="#ffe2b0" stop-opacity="0.8"/><stop offset="1" stop-color="#ffd9a0" stop-opacity="0"/></radialGradient>
+              </defs>
+              <rect width="400" height="310" fill="url(#cp-sky)"/>
+              <rect width="400" height="310" fill="url(#cp-sun)"/>
+              <circle cx="264" cy="152" r="15" fill="#fff7e6"/>
+              <path d="M0 196 C 60 168, 110 178, 160 170 S 260 150, 320 168 S 380 182, 400 174 V310 H0Z" fill="#b9a6b1"/>
+              <path d="M0 212 C 50 194, 120 204, 180 194 S 290 188, 340 202 S 390 210, 400 204 V310 H0Z" fill="#8e8698"/>
+              <path d="M0 234 C 70 212, 140 224, 200 218 S 300 214, 360 226 S 400 230, 400 230 V310 H0Z" fill="#5a6862"/>
+              <path d="M0 262 C 80 244, 160 252, 240 246 S 360 248, 400 242 V310 H0Z" fill="#3b4a40"/>
+            </svg>
+          </div>
+        </div>
+        <figcaption><span>Quiet hill</span><span>18:42</span></figcaption>
+      </figure>
+    </div>
+    <span class="chip cp-layer" style="--pd:12"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h7"/></svg>Wind 3 m/s</span>
+    <button class="play cp-layer" style="--pd:20" type="button" aria-label="Play"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l12-7.5z"/></svg></button>
+    <span class="sticker cp-layer" style="--pd:26">New</span>
+  </div>
+</main>
+<script src="../variants/html/cursor-parallax.js"></script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Copy Address Button</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@300..600&display=swap">
+<link rel="stylesheet" href="../variants/html/copy-address.css">
+<style>
+  html, body { height: 100%; margin: 0; background: transparent; }
+  body { display: grid; place-items: center; font-family: "Onest", system-ui, sans-serif; }
+  main { display: grid; justify-items: center; gap: 18px; padding: 24px 16px; text-align: center; }
+  p { margin: 0; font-size: 13px; color: #636366; }
+  @media (prefers-color-scheme: dark) { p { color: #aaaaaf; } }
+  @media (prefers-color-scheme: light) { .copy-address { --copy-focus: #1d1d1f; } }
+</style>
+</head>
+<body>
+<main>
+  <button class="copy-address" type="button" data-copy="hello@example.com">
+    <svg class="copy-address__ic copy-address__ic--copy" viewBox="0 0 16 16" aria-hidden="true"><rect x="5.6" y="5.6" width="8" height="8" rx="1.6"/><path d="M10.6 5.6V4a1.6 1.6 0 0 0-1.6-1.6H4A1.6 1.6 0 0 0 2.4 4v5a1.6 1.6 0 0 0 1.6 1.6h1.6"/></svg>
+    <svg class="copy-address__ic copy-address__ic--done" viewBox="0 0 16 16" aria-hidden="true"><path d="m3 8.6 3.2 3.2L13 5"/></svg>
+    <span class="copy-address__label">hello@example.com</span>
+  </button>
+  <p>Click the address, it copies itself.</p>
+</main>
+<script src="../variants/html/copy-address.js"></script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>GPU Quality Governor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&display=swap">
+<style>
+  html, body { height: 100%; margin: 0; background: #1d1f36; }
+  body { overflow: hidden; color: #eef0f7; font: 400 13px/1.35 Onest, system-ui, sans-serif; }
+  #scene { position: fixed; inset: 0; display: block; width: 100%; height: 100%; }
+  .panel {
+    position: absolute; top: 16px; left: 16px; box-sizing: border-box; width: min(304px, calc(100vw - 32px));
+    padding: 14px 16px 14px; border-radius: 18px; background: rgb(16 17 34 / .62);
+    box-shadow: 0 12px 32px rgb(0 0 0 / .28), inset 0 0 0 .5px rgb(255 255 255 / .16);
+    -webkit-backdrop-filter: blur(16px) saturate(1.3); backdrop-filter: blur(16px) saturate(1.3);
+  }
+  .panel h1 { margin: 0 0 8px; font-size: 13px; font-weight: 600; letter-spacing: .01em; }
+  .dim { color: rgb(238 240 247 / .62); }
+  .ms { display: flex; align-items: baseline; gap: 6px; }
+  .ms b { font-size: 30px; font-weight: 500; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .spark { display: block; width: 100%; height: 40px; margin: 4px 0 10px; }
+  dl { display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; margin: 0 0 10px; }
+  dt { color: rgb(238 240 247 / .62); }
+  dd { margin: 0; font-variant-numeric: tabular-nums; }
+  .rungs { display: inline-flex; gap: 3px; margin-right: 8px; vertical-align: 1px; }
+  .rungs i { width: 7px; height: 7px; border-radius: 50%; box-shadow: inset 0 0 0 1.2px rgb(238 240 247 / .5); }
+  .rungs i.on { background: #ffc79a; box-shadow: none; }
+  .note { margin: 0 0 10px; padding: 8px 10px; border-radius: 10px; background: rgb(255 199 154 / .14); color: #ffe1c4; font-size: 12px; }
+  ol { list-style: none; margin: 0 0 12px; padding: 10px 0 0; border-top: .5px solid rgb(255 255 255 / .16); font-size: 12px; min-height: 5.4em; }
+  ol li { margin: 0 0 3px; }
+  ol li span { display: inline-block; min-width: 3.6em; color: rgb(238 240 247 / .55); font-variant-numeric: tabular-nums; }
+  .controls { display: flex; align-items: center; gap: 10px; }
+  .controls label { display: flex; align-items: center; gap: 8px; flex: 1; }
+  .controls input { flex: 1; min-width: 0; accent-color: #ffc79a; }
+  .controls output { min-width: 2.2em; font-variant-numeric: tabular-nums; }
+  button {
+    appearance: none; border: 0; margin: 0; padding: 7px 12px; border-radius: 999px; cursor: pointer;
+    background: rgb(255 255 255 / .12); color: inherit; font: 500 12px/1 Onest, system-ui, sans-serif;
+  }
+  button:hover { background: rgb(255 255 255 / .2); }
+  button:focus-visible, input:focus-visible { outline: 2px solid #ffc79a; outline-offset: 2px; }
+</style>
+</head>
+<body>
+<canvas id="scene" aria-label="A dusk sky with drifting clouds, drawn by a heavy shader"></canvas>
+<section class="panel" aria-label="Quality governor">
+  <h1>GPU quality governor</h1>
+  <p class="note" data-note hidden></p>
+  <div class="ms"><b data-ms>–</b><span class="dim">ms · <span data-ms-label>GPU time</span>, budget 15</span></div>
+  <canvas class="spark" data-spark aria-hidden="true"></canvas>
+  <dl>
+    <dt>Tier</dt><dd><span class="rungs" data-rungs aria-hidden="true"></span><span data-tier></span></dd>
+    <dt>Quality</dt><dd data-quality></dd>
+    <dt>Window</dt><dd data-window></dd>
+    <dt>Changes</dt><dd data-changes></dd>
+    <dt>State</dt><dd data-state></dd>
+  </dl>
+  <ol data-log aria-live="polite"></ol>
+  <div class="controls">
+    <label><span class="dim">Load</span><input type="range" min="1" max="32" step="1" value="4" data-load aria-label="Samples per pixel"><output data-load-text>×4</output></label>
+    <button type="button" data-restart>Restart</button>
+  </div>
+</section>
+<script type="module" src="app.js"></script>
+</body>
+</html>

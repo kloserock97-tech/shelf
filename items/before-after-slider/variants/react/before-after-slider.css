@@ -1,0 +1,54 @@
+/* Before / after slider: two screens under one handle, both fully visible on a stage that fits the window.
+   Ported from Portfolio 3D TS2 (src/ui/case-story.css: .cs-stage, .cs-compare-*). Colours follow the page's
+   color-scheme through light-dark(); the label pills and the handle sit on the screens and keep their colours. */
+.ba {
+  --ba-ink: light-dark(#1d1d1f, #f5f5f7);
+  --ba-soft: color-mix(in srgb, var(--ba-ink) 62%, transparent);
+  --ba-s1: light-dark(#f0f0f3, #2b2b2f);
+  --ba-s2: light-dark(#e2e2e7, #1e1e21);
+  --ba-shade: light-dark(#1d1d1f, #000);
+  --stage-h: clamp(340px, calc(100svh - 230px), 780px);
+  --stage-pad: clamp(16px, 2.6vw, 44px);
+  margin: 0; min-width: 0; color: var(--ba-ink); container-type: inline-size;
+}
+.ba-title { margin: 0 0 16px; max-width: 26em; font-size: clamp(22px, 1.9vw, 28px); font-weight: 600; line-height: 1.2; letter-spacing: -0.012em; }
+.ba-box {
+  position: relative; display: grid; place-items: center; width: 100%; overflow: hidden; border-radius: 28px;
+  height: min(var(--stage-h), calc((100cqw - 2 * var(--stage-pad)) / var(--ar, 1.6) + 2 * var(--stage-pad)));
+  /* vertical swipes still scroll the page; horizontal ones move the handle */
+  touch-action: pan-y; cursor: ew-resize; user-select: none; -webkit-user-select: none;
+}
+.ba-after, .ba-before { position: absolute; inset: 0; display: grid; place-items: center; }
+.ba-after { background: linear-gradient(180deg, color-mix(in srgb, var(--ba-s1) 60%, light-dark(#fff, #3a3a3f)), color-mix(in srgb, var(--ba-s2) 50%, light-dark(#e9e9ee, #28282c))); }
+.ba-before { background: linear-gradient(180deg, var(--ba-s1), var(--ba-s2)); clip-path: inset(0 calc(100% - var(--pos, 50%)) 0 0); }
+/* the screen size is computed, not a percentage; --iar is the image's own ratio when it differs from the stage */
+.ba-box img {
+  display: block; width: auto; min-width: 0; aspect-ratio: var(--iar, var(--ar, 1.6));
+  height: min(calc(var(--stage-h) - 2 * var(--stage-pad)), calc((100cqw - 2 * var(--stage-pad)) / var(--iar, var(--ar, 1.6))));
+  border-radius: 12px; box-shadow: 0 22px 50px color-mix(in srgb, var(--ba-shade) 22%, transparent);
+  pointer-events: none; -webkit-user-drag: none;
+}
+.ba-label {
+  position: absolute; top: 16px; z-index: 1; padding: 8px 14px; border-radius: 999px;
+  background: rgb(29 29 31 / 0.82); color: #fff; font-size: 14px; font-weight: 500; line-height: 1.2;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); pointer-events: none;
+}
+.ba-label--a { left: 16px; }
+.ba-label--b { right: 16px; }
+.ba-handle { position: absolute; top: 0; bottom: 0; left: var(--pos, 50%); width: 2px; translate: -1px 0; background: #fff; box-shadow: 0 0 0 1px rgb(29 29 31 / 0.12); pointer-events: none; }
+.ba-handle i { position: absolute; left: 50%; top: 50%; translate: -50% -50%; width: 44px; height: 44px; border-radius: 50%; background: #fff; box-shadow: 0 8px 24px rgb(29 29 31 / 0.3); }
+/* two chevrons drawn with borders */
+.ba-handle i::before, .ba-handle i::after { content: ""; position: absolute; top: 50%; width: 8px; height: 8px; border-top: 2px solid #1d1d1f; border-left: 2px solid #1d1d1f; }
+.ba-handle i::before { left: 11px; translate: 0 -50%; rotate: -45deg; }
+.ba-handle i::after { right: 11px; translate: 0 -50%; rotate: 135deg; }
+/* a real range input gives keyboard and screen readers a slider; the pointer is handled by the box,
+   so the line stays exactly under the finger (a native thumb is off by up to half its width near the edges) */
+.ba-range { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; pointer-events: none; }
+.ba-box:has(.ba-range:focus-visible) { outline: 2px solid var(--ba-ink); outline-offset: 3px; }
+.ba figcaption { padding: 14px 4px 0; max-width: 46em; font-size: 15px; line-height: 1.45; color: var(--ba-soft); }
+@media (max-width: 760px) {
+  .ba-box { border-radius: 22px; }
+  .ba-label { top: 12px; padding: 6px 12px; font-size: 13px; }
+  .ba-label--a { left: 12px; }
+  .ba-label--b { right: 12px; }
+}

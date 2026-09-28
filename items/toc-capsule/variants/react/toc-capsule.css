@@ -1,0 +1,87 @@
+/* Contents capsule: a floating pill with the current section and a reading ring; it opens a sheet with the page map.
+   Ported from Portfolio 3D TS2 (src/ui/case-story.css: .cs-toc-btn, .cs-sheet, .cs-toc).
+   Colours follow the page's color-scheme through light-dark(): declare `color-scheme: light dark` to get the dark set.
+   Lift it above your own bottom bar with --toc-bottom on :root (default 20px). */
+.toc-capsule, .toc-sheet {
+  --toc-ink: light-dark(#1d1d1f, #f5f5f7);
+  --toc-accent: var(--toc-ink);                       /* the current entry; graphite, as on the case page */
+  --toc-shade: light-dark(#1d1d1f, #000);
+  --toc-faint: color-mix(in srgb, var(--toc-ink) 44%, transparent);
+  --toc-soft: color-mix(in srgb, var(--toc-ink) 62%, transparent);
+  --toc-panel: light-dark(rgb(255 255 255 / 0.92), rgb(30 30 32 / 0.92));
+  --toc-cap: light-dark(rgb(29 29 31 / 0.86), rgb(245 245 247 / 0.9));
+  --toc-cap-solid: light-dark(#1d1d1f, #f5f5f7);
+  --toc-cap-fg: light-dark(#fff, #1d1d1f);
+  --toc-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* ── capsule ── */
+.toc-capsule {
+  position: fixed; left: 50%; bottom: calc(var(--toc-bottom, 20px) + env(safe-area-inset-bottom)); translate: -50% 0; z-index: 8;
+  display: inline-flex; align-items: center; gap: 12px; height: 50px; max-width: min(92vw, 460px); padding: 0 12px 0 18px;
+  border: 0; border-radius: 999px; background: var(--toc-cap); color: var(--toc-cap-fg);
+  font-family: inherit; font-size: 15px; font-weight: 500; line-height: 1;
+  -webkit-backdrop-filter: blur(20px) saturate(1.6); backdrop-filter: blur(20px) saturate(1.6);
+  box-shadow: 0 16px 40px color-mix(in srgb, var(--toc-shade) 34%, transparent);
+  cursor: pointer; transition: scale 0.3s var(--toc-ease), background 0.3s var(--toc-ease);
+}
+.toc-capsule:hover { scale: 1.03; background: var(--toc-cap-solid); }
+.toc-capsule:active { scale: 0.98; }
+.toc-capsule:focus-visible { outline: 2px solid var(--toc-cap-solid); outline-offset: 3px; }
+.toc-capsule > svg { flex: none; width: 17px; height: 17px; opacity: 0.8; }
+.toc-now { display: inline-flex; align-items: baseline; gap: 9px; min-width: 0; }
+.toc-now b { font-weight: 500; font-variant-numeric: tabular-nums; opacity: 0.6; }
+.toc-now em { font-style: normal; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* how much of the page is read: a conic fill, hollowed by a radial mask */
+.toc-ring {
+  flex: none; width: 28px; height: 28px; border-radius: 50%;
+  background: conic-gradient(currentColor calc(var(--p, 0) * 360deg), color-mix(in srgb, currentColor 20%, transparent) 0);
+  -webkit-mask: radial-gradient(circle, transparent 9.5px, #000 10px); mask: radial-gradient(circle, transparent 9.5px, #000 10px);
+}
+
+/* ── sheet: a panel above the capsule, a bottom sheet on phones ── */
+.toc-sheet[hidden] { display: none; }
+.toc-sheet {
+  position: fixed; inset: 0; z-index: 20; display: grid; align-items: end; justify-items: center;
+  background: light-dark(rgb(10 12 16 / 0.36), rgb(0 0 0 / 0.5)); color: var(--toc-ink); animation: toc-fade 0.25s ease;
+}
+.toc-panel {
+  width: min(100%, 460px); max-height: min(76vh, 640px); margin-bottom: calc(var(--toc-bottom, 20px) + 64px + env(safe-area-inset-bottom));
+  overflow-y: auto; overscroll-behavior: contain; padding: 6px 12px 14px; border-radius: 28px; background: var(--toc-panel);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6); backdrop-filter: blur(24px) saturate(1.6);
+  box-shadow: 0 30px 80px rgb(10 12 16 / 0.3); animation: toc-rise 0.45s var(--toc-ease);
+}
+.toc-head { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between; padding: 12px 8px 10px 12px; }
+.toc-head b { font-size: 17px; font-weight: 600; }
+.toc-close {
+  display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 0; border-radius: 50%;
+  background: color-mix(in srgb, var(--toc-ink) 8%, transparent); color: var(--toc-ink); font: inherit; font-size: 20px; line-height: 1; cursor: pointer;
+}
+.toc-close:focus-visible { outline: 2px solid var(--toc-accent); outline-offset: 2px; }
+.toc-list, .toc-list ol { margin: 0; padding: 0; list-style: none; }
+.toc-list { display: grid; gap: 1px; }
+.toc-list a {
+  display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 14px;
+  color: var(--toc-ink); font-size: 16px; font-weight: 500; line-height: 1.3; text-decoration: none; transition: background 0.2s var(--toc-ease);
+}
+.toc-list a svg { flex: none; width: 18px; height: 18px; color: var(--toc-faint); }
+.toc-list a span { min-width: 20px; font-size: 14px; color: var(--toc-faint); font-variant-numeric: tabular-nums; }
+.toc-list a em { font-style: normal; }
+@media (hover: hover) { .toc-list a:hover { background: color-mix(in srgb, var(--toc-ink) 6%, transparent); } }
+.toc-list a:focus-visible { outline: 2px solid var(--toc-accent); outline-offset: -2px; }
+.toc-list a.is-on { background: color-mix(in srgb, var(--toc-accent) 12%, transparent); }
+.toc-list a.is-on svg, .toc-list a.is-on span { color: var(--toc-accent); }
+/* nested entries (deep dives) line up with the labels above them */
+.toc-list ol { display: grid; padding: 0 0 4px 62px; }
+.toc-list ol a { padding: 8px 12px; font-size: 15px; font-weight: 400; color: var(--toc-soft); }
+.toc-list ol a.is-on { color: var(--toc-accent); }
+@keyframes toc-fade { from { opacity: 0; } }
+@keyframes toc-rise { from { translate: 0 30px; opacity: 0; } }
+
+@media (max-width: 760px) {
+  .toc-panel { width: 100%; margin-bottom: 0; border-radius: 26px 26px 0 0; padding-bottom: calc(18px + env(safe-area-inset-bottom)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .toc-capsule { transition: none; }
+  .toc-sheet, .toc-panel { animation: none; }
+}

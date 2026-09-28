@@ -1,0 +1,69 @@
+/* Link-preview card, 1200×630. Every size is design pixels × --u, so the card keeps its proportions in any
+   container and is exactly 1200 px wide when it is shot. The text sits on the left over a dark veil, the picture
+   shows through on the right: in a feed the preview is often cropped or shrunk, and the name must survive that. */
+.og-frame { container-type: inline-size; }
+.og {
+  --u: calc(100cqw / 1200);
+  --accent: #9fe38b;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  aspect-ratio: 1200 / 630;
+  background: #1e2219;
+  color: #f4f1ea;
+  font-family: Onest, system-ui, sans-serif;
+}
+.og * { margin: 0; box-sizing: border-box; }
+
+/* the picture: hills at dusk, gradients only (top layer first: near hill, mid hill, far ridge, sun, sky) */
+.og__art {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(170% 72% at 60% 112%, #1d3121 0 50%, #1d312100 50.3%),
+    radial-gradient(120% 76% at 100% 104%, #2c472e 0 50%, #2c472e00 50.3%),
+    radial-gradient(160% 104% at 30% 112%, #4a633f 0 50%, #4a633f00 50.3%),
+    radial-gradient(circle at 76% 52%, #ffe9bd 0 calc(34 * var(--u)), #ffd49a66 calc(36 * var(--u)), #ffd49a00 calc(190 * var(--u))),
+    linear-gradient(180deg, #2f3a57 0%, #6d6784 36%, #d99c74 60%, #f0bf8c 72%);
+}
+/* the veil keeps the text readable whatever the picture is */
+.og__veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(100deg, rgba(16, 20, 13, .95) 0%, rgba(18, 23, 15, .9) 46%, rgba(22, 28, 18, .5) 72%, rgba(24, 30, 20, .14) 100%),
+    radial-gradient(120% 90% at 8% 100%, rgba(10, 14, 8, .6), transparent 60%);
+}
+.og__wrap {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: calc(70 * var(--u)) calc(76 * var(--u));
+}
+.og__kicker { font-size: calc(19 * var(--u)); font-weight: 500; letter-spacing: .26em; text-transform: uppercase; color: var(--accent); opacity: .95; }
+.og h1 {
+  max-width: 11em;
+  font-size: calc(82 * var(--u)); font-weight: 300; line-height: 1.02; letter-spacing: -.035em;
+  text-shadow: 0 calc(2 * var(--u)) calc(26 * var(--u)) rgba(0, 0, 0, .5);
+}
+.og h1 b { font-weight: 400; }
+.og__role {
+  max-width: 13.6em; margin-top: calc(22 * var(--u));
+  font-size: calc(31 * var(--u)); font-weight: 300; line-height: 1.3; letter-spacing: -.012em; color: #e4e2d6;
+  text-shadow: 0 calc(1 * var(--u)) calc(18 * var(--u)) rgba(0, 0, 0, .45);
+}
+.og__foot { display: flex; align-items: center; gap: calc(14 * var(--u)); }
+.og__chip {
+  padding: calc(11 * var(--u)) calc(22 * var(--u)); border-radius: 999px; white-space: nowrap;
+  font-size: calc(20 * var(--u)); letter-spacing: .01em; color: #f0eee4;
+  background: rgba(244, 241, 234, .09); box-shadow: inset 0 0 0 calc(1 * var(--u)) rgba(255, 255, 255, .18);
+}
+.og__url { margin-left: auto; white-space: nowrap; font-size: calc(20 * var(--u)); font-weight: 300; letter-spacing: .02em; color: #c9cdbd; }
+.og__mark {
+  position: absolute; top: calc(66 * var(--u)); right: calc(76 * var(--u));
+  display: grid; place-items: center; width: calc(76 * var(--u)); height: calc(76 * var(--u)); border-radius: 50%;
+  background: rgba(16, 20, 13, .5); box-shadow: inset 0 0 0 calc(1 * var(--u)) rgba(255, 255, 255, .22);
+  color: var(--accent); font-size: calc(24 * var(--u)); font-weight: 500; letter-spacing: .04em;
+}

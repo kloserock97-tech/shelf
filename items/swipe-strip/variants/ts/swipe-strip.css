@@ -1,0 +1,29 @@
+/* Swipe strip — native horizontal scrolling with a snap. One swipe is one card; the neighbour peeks 8–10 % of
+   its width from the edge and tells that the strip can be pulled. Card width follows both width and height of the
+   window, so the whole card fits between the heading and the counter on a short screen. */
+.ss {
+  --w: min(76vw, 400px, calc((100svh - 270px) * 0.7));
+  --gap: 14px;
+}
+.ss-strip {
+  display: flex; align-items: stretch; gap: var(--gap);
+  /* half the window minus half a card on both sides: the first and the last card can stand in the centre */
+  padding: 8px calc(50% - var(--w) / 2) 40px; margin-bottom: -32px; /* room for the card shadow */
+  overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
+}
+.ss-strip::-webkit-scrollbar { display: none; }
+.ss-card {
+  position: relative; flex: none; width: var(--w); aspect-ratio: 0.7;
+  /* stop on every card: a strong fling still turns only one */
+  scroll-snap-align: center; scroll-snap-stop: always;
+  opacity: 0.7; scale: 0.94;
+  transition: opacity 0.35s ease, scale 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.5s ease;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.18);
+}
+.ss-card.is-active { opacity: 1; scale: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ss-card { transition: none; scale: 1; }
+}
