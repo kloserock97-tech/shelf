@@ -10,7 +10,7 @@ const out = path.join(ROOT, '.smoke');
 fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out, { recursive: true });
 
-const PAGES = ['', 'type/webgl/', 'favorites/', 'recent/', 'items/spring-toggle/', 'items/windcrest/', 'nope/'];
+const PAGES = ['', 'type/webgl/', 'favorites/', 'items/spring-toggle/', 'items/windcrest/', 'nope/'];
 const problems = [];
 const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] });
 
@@ -136,11 +136,11 @@ const check = (ok, what) => { if (!ok) problems.push(`flow: ${what}`); return ok
   await page.waitForTimeout(500);
   await page.keyboard.press('Escape');
   check((await box()) === '8,8', `a floating sidebar should sit 8px from the window edges, got ${await box()}`);
-  await page.locator('[data-section="types"] .sh-sb__heading').click();
+  await page.locator('section[data-section] .sh-sb__heading >> nth=0').click();
   await page.reload();
   await page.waitForTimeout(300);
-  check((await page.locator('[data-section="types"] .sh-sb__heading').getAttribute('aria-expanded')) === 'false', 'a folded section does not stay folded');
-  await page.locator('[data-section="types"] .sh-sb__heading').click();
+  check((await page.locator('section[data-section] .sh-sb__heading >> nth=0').getAttribute('aria-expanded')) === 'false', 'a folded section does not stay folded');
+  await page.locator('section[data-section] .sh-sb__heading >> nth=0').click();
   await page.keyboard.press('?');
   check(await page.locator('#shortcuts').isVisible(), '? does not open the shortcuts');
   await page.screenshot({ path: path.join(out, 'shortcuts.png') });

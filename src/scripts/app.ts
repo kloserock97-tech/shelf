@@ -1,4 +1,4 @@
-// Shelf in the browser: theme, copy, favourites, recent, the grid, Quick Look, the ⌘K palette and the item page.
+// Shelf in the browser: theme, copy, favourites, the grid, Quick Look, the ⌘K palette and the item page.
 import MiniSearch from 'minisearch';
 import { Check, Contrast, Copy, Keyboard, MessageSquareCode, PanelLeft, TriangleAlert } from 'lucide-static';
 import { cleanSvg } from '../lib/svg';
@@ -161,21 +161,6 @@ function toggleSection(heading: HTMLElement) {
   store.set('shelf:sections', JSON.stringify([...closed]));
 }
 
-// The last opened items, like a chat history, each with its poster.
-function renderOpened() {
-  const sec = $('[data-section="opened"]');
-  const box = $('#sb-opened');
-  if (!sec || !box) return;
-  const list = readList('shelf:recent').map((s) => BY_SLUG.get(s)).filter((e): e is Entry => Boolean(e)).slice(0, 5);
-  sec.hidden = list.length === 0;
-  box.innerHTML = list
-    .map((e) =>
-      `<a class="sh-sb__row" href="${esc(e.url)}" data-tip="${esc(e.title)}">` +
-      `<span class="sh-sb__thumb">${e.poster ? `<img src="${esc(e.poster)}" alt="" loading="lazy" decoding="async">` : ''}</span>` +
-      `<span class="sh-sb__label">${esc(e.title)}</span></a>`)
-    .join('');
-}
-
 // Tooltips name the icons while the sidebar is a rail; the collapse button always has one.
 const tip = $('#tip');
 let tipTimer = 0;
@@ -330,7 +315,7 @@ function wireSeg(seg: HTMLElement | null, onChange?: (value: string, index: numb
   return { select, opts };
 }
 
-/* ---------- favourites and recent ---------- */
+/* ---------- favourites ---------- */
 const favs = new Set(readList('shelf:favorites'));
 function renderFavs() {
   $$('[data-fav]').forEach((b) => {
@@ -349,10 +334,6 @@ function toggleFav(slug: string) {
   renderFavs();
   toast(on ? 'Added to Favorites' : 'Removed from Favorites');
   gridApi?.apply();
-}
-function rememberRecent(slug: string) {
-  const list = [slug, ...readList('shelf:recent').filter((s) => s !== slug && BY_SLUG.has(s))].slice(0, 24);
-  store.set('shelf:recent', JSON.stringify(list));
 }
 
 /* ---------- search ---------- */
@@ -465,15 +446,14 @@ function initGrid(grid: HTMLElement) {
   function apply() {
     let list = cards.slice();
     if (mode === 'favorites') list = list.filter((c) => favs.has(c.dataset.slug!));
-    if (mode === 'recent') list = readList('shelf:recent').map((s) => bySlug.get(s)).filter((c): c is HTMLElement => Boolean(c));
     if (tech) list = list.filter((c) => (c.dataset.tech ?? '').split('|').includes(tech));
     const q = query.trim();
     if (q) {
       const hits = find(q);
       const rank = new Map(hits.map((s, i) => [s, i]));
       list = list.filter((c) => rank.has(c.dataset.slug!));
-      if (mode !== 'recent') list.sort((a, b) => rank.get(a.dataset.slug!)! - rank.get(b.dataset.slug!)!);
-    } else if (mode !== 'recent') {
+      list.sort((a, b) => rank.get(a.dataset.slug!)! - rank.get(b.dataset.slug!)!);
+    } else {
       list.sort(sort === 'name'
         ? (a, b) => (a.dataset.title ?? '').localeCompare(b.dataset.title ?? '')
         : (a, b) => (b.dataset.added ?? '').localeCompare(a.dataset.added ?? '') || (a.dataset.title ?? '').localeCompare(b.dataset.title ?? ''));
@@ -483,7 +463,7 @@ function initGrid(grid: HTMLElement) {
     list.forEach((c) => grid.append(c));
     visible = list;
     if (countEl) countEl.textContent = String(list.length);
-    const empty = list.length ? '' : q || tech ? 'search' : mode === 'favorites' ? 'favorites' : mode === 'recent' ? 'recent' : 'none';
+    const empty = list.length ? '' : q || tech ? 'search' : mode === 'favorites' ? 'favorites' : 'none';
     $$('[data-empty]').forEach((el) => (el.hidden = el.dataset.empty !== empty));
     const qEl = $('[data-empty-query]');
     if (qEl) qEl.textContent = q || tech;
@@ -648,8 +628,7 @@ function renderPalette() {
   const runs: (() => void)[] = [];
   const add = (markup: string, run: () => void) => { rows.push(markup); runs.push(run); };
 
-  const recent = readList('shelf:recent').map((s) => BY_SLUG.get(s)).filter((e): e is Entry => Boolean(e));
-  const items = q ? find(q).map((s) => BY_SLUG.get(s)!).slice(0, 8) : [...recent, ...INDEX.filter((e) => !recent.includes(e))].slice(0, 6);
+  const items = q ? find(q).map((s) => BY_SLUG.get(s)!).slice(0, 8) : INDEX.slice(0, 6);
   if (items.length) rows.push(`<div class="sh-palette__group">${q ? 'Items' : 'Jump to'}</div>`);
   for (const e of items) {
     add(
@@ -660,7 +639,6 @@ function renderPalette() {
     );
   }
   const places = $$<HTMLAnchorElement>('#sidebar .sh-sb__row[href]')
-    .filter((a) => !a.closest('#sb-opened'))
     .map((a) => ({ label: a.querySelector('.sh-sb__label')?.textContent?.trim() ?? '', href: a.href, icon: a.querySelector('.sh-i')?.innerHTML ?? '' }));
   const matchedPlaces = places.filter((p) => !q || p.label.toLowerCase().includes(q.toLowerCase()));
   if (matchedPlaces.length && q) {
@@ -722,7 +700,6 @@ let itemApi: { copyCode: () => void; copyPrompt: () => void; slug: string } | nu
 
 function initItem(article: HTMLElement) {
   const slug = article.dataset.item!;
-  rememberRecent(slug);
 
   const stage = $('#stage');
   const frame = $<HTMLIFrameElement>('#demo-frame');
@@ -877,7 +854,6 @@ const grid = $('#grid');
 if (grid) initGrid(grid);
 const article = $('[data-item]');
 const itemCtl = article ? initItem(article) : null;
-renderOpened();
 renderFavs();
 requestAnimationFrame(() => requestAnimationFrame(() => html.classList.remove('sb-noanim')));
 

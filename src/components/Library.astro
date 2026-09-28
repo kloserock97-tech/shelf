@@ -6,7 +6,7 @@ import type { Item } from '../lib/items';
 interface Props {
   title: string;
   items: Item[];
-  mode?: 'all' | 'type' | 'favorites' | 'recent';
+  mode?: 'all' | 'type' | 'favorites';
 }
 const { title, items, mode = 'all' } = Astro.props;
 const techCount = new Map<string, number>();
@@ -35,15 +35,11 @@ const filterable = mode === 'all' || mode === 'type';
     <input class="sh-slider" type="range" min="0" max="2" step="1" value="1" aria-label="Grid size" data-zoom>
     <Icon name="LayoutGrid" class="sh-i--md" />
   </div>
-  {mode !== 'recent' && (
-    <>
-      <span class="sh-vsep"></span>
-      <div class="sh-seg sh-seg--sm" role="group" aria-label="Sort" data-sort>
-        <button class="sh-seg__opt" type="button" data-value="new" aria-pressed="true">Newest</button>
-        <button class="sh-seg__opt" type="button" data-value="name" aria-pressed="false">A–Z</button>
-      </div>
-    </>
-  )}
+  <span class="sh-vsep"></span>
+  <div class="sh-seg sh-seg--sm" role="group" aria-label="Sort" data-sort>
+    <button class="sh-seg__opt" type="button" data-value="new" aria-pressed="true">Newest</button>
+    <button class="sh-seg__opt" type="button" data-value="name" aria-pressed="false">A–Z</button>
+  </div>
 </header>
 <div class="sh-grid" id="grid" data-mode={mode}>
   {items.map((item) => <ItemCard item={item} />)}
@@ -52,11 +48,6 @@ const filterable = mode === 'all' || mode === 'type';
   <Icon name="Star" stroke={1.5} class="sh-empty__icon" />
   <p class="sh-empty__title">No favorites yet</p>
   <p class="sh-empty__text">Star an item on its card, or press F on its page.</p>
-</div>
-<div class="sh-empty" data-empty="recent" hidden>
-  <Icon name="Clock" stroke={1.5} class="sh-empty__icon" />
-  <p class="sh-empty__title">Nothing opened yet</p>
-  <p class="sh-empty__text">Items you open show up here, the latest first.</p>
 </div>
 <div class="sh-empty" data-empty="search" hidden>
   <Icon name="Search" stroke={1.5} class="sh-empty__icon" />
