@@ -1,6 +1,6 @@
 ---
 title: Retro Desktop Screen
-type: app
+type: webgl
 status: stable
 summary: "Экран монитора из 2000-х на CanvasTexture: рабочий стол, окно браузера с домашней страницей, часы на панели задач и рабочие кнопки; страница прокручивается прямо в шейдере, без перерисовки."
 tech: [TypeScript, three.js, GLSL, Canvas 2D]

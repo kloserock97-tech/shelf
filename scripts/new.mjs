@@ -1,4 +1,4 @@
-// Scaffolds an item: npm run new -- <slug> [--type component] [--title "Glass Button"] [--private]
+// Scaffolds an item: npm run new -- <slug> [--type control] [--title "Glass Button"] [--private]
 import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT, TYPES } from './lib/items.mjs';
@@ -10,10 +10,10 @@ const flag = (name, fallback) => {
 };
 const slug = args.find((a) => !a.startsWith('--') && args[args.indexOf(a) - 1]?.startsWith('--') !== true);
 if (!slug || !/^[a-z0-9][a-z0-9-]*$/.test(slug)) {
-  console.error('Usage: npm run new -- <kebab-slug> [--type component] [--title "Title"] [--private]');
+  console.error('Usage: npm run new -- <kebab-slug> [--type control] [--title "Title"] [--private]');
   process.exit(1);
 }
-const type = flag('type', 'component');
+const type = flag('type', 'control');
 if (!TYPES.includes(type)) {
   console.error(`Unknown type "${type}". One of: ${TYPES.join(', ')}`);
   process.exit(1);

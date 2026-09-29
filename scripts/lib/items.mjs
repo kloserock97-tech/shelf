@@ -5,7 +5,7 @@ import YAML from 'yaml';
 
 export const ROOT = path.resolve(import.meta.dirname, '..', '..');
 // Same ids as src/lib/taxonomy.ts, which also holds labels, icons and sidebar groups.
-export const TYPES = ['component', 'button', 'card', 'navigation', 'gallery', 'icon', 'cursor', 'motion', 'transition', 'scroll', 'text', 'loader', 'webgl', 'shader', 'background', 'object', 'section', 'app', 'sound', 'utility'];
+export const TYPES = ['button', 'control', 'card', 'navigation', 'gallery', 'scroll', 'cursor', 'text', 'transition', 'loader', 'webgl', 'shader', 'object', 'background', 'icon', 'section', 'sound', 'utility'];
 
 export function splitFrontmatter(src) {
   const m = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/.exec(src);

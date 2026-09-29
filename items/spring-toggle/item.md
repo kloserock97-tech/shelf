@@ -1,6 +1,6 @@
 ---
 title: Spring Toggle
-type: component
+type: control
 status: stable
 summary: "Переключатель с пружинной ручкой: перелёт 1,5% и мягкая посадка. Движение целиком на CSS, скрипт только меняет aria-checked."
 tech: [HTML, CSS, React, Vue]

@@ -20,10 +20,11 @@ description: Кладёт UI-решение на полку Shelf (Projects/shel
   Blender, процедурная геометрия, свой синтез.
   Опись с пометками происхождения — `docs/research/inventory.md`.
 - Выбери тип и короткий kebab-case slug. Типы по группам сайдбара:
-  Interface — component, button, card, navigation, gallery, icon, cursor;
-  Animation — motion, transition, scroll, text, loader;
-  Graphics — webgl, shader, background, object;
-  Pages & tools — section, app, sound, utility.
+  Interface — button, control (переключатели, поля, ползунки), card, navigation, gallery;
+  Animation — scroll, cursor, text, transition, loader;
+  Graphics — webgl, shader, object, background, icon;
+  Pages & tools — section, sound, utility.
+  Тип называет, что внутри. Общих корзин вроде «компоненты» или «анимации» нет: всё на полке — компоненты.
   Нужного типа нет — добавь его в `src/lib/taxonomy.ts` (подписи EN/RU, иконка Lucide, группа, строка о типе) и в
   `scripts/lib/items.mjs`.
 
