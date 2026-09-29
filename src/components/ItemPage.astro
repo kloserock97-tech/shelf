@@ -37,7 +37,6 @@ const related = (
     : items.filter((i) => i.id !== item.id && i.data.type === d.type)
 ).filter((i): i is Item => Boolean(i)).slice(0, 3);
 const registryUrl = d.registry && variants.some((v) => v.id === 'react') ? new URL(url(`r/${d.registry}.json`), Astro.site).href : undefined;
-const origin = { own: t(lang, 'originOwn'), adapted: t(lang, 'originAdapted'), 'third-party': t(lang, 'originThird') }[d.origin];
 const license = d.license === 'PolyForm-Noncommercial-1.0.0' ? 'PolyForm Noncommercial 1.0.0' : d.license;
 // Summaries and notes are written in Russian: on English pages screen readers should read them as Russian.
 const contentLang = lang === 'ru' ? undefined : 'ru';
@@ -194,8 +193,7 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
             {variants.length > 0 && (<><dt>{t(lang, 'variants')}</dt><dd>{variants.map((v) => v.label).join(' · ')}</dd></>)}
             <dt>{t(lang, 'dependsOn')}</dt><dd>{d.depends.length ? d.depends.join(', ') : t(lang, 'nothing')}</dd>
             {d.registry && (<><dt>{t(lang, 'registry')}</dt><dd><code>{d.registry}</code></dd></>)}
-            <dt>{t(lang, 'origin')}</dt><dd>{origin}{d.source ? ` · ${d.source}` : ''}</dd>
-            {d.priorArt && (<><dt>{t(lang, 'priorArt')}</dt><dd>{d.priorArt}</dd></>)}
+            {d.source && (<><dt>{t(lang, 'source')}</dt><dd>{d.source}</dd></>)}
             {d.repo && (<><dt>{t(lang, 'repository')}</dt><dd><a class="sh-link" href={d.repo} target="_blank" rel="noopener">{d.repo.replace('https://github.com/', '')}</a></dd></>)}
             <dt>{t(lang, 'added')}</dt><dd>{formatDate(lang, d.added)}</dd>
             {d.updated && (<><dt>{t(lang, 'updated')}</dt><dd>{formatDate(lang, d.updated)}</dd></>)}

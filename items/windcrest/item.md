@@ -7,7 +7,7 @@ tech: [three.js, GLSL]
 tags: [grass, wind, instancing, voronoi, noise, lil-gui, трава, ветер, холм]
 added: 2026-09-20
 origin: own
-source: Projects/windcrest; трава с первого экрана портфолио
+source: Projects/windcrest
 repo: https://github.com/kloserock97-tech/windcrest
 demo:
   url: https://kloserock97-tech.github.io/windcrest/

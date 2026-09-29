@@ -7,7 +7,7 @@ tech: [HTML, CSS, Playwright]
 tags: [og image, open graph, social card, link preview, twitter card, meta tags, превью ссылки, соцсети, карточка, мета-теги]
 added: 2026-09-28
 origin: own
-source: "Portfolio 3D TS2: docs/media/og-cover.source.html, мета-теги превью из index.html (v39)"
+source: "Portfolio 3D TS2: docs/media/og-cover.source.html, мета-теги превью из index.html"
 repo: https://github.com/kloserock97-tech/gorbachev-nikita-product-designer
 demo:
   path: demo/index.html
@@ -22,4 +22,4 @@ poster: poster.webp
 - Все размеры — «дизайн-пиксели» × `--u` (`100cqw / 1200`): при снимке карточка ровно 1200 px, а в любой колонке держит пропорции, как сжатое превью в ленте.
 - Текст слева на тёмной вуали, картинка просвечивает справа: в ленте превью обрезают и уменьшают, имя должно это пережить.
 - Перед снимком шрифты грузятся явно, `load()` для каждого начертания. `document.fonts.ready` сам по себе разрешается, пока шрифт ещё не запрошен, и в кадр попадал запасной шрифт.
-- Имя, текст и фон в шаблоне нейтральные: холмы на закате из градиентов, вместо личного знака — монограмма.
+- В шаблоне нейтральные имя, текст и фон: холмы на закате из градиентов и монограмма.

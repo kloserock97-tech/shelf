@@ -7,7 +7,7 @@ tech: [HTML, CSS, React, Vue]
 tags: [switch, toggle, spring, a11y, переключатель, пружина]
 added: 2026-09-28
 origin: own
-source: написан для Shelf как образец элемента
+source: Полка
 registry: spring-toggle
 demo:
   path: demo/index.html

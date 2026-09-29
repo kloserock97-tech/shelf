@@ -7,7 +7,7 @@ tech: [three.js, WebGPU, TSL]
 tags: [sea, ocean, tide, waves, light column, sparks, bloom, море, прилив, волны]
 added: 2026-09-16
 origin: own
-source: Projects/nightsail; бюст Poly Haven (CC0), небо отрендерено в Blender
+source: "Projects/nightsail; бюст — Poly Haven, небо — рендер Blender"
 repo: https://github.com/kloserock97-tech/nightsail
 demo:
   url: https://kloserock97-tech.github.io/nightsail/
