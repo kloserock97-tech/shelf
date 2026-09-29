@@ -522,7 +522,7 @@ button.sh-menu__item { appearance: none; margin: 0; border: 0; width: 100%; back
 .sh-pop__list { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 6px 6px; }
 .sh-pop__set { margin: 0; padding: 0; border: 0; min-width: 0; }
 .sh-pop__set + .sh-pop__set { margin-top: 4px; }
-.sh-pop__group { padding: 8px 8px 4px; font: 600 11px/16px var(--font-sans); letter-spacing: 0.02em; text-transform: uppercase; color: var(--label-secondary); }
+.sh-pop__group { padding: 8px 8px 4px; font: 600 12px/16px var(--font-sans); letter-spacing: 0.01em; color: var(--label-secondary); }
 .sh-pop__none { margin: 0; padding: 16px 12px; color: var(--label-secondary); }
 .sh-opt {
   position: relative; display: flex; align-items: center; gap: 10px; min-height: 32px; padding: 0 8px;
@@ -575,6 +575,19 @@ button.sh-menu__item { appearance: none; margin: 0; border: 0; width: 100%; back
   display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--card-min-width), 1fr));
   gap: var(--space-8) var(--space-6); padding: var(--space-6) var(--space-8) var(--space-10);
 }
+/* Sections (All items, or By section on Favorites): a header row over each kind group, spanning the grid. The grid's
+   32px row gap above it is the space between sections; the header sits 12px over its own cards. From the second
+   section on a hairline divides them. The kinds are quiet links to their own pages. */
+.sh-grid__head {
+  grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px var(--space-5);
+  margin-bottom: calc(var(--space-3) - var(--space-8));
+}
+.sh-grid__head:not([hidden]) ~ .sh-grid__head { padding-top: var(--space-6); border-top: 0.5px solid var(--separator); }
+.sh-grid__title { display: flex; align-items: baseline; gap: var(--space-2); margin: 0; font: 600 22px/28px var(--font-sans); letter-spacing: -0.015em; }
+.sh-grid__count { font: 500 13px/18px var(--font-sans); font-variant-numeric: tabular-nums; color: var(--label-secondary); letter-spacing: 0; }
+.sh-grid__kinds { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; }
+.sh-grid__kind { border-radius: 4px; font: 500 13px/18px var(--font-sans); color: var(--label-secondary); text-decoration: none; transition: color var(--duration-fast) var(--ease-standard); }
+.sh-grid__kind:hover { color: var(--accent-text); }
 .sh-card { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; color: inherit; }
 .sh-card__thumb {
   display: block; position: relative; aspect-ratio: 4 / 3; max-width: 100%; overflow: hidden;

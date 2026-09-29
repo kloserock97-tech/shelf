@@ -475,11 +475,21 @@ function selectCard(i: number) {
   list.forEach((c, j) => c.toggleAttribute('data-selected', j === selected));
   $('.sh-card__thumb', list[selected])?.focus({ preventScroll: false });
 }
-function columns(list: HTMLElement[]) {
-  if (list.length < 2) return 1;
-  const top = list[0].offsetTop;
-  const n = list.findIndex((c) => c.offsetTop !== top);
-  return n < 0 ? list.length : n;
+// The card straight above or below: sections can leave a row half full, so go by position, not by index.
+function rowStep(list: HTMLElement[], i: number, dir: 1 | -1) {
+  const from = list[i];
+  if (!from) return 0;
+  const cx = from.offsetLeft + from.offsetWidth / 2;
+  let best = i;
+  let bestDy = Infinity;
+  let bestDx = Infinity;
+  list.forEach((c, j) => {
+    const dy = (c.offsetTop - from.offsetTop) * dir;
+    if (dy <= 4) return;
+    const dx = Math.abs(c.offsetLeft + c.offsetWidth / 2 - cx);
+    if (dy < bestDy - 4 || (Math.abs(dy - bestDy) <= 4 && dx < bestDx)) { best = j; bestDy = dy; bestDx = dx; }
+  });
+  return best;
 }
 function currentCard(): HTMLElement | null {
   const list = gridApi?.visible() ?? [];
@@ -978,13 +988,12 @@ document.addEventListener('keydown', (e) => {
 
   if (gridApi) {
     const list = gridApi.visible();
-    const cols = columns(list);
     const cur = currentCard();
     const i = cur ? list.indexOf(cur) : -1;
     if (e.key === 'ArrowRight') { e.preventDefault(); selectCard(i + 1); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); selectCard(i < 0 ? 0 : i - 1); }
-    else if (e.key === 'ArrowDown') { e.preventDefault(); selectCard(i < 0 ? 0 : i + cols); }
-    else if (e.key === 'ArrowUp') { e.preventDefault(); selectCard(i < 0 ? 0 : i - cols); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); selectCard(i < 0 ? 0 : rowStep(list, i, 1)); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); selectCard(i < 0 ? 0 : rowStep(list, i, -1)); }
     else if (e.key === ' ' && cur) { e.preventDefault(); openQuickLook(cur.dataset.slug!, true); }
     else if (e.key.toLowerCase() === 'f' && cur) { e.preventDefault(); toggleFav(cur.dataset.slug!); }
     else if (e.key === '[' || e.key === ']') {

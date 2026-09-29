@@ -10,13 +10,20 @@ export const FACETS: { id: FacetId; key: Key; param: string }[] = [
   { id: 'tag', key: 'facetTag', param: 'tag' }
 ];
 
+// 'type' shows the list in sections by kind group (Interface, Animation, Graphics, Pages & tools), the way a store's
+// browse page does; the others are one flat grid. All items opens in sections, every other list opens newest first.
+// The address names the sort only when it differs from the page's own default.
 export type SortId = 'new' | 'updated' | 'az' | 'type';
-export const SORTS: { id: SortId; key: Key; param: string | null }[] = [
-  { id: 'new', key: 'newest', param: null },
+export const SORTS: { id: SortId; key: Key; param: string }[] = [
+  { id: 'type', key: 'sortType', param: 'type' },
+  { id: 'new', key: 'newest', param: 'new' },
   { id: 'updated', key: 'sortUpdated', param: 'updated' },
-  { id: 'az', key: 'az', param: 'az' },
-  { id: 'type', key: 'sortType', param: 'type' }
+  { id: 'az', key: 'az', param: 'az' }
 ];
+export type ListMode = 'all' | 'type' | 'favorites';
+export const defaultSort = (mode: string): SortId => (mode === 'all' ? 'type' : 'new');
+// Sections make no sense on a kind's own page
+export const sortsFor = (mode: string) => SORTS.filter((s) => s.id !== 'type' || mode !== 'type');
 
 // Technologies, grouped the way people look for them. Anything unknown falls into Tools.
 export const STACK_GROUPS: { key: Key; members: string[] }[] = [

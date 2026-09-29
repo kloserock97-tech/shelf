@@ -2,7 +2,7 @@
 // counts beside every value recomputed against the other filters, several values per facet (OR), facets and the
 // text query together (AND), the applied count inside the pill, a sort menu, a readable URL, filters kept when the
 // sidebar changes the type, and an empty state that names the filter to drop. On a phone the popover is a sheet.
-import { FACETS, SORTS, STACK_GROUPS, stackGroupOf, tagInLang, type FacetId, type SortId } from '../lib/facets';
+import { FACETS, SORTS, STACK_GROUPS, defaultSort, sortsFor, stackGroupOf, tagInLang, type FacetId, type SortId } from '../lib/facets';
 import { GROUPS, TYPES, typeLabel, typeAbout, typeOf } from '../lib/taxonomy';
 import { itemsWord, type Key, type Lang } from '../lib/i18n';
 
@@ -29,6 +29,7 @@ const $ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = docu
 const $$ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document) => Array.from(root.querySelectorAll(sel)) as T[];
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 const CARRY = ['stack', 'tag', 'sort']; // what follows you to another type in the sidebar
+const CARRY_SORTS: SortId[] = ['updated', 'az']; // orders that mean the same on every list
 const TAG_POPULAR = 2; // a tag used this many times is listed before you search
 
 export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
@@ -51,14 +52,16 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
   type State = { q: string; type: Set<string>; stack: Set<string>; tag: Set<string>; sort: SortId };
   const params = new URLSearchParams(location.search);
   const list = (k: string) => new Set((params.get(k) ?? '').split(',').map((s) => s.trim()).filter(Boolean));
-  const sortFromParam = (v: string | null): SortId | null => SORTS.find((s) => s.param && s.param === v)?.id ?? null;
+  const baseSort = defaultSort(mode);
+  const offered = sortsFor(mode);
+  const sortFromParam = (v: string | null): SortId | null => offered.find((s) => s.param === v)?.id ?? null;
   const storedSort = d.store.get('shelf:sort');
   const state: State = {
     q: params.get('q') ?? '',
     type: hasFacet('type') ? list('type') : new Set(),
     stack: facetsOn ? list('stack') : new Set(),
     tag: facetsOn ? list('tag') : new Set(),
-    sort: sortFromParam(params.get('sort')) ?? (storedSort === 'name' ? 'az' : (SORTS.find((s) => s.id === storedSort)?.id ?? 'new'))
+    sort: sortFromParam(params.get('sort')) ?? (storedSort === 'name' ? 'az' : (offered.find((s) => s.id === storedSort)?.id ?? baseSort))
   };
   // links from before the facets used ?tech=
   if (facetsOn && params.get('tech')) state.stack.add(params.get('tech')!);
@@ -70,8 +73,7 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
     ['q', 'type', 'stack', 'tag', 'sort', 'tech'].forEach((k) => p.delete(k));
     if (state.q.trim()) p.set('q', state.q.trim());
     for (const f of FACETS) if (state[f.id].size) p.set(f.param, [...state[f.id]].join(','));
-    const sp = SORTS.find((s) => s.id === state.sort)?.param;
-    if (sp) p.set('sort', sp);
+    if (state.sort !== baseSort) p.set('sort', SORTS.find((s) => s.id === state.sort)!.param);
     const qs = p.toString().replace(/%2C/g, ',');
     history.replaceState(history.state, '', `${location.pathname}${qs ? `?${qs}` : ''}${location.hash}`);
     carryToSidebar();
@@ -81,8 +83,7 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
     const p = new URLSearchParams();
     if (state.stack.size) p.set('stack', [...state.stack].join(','));
     if (state.tag.size) p.set('tag', [...state.tag].join(','));
-    const sp = SORTS.find((s) => s.id === state.sort)?.param;
-    if (sp) p.set('sort', sp);
+    if (CARRY_SORTS.includes(state.sort)) p.set('sort', SORTS.find((s) => s.id === state.sort)!.param);
     const qs = p.toString().replace(/%2C/g, ',');
     $$<HTMLAnchorElement>('#sidebar a.sh-sb__row[href]').forEach((a) => {
       const url = new URL(a.href);
@@ -113,7 +114,10 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
     type: (a, b) => TYPES.findIndex((t) => t.id === a.type) - TYPES.findIndex((t) => t.id === b.type) || collator.compare(a.title, b.title)
   };
   // With a text query the default order is relevance, as in Mobbin's search; a sort you picked still wins.
-  const relevance = () => Boolean(queryHits) && state.sort === 'new';
+  const relevance = () => Boolean(queryHits) && state.sort === baseSort;
+  // Sections: the list broken up by kind group under its own headers, unless the words sort by relevance
+  const heads = new Map($$('[data-group-head]', grid).map((h) => [h.dataset.groupHead!, h]));
+  const sectioned = () => state.sort === 'type' && !relevance() && heads.size > 0;
 
   /* ---------- rendering the grid ---------- */
   let visible: HTMLElement[] = cards;
@@ -125,7 +129,7 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
     const keep = new Set(found.map((e) => e.slug));
     cards.forEach((c) => { c.hidden = !keep.has(c.dataset.slug!); if (c.hidden) c.removeAttribute('data-selected'); });
     visible = found.map((e) => cardOf.get(e.slug)!);
-    visible.forEach((c) => grid.append(c));
+    layout(found);
     grid.hidden = found.length === 0;
     if (countEl) countEl.textContent = String(found.length);
     const filtered = Boolean(state.q.trim()) || active() > 0;
@@ -138,6 +142,22 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
     syncControls();
     if (status) status.textContent = filtered ? tr('resultsCount', { n: found.length, items: itemsWord(lang, found.length) }) : '';
     if (pop && !pop.hidden && openFacet) renderPop(openFacet, false);
+  }
+
+  // One grid either way: in sections each group's header spans the row above its cards, empty groups hide
+  function layout(found: LibEntry[]) {
+    heads.forEach((h) => (h.hidden = true));
+    if (!sectioned()) { visible.forEach((c) => grid.append(c)); return; }
+    for (const g of GROUPS) {
+      const inGroup = found.filter((e) => typeOf(e.type).group === g.id);
+      const head = heads.get(g.id);
+      if (!inGroup.length || !head) continue;
+      head.hidden = false;
+      const n = $('[data-group-count]', head);
+      if (n) n.textContent = String(inGroup.length);
+      grid.append(head);
+      inGroup.forEach((e) => grid.append(cardOf.get(e.slug)!));
+    }
   }
 
   function renderEmpty(n: number, filtered: boolean) {
@@ -394,7 +414,7 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
   sortBtn?.addEventListener('click', () => (sortMenu?.hidden ? openSort() : closeSort()));
   sortItems.forEach((b) => b.addEventListener('click', () => {
     state.sort = b.dataset.value as SortId;
-    d.store.set('shelf:sort', state.sort === 'new' ? null : state.sort);
+    d.store.set('shelf:sort', state.sort === baseSort ? null : state.sort);
     writeUrl();
     apply();
     closeSort();

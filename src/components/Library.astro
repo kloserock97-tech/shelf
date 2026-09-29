@@ -3,9 +3,10 @@ import Icon from './Icon.astro';
 import ItemCard from './ItemCard.astro';
 import ShelfArt from './ShelfArt.astro';
 import { type Item, itemUrl, posterUrl, subtitle } from '../lib/items';
-import { typeOf, typeAbout, type TypeDef } from '../lib/taxonomy';
+import { GROUPS, TYPES, typeOf, typeAbout, typeLabel, groupLabel, type TypeDef } from '../lib/taxonomy';
 import { t, itemsWord, type Lang } from '../lib/i18n';
-import { FACETS, SORTS } from '../lib/facets';
+import { lurl } from '../lib/url';
+import { FACETS, defaultSort, sortsFor } from '../lib/facets';
 
 interface Props {
   title: string;
@@ -19,6 +20,19 @@ const techCount = new Map<string, number>();
 for (const it of items) for (const tech of it.data.tech) techCount.set(tech, (techCount.get(tech) ?? 0) + 1);
 const techs = [...techCount.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 8);
 const filterable = mode === 'all' || mode === 'type';
+// All items opens in sections by kind group, a header over each (its name, how many, links to its kinds); library.ts
+// keeps them in step with filters and the sort. Rendered in that order already, so nothing moves when the script runs.
+const firstSort = defaultSort(mode);
+const sectioned = mode === 'all' || mode === 'favorites';
+const typeIndex = new Map(TYPES.map((ty, i) => [ty.id as string, i]));
+const byKind = (a: Item, b: Item) => (typeIndex.get(a.data.type)! - typeIndex.get(b.data.type)!) || a.data.title.localeCompare(b.data.title, lang);
+const sections = sectioned
+  ? GROUPS.map((g) => {
+      const inGroup = items.filter((i) => typeOf(i.data.type).group === g.id);
+      const kinds = TYPES.filter((ty) => ty.group === g.id && inGroup.some((i) => i.data.type === ty.id));
+      return { group: g, kinds, items: firstSort === 'type' ? [...inGroup].sort(byKind) : inGroup };
+    }).filter((s) => s.items.length)
+  : [];
 
 // The library opens on one featured piece, shown big like a shelf in a shop window.
 const FEATURED = ['garden-loader', 'glass-diorama', 'quiet-hill-hero', 'windcrest'];
@@ -42,11 +56,11 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
   <span class="sh-vsep"></span>
   <div class="sh-sortwrap">
     <button class="sh-btn sh-btn--ghost sh-btn--sm sh-sort" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="sort-menu" data-sort-trigger>
-      <Icon name="ArrowUpDown" /><span data-sort-label>{t(lang, 'newest')}</span><Icon name="ChevronDown" class="sh-i--xs sh-facet__chev" />
+      <Icon name="ArrowUpDown" /><span data-sort-label>{t(lang, firstSort === 'type' ? 'sortType' : 'newest')}</span><Icon name="ChevronDown" class="sh-i--xs sh-facet__chev" />
     </button>
     <div class="sh-menu sh-sortmenu" id="sort-menu" role="menu" aria-label={t(lang, 'sort')} hidden data-sort-menu>
-      {SORTS.map((s) => (
-        <button class="sh-menu__item" type="button" role="menuitemradio" aria-checked={s.id === 'new' ? 'true' : 'false'} tabindex="-1" data-value={s.id}>
+      {sortsFor(mode).map((s) => (
+        <button class="sh-menu__item" type="button" role="menuitemradio" aria-checked={s.id === firstSort ? 'true' : 'false'} tabindex="-1" data-value={s.id}>
           <span class="sh-menu__check"><Icon name="Check" /></span>{t(lang, s.key)}
         </button>
       ))}
@@ -131,7 +145,17 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
 )}
 
 <div class="sh-grid" id="grid" data-mode={mode}>
-  {items.map((item) => <ItemCard item={item} lang={lang} />)}
+  {sectioned ? sections.map((s) => (
+    <>
+      <div class="sh-grid__head" data-group-head={s.group.id} hidden={firstSort !== 'type'}>
+        <h2 class="sh-grid__title">{groupLabel(s.group, lang)} <span class="sh-grid__count" data-group-count>{s.items.length}</span></h2>
+        <nav class="sh-grid__kinds" aria-label={t(lang, 'groupKinds', { group: groupLabel(s.group, lang) })}>
+          {s.kinds.map((ty) => <a class="sh-grid__kind" href={lurl(lang, `type/${ty.id}/`)} data-kind={ty.id}>{typeLabel(ty, lang)}</a>)}
+        </nav>
+      </div>
+      {s.items.map((item) => <ItemCard item={item} lang={lang} />)}
+    </>
+  )) : items.map((item) => <ItemCard item={item} lang={lang} />)}
 </div>
 <div class="sh-empty" data-empty="favorites" hidden>
   <ShelfArt kind="favorites" />
