@@ -83,13 +83,19 @@ fs.writeFileSync(out('THIRD_PARTY_NOTICES.txt'), `Shelf — open-source pieces t
 const NOINDEX = '<meta name="robots" content="noindex, nofollow">';
 // A demo that declares both schemes stays transparent in the stage whatever the page theme is.
 const SCHEME = '<meta name="color-scheme" content="light dark">';
+// A demo opened in its own tab shows the Shelf mark, not the browser's blank: the site lives under /shelf/.
+const ICONS = [
+  '<link rel="icon" href="/shelf/favicon.ico" sizes="32x32">',
+  '<link rel="icon" href="/shelf/favicon.svg" type="image/svg+xml">',
+  '<link rel="apple-touch-icon" href="/shelf/apple-touch-icon.png">'
+].join('\n');
 function copyTree(from, to) {
   for (const file of walk(from)) {
     const dest = path.join(to, path.relative(from, file));
     fs.mkdirSync(path.dirname(dest), { recursive: true });
     if (/\.html?$/i.test(file)) {
       let text = fs.readFileSync(file, 'utf8');
-      for (const [re, tag] of [[/name=["']robots["']/i, NOINDEX], [/name=["']color-scheme["']/i, SCHEME]]) {
+      for (const [re, tag] of [[/name=["']robots["']/i, NOINDEX], [/name=["']color-scheme["']/i, SCHEME], [/rel=["'](?:shortcut )?icon["']/i, ICONS]]) {
         if (!re.test(text)) text = /<head[^>]*>/i.test(text) ? text.replace(/<head[^>]*>/i, (m) => `${m}\n${tag}`) : `${tag}\n${text}`;
       }
       fs.writeFileSync(dest, text);

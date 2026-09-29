@@ -10,6 +10,7 @@
   },
   "scripts": {
     "tokens": "node scripts/tokens.mjs",
+    "icons": "node scripts/icons.mjs",
     "sync": "node scripts/sync.mjs",
     "check": "node scripts/sync.mjs --check",
     "dev": "node scripts/sync.mjs && astro dev",
