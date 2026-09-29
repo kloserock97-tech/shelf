@@ -807,6 +807,46 @@ function initItem(article: HTMLElement) {
   return { variantSeg, ids };
 }
 
+/* ---------- the way back: an item page remembers the list you opened it from ---------- */
+// A list page (All items, Favorites, a kind) writes itself down as you leave it: which list, its address with the
+// filters and sort, and how far you had scrolled. The item page reads that back: the inline script in Sidebar.astro
+// keeps that list selected, and here the matching breadcrumb returns to it exactly.
+interface ListVisit { nav: string; url: string; y: number }
+const LIST_NAV = /^(all|favorites|type:[\w-]+)$/;
+const readSession = <T>(k: string): T | null => { try { return JSON.parse(sessionStorage.getItem(k) || 'null') as T | null; } catch { return null; } };
+const writeSession = (k: string, v: unknown) => { try { sessionStorage.setItem(k, JSON.stringify(v)); } catch { /* storage may be blocked */ } };
+function rememberList() {
+  writeSession('shelf:list', { nav: html.dataset.nav, url: location.pathname + location.search, y: Math.round(scrollY) } satisfies ListVisit);
+}
+// The previous entry in this tab's history, when the browser can tell.
+function previousUrl() {
+  const nav = (window as unknown as { navigation?: { currentEntry?: { index: number } | null; entries(): { url: string | null }[] } }).navigation;
+  const i = nav?.currentEntry?.index ?? -1;
+  if (nav && i > 0) return nav.entries()[i - 1]?.url ?? '';
+  return document.referrer;
+}
+function initCrumbs() {
+  const list = readSession<ListVisit>('shelf:list');
+  if (!list || !html.dataset.from) return;
+  $$<HTMLAnchorElement>('[data-crumb-nav]').forEach((a) => {
+    if (a.dataset.crumbNav !== list.nav) return;
+    a.href = list.url;
+    a.addEventListener('click', (e) => {
+      if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      // Straight back to the page you left: the browser brings it back as it was, scroll and all.
+      if (previousUrl() === a.href) { e.preventDefault(); history.back(); return; }
+      writeSession('shelf:restore', { url: list.url, y: list.y });
+    });
+  });
+}
+// Arriving at a list through its breadcrumb (not Back): scroll to where you were.
+function restoreListScroll() {
+  const r = readSession<{ url: string; y: number }>('shelf:restore');
+  if (!r) return;
+  try { sessionStorage.removeItem('shelf:restore'); } catch { /* ignore */ }
+  if (r.url === location.pathname + location.search && r.y > 0) requestAnimationFrame(() => scrollTo({ top: r.y, behavior: 'instant' }));
+}
+
 /* ---------- wiring ---------- */
 document.addEventListener('click', (e) => {
   const t = e.target as HTMLElement;
@@ -864,8 +904,14 @@ initEdge();
 const searchInput = $<HTMLInputElement>('#search');
 const grid = $('#grid');
 if (grid) initGrid(grid);
+if (grid && LIST_NAV.test(html.dataset.nav ?? '')) {
+  restoreListScroll();
+  addEventListener('pagehide', rememberList);
+  document.addEventListener('click', (e) => { if ((e.target as Element).closest?.('a[href]')) rememberList(); }, true);
+}
 const article = $('[data-item]');
 const itemCtl = article ? initItem(article) : null;
+if (article) initCrumbs();
 renderFavs();
 requestAnimationFrame(() => requestAnimationFrame(() => html.classList.remove('sb-noanim')));
 

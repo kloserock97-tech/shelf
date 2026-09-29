@@ -408,6 +408,29 @@ button.sh-menu__item, a.sh-menu__item { appearance: none; margin: 0; border: 0; 
 }
 @keyframes sh-bar-edge { to { background-color: var(--bar); border-bottom-color: var(--separator); } }
 .sh-toolbar__title { flex: none; display: flex; align-items: baseline; gap: var(--space-2); margin: 0; font: 600 17px/22px var(--font-sans); letter-spacing: -0.01em; white-space: nowrap; }
+
+/* ---------- Breadcrumbs: where the item lives and the way back ----------
+   All items › kind › item; from Favorites it reads Favorites › item. Links are quiet text with a pill on hover,
+   pulled left by their padding so the first word lines up with the page title below. The item's own name is the
+   first to shrink. */
+.sh-crumbs { flex: 0 1 auto; min-width: 0; margin-left: -8px; }
+.sh-crumbs ol { display: flex; align-items: center; min-width: 0; margin: 0; padding: 0; list-style: none; }
+.sh-crumbs li { flex: none; display: flex; align-items: center; min-width: 0; }
+.sh-crumbs li[data-crumb="type"], .sh-crumbs li[data-crumb="favorites"] { flex: 0 1 auto; }
+.sh-crumbs li[data-crumb="current"] { flex: 0 100 auto; }
+.sh-crumbs__link {
+  display: block; min-width: 0; height: var(--control-sm); padding: 0 8px; border-radius: var(--radius-pill);
+  font: 500 13px/var(--control-sm) var(--font-sans); color: var(--label-secondary); text-decoration: none;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  transition: background-color var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard);
+}
+.sh-crumbs__link:hover { background: var(--fill); color: var(--label); }
+.sh-crumbs__link:active { background: var(--fill-hover); }
+.sh-crumbs__sep { flex: none; width: 12px; height: 12px; color: var(--label-tertiary); }
+.sh-crumbs__current { min-width: 0; padding: 0 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 13px/18px var(--font-sans); color: var(--label); }
+.sh-crumbs li[data-crumb="favorites"] { display: none; }
+html[data-from="favorites"] .sh-crumbs li[data-crumb="favorites"] { display: flex; }
+html[data-from="favorites"] .sh-crumbs li[data-crumb="all"], html[data-from="favorites"] .sh-crumbs li[data-crumb="type"] { display: none; }
 .sh-toolbar__count { font: 500 13px/18px var(--font-sans); font-variant-numeric: tabular-nums; color: var(--label-secondary); }
 .sh-toolbar__spacer { flex: 1 1 auto; }
 .sh-toolbar__group { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
@@ -825,6 +848,19 @@ button.sh-menu__item { appearance: none; margin: 0; border: 0; width: 100%; back
   .sh-item__cols { grid-template-columns: minmax(0, 1fr); }
   .sh-stage--item { height: min(70vh, 520px); min-height: 320px; }
   .sh-hide-narrow { display: none; }
+}
+
+/* ---------- Phones: the item bar keeps the way back and drops the item's own name, which is the title right
+   below; Open demo shrinks to its icon ---------- */
+@media (max-width: 900px) {
+  .sh-toolbar:has(> .sh-crumbs) { flex-wrap: nowrap; }
+}
+@media (max-width: 600px) {
+  .sh-crumbs li[data-crumb="current"] { display: none; }
+  html:not([data-from="favorites"]) .sh-crumbs li[data-crumb="type"] .sh-crumbs__sep,
+  html[data-from="favorites"] .sh-crumbs li[data-crumb="favorites"] .sh-crumbs__sep { display: none; }
+  .sh-demo-btn { width: var(--control-sm); padding: 0; }
+  .sh-demo-btn__label { display: none; }
 }
 
 /* ---------- Touch: sidebar rows grow to Apple's 44pt hit target ---------- */

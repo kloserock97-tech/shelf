@@ -42,14 +42,24 @@ const license = d.license === 'PolyForm-Noncommercial-1.0.0' ? 'PolyForm Noncomm
 // Summaries and notes are written in Russian: on English pages screen readers should read them as Russian.
 const contentLang = lang === 'ru' ? undefined : 'ru';
 ---
-<App title={d.title} nav={`type:${d.type}`} lang={lang}>
+<App title={d.title} nav={`type:${d.type}`} lang={lang} item={item.id}>
   <header class="sh-toolbar">
     <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm sh-sidebar-toggle" type="button" data-action="sidebar-toggle" aria-label={t(lang, 'showSidebar')}><Icon name="PanelLeft" /></button>
-    <a class="sh-btn sh-btn--ghost sh-btn--sm" href={lurl(lang, `type/${d.type}/`)}><Icon name="ChevronLeft" /><span>{typeLabel(type, lang)}</span></a>
+    {/* Where the item lives: All items › its kind › the item. Opened from Favorites, the trail starts there instead
+        (the inline script in Sidebar.astro sets html[data-from]); app.ts points the crumb you came from back at your
+        filters and scroll. */}
+    <nav class="sh-crumbs" aria-label={t(lang, 'breadcrumbs')}>
+      <ol>
+        <li data-crumb="all"><a class="sh-crumbs__link" href={lurl(lang, '')} data-crumb-nav="all">{t(lang, 'allItems')}</a><Icon name="ChevronRight" class="sh-crumbs__sep" /></li>
+        <li data-crumb="favorites"><a class="sh-crumbs__link" href={lurl(lang, 'favorites/')} data-crumb-nav="favorites">{t(lang, 'favorites')}</a><Icon name="ChevronRight" class="sh-crumbs__sep" /></li>
+        <li data-crumb="type"><a class="sh-crumbs__link" href={lurl(lang, `type/${d.type}/`)} data-crumb-nav={`type:${d.type}`}>{typeLabel(type, lang)}</a><Icon name="ChevronRight" class="sh-crumbs__sep" /></li>
+        <li data-crumb="current"><span class="sh-crumbs__current" aria-current="page">{d.title}</span></li>
+      </ol>
+    </nav>
     <div class="sh-toolbar__spacer"></div>
     <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm sh-fav" type="button" data-fav={item.id} aria-pressed="false" aria-label={t(lang, 'favAdd', { title: d.title })}><Icon name="Star" /></button>
     <button class="sh-btn sh-btn--sm sh-hide-narrow" type="button" data-copy-link data-toast={t(lang, 'linkCopied')}><Icon name="Link" /><span class="sh-btn__label">{t(lang, 'copyLink')}</span></button>
-    {demo && <a class="sh-btn sh-btn--sm sh-btn--primary" href={demo} target="_blank" rel="noopener"><Icon name="ExternalLink" /><span>{t(lang, 'openDemo')}</span></a>}
+    {demo && <a class="sh-btn sh-btn--sm sh-btn--primary sh-demo-btn" href={demo} target="_blank" rel="noopener" aria-label={t(lang, 'openDemo')}><Icon name="ExternalLink" /><span class="sh-demo-btn__label">{t(lang, 'openDemo')}</span></a>}
   </header>
 
   <article class="sh-item" data-item={item.id}>

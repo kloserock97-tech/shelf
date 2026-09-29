@@ -33,10 +33,10 @@ const n = items.length;
       <button class="sh-sb__row" type="button" data-action="palette" data-tip={t(lang, 'search')} data-tip-kbd="mod+K">
         <Icon name="Search" /><span class="sh-sb__label">{t(lang, 'search')}</span><kbd class="sh-sb__kbd" data-mod-kbd="K">⌘K</kbd>
       </button>
-      <a class="sh-sb__row" href={lurl(lang, '')} aria-current={current('all')} data-tip={t(lang, 'allItems')}>
+      <a class="sh-sb__row" href={lurl(lang, '')} aria-current={current('all')} data-tip={t(lang, 'allItems')} data-nav="all">
         {nav === 'all' && <span class="sh-sb__pill"></span>}<Icon name="Library" /><span class="sh-sb__label">{t(lang, 'allItems')}</span><span class="sh-sb__count">{n}</span>
       </a>
-      <a class="sh-sb__row" href={lurl(lang, 'favorites/')} aria-current={current('favorites')} data-tip={t(lang, 'favorites')}>
+      <a class="sh-sb__row" href={lurl(lang, 'favorites/')} aria-current={current('favorites')} data-tip={t(lang, 'favorites')} data-nav="favorites">
         {nav === 'favorites' && <span class="sh-sb__pill"></span>}<Icon name="Star" /><span class="sh-sb__label">{t(lang, 'favorites')}</span><span class="sh-sb__count" data-count="favorites"></span>
       </a>
     </div>
@@ -47,7 +47,7 @@ const n = items.length;
         <div class="sh-sb__list">
           <div>
             {g.types.map((ty) => (
-              <a class="sh-sb__row" href={lurl(lang, `type/${ty.id}/`)} aria-current={current(`type:${ty.id}`)} data-tip={typeLabel(ty, lang)}>
+              <a class="sh-sb__row" href={lurl(lang, `type/${ty.id}/`)} aria-current={current(`type:${ty.id}`)} data-tip={typeLabel(ty, lang)} data-nav={`type:${ty.id}`}>
                 {nav === `type:${ty.id}` && <span class="sh-sb__pill"></span>}<Icon name={ty.icon} /><span class="sh-sb__label">{typeLabel(ty, lang)}</span><span class="sh-sb__count">{counts.get(ty.id)}</span>
               </a>
             ))}
@@ -68,6 +68,31 @@ const n = items.length;
   <div class="sh-sb__edge" data-action="sidebar-edge" role="separator" aria-orientation="vertical" aria-controls="sidebar" tabindex="0"
     aria-label={t(lang, 'sidebarEdge')} aria-valuemin="216" aria-valuemax="320" aria-valuenow="248"></div>
 </aside>
+<script is:inline>
+  // An item page keeps the place you came from: opened from All items or Favorites, that row stays selected
+  // (as in Mail or Linear) and the breadcrumb starts there. Runs before the page paints, so nothing jumps.
+  // The last list you looked at is written by app.ts as { nav, url, y } when you leave it.
+  (function () {
+    var d = document.documentElement, item = d.dataset.itemPage;
+    if (!item) return;
+    try {
+      var s = JSON.parse(sessionStorage.getItem("shelf:list") || "null");
+      if (!s || typeof s.nav !== "string") return;
+      var favs = JSON.parse(localStorage.getItem("shelf:favorites") || "[]");
+      var from = s.nav === "all" ? "all" : s.nav === "favorites" && favs.indexOf(item) >= 0 ? "favorites" : s.nav === d.dataset.nav ? "type" : "";
+      if (!from) return;
+      d.dataset.from = from;
+      if (from === "type") return;
+      var sb = document.getElementById("sidebar");
+      var cur = sb.querySelector('[aria-current="page"]'), to = sb.querySelector('[data-nav="' + s.nav + '"]');
+      if (!to || to === cur) return;
+      var pill = cur && cur.querySelector(".sh-sb__pill");
+      if (cur) cur.removeAttribute("aria-current");
+      to.setAttribute("aria-current", "page");
+      if (pill) to.insertBefore(pill, to.firstChild);
+    } catch (e) {}
+  })();
+</script>
 
 <div class="sh-menu sh-profile-menu" id="profile-menu" role="dialog" aria-label={t(lang, 'settings')} hidden>
   <div class="sh-menu__label" id="pm-lang">{t(lang, 'language')}</div>
