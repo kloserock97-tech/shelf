@@ -386,27 +386,42 @@ button.sh-menu__item, a.sh-menu__item { appearance: none; margin: 0; border: 0; 
 }
 
 /* ---------- Toolbar ---------- */
+/* Its content lines up with the page below it: 32px in, like the grid, the banner and the item page. */
 .sh-toolbar {
-  position: sticky; top: 0; z-index: var(--z-toolbar);
+  position: sticky; top: 0; z-index: var(--z-toolbar); isolation: isolate;
   display: flex; align-items: center; gap: var(--space-3);
-  min-height: var(--toolbar-height); padding: 0 var(--space-5);
+  min-height: var(--toolbar-height); padding: 0 var(--space-8);
+}
+/* The bar's material lives on a layer under the controls. Scroll edge, as in macOS 26 and ChatGPT: no backing or
+   line until content slides under it, then the material and a hairline fade in over the first 32px of scroll.
+   Without scroll timelines they stay on. Longhands on purpose: the minifier folds a shorthand plus
+   animation-timeline into one shorthand that Chrome rejects. */
+.sh-toolbar::before {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
   background: transparent; border-bottom: 0.5px solid transparent;
   -webkit-backdrop-filter: blur(var(--material-blur)) saturate(var(--material-saturate));
   backdrop-filter: blur(var(--material-blur)) saturate(var(--material-saturate));
 }
-/* Scroll edge, as in macOS 26 and ChatGPT: the bar has no backing or line until content slides under it,
-   then the material and a hairline fade in over the first 32px of scroll. Without scroll timelines they stay on.
-   Longhands on purpose: the minifier folds a shorthand plus animation-timeline into one shorthand that Chrome rejects. */
 @supports (animation-timeline: scroll()) {
-  .sh-toolbar {
+  .sh-toolbar::before {
     animation-name: sh-bar-edge; animation-timing-function: linear; animation-fill-mode: both;
     animation-timeline: scroll(root block); animation-range: 0 32px;
   }
 }
 @supports not (animation-timeline: scroll()) {
-  .sh-toolbar { background: var(--bar); border-bottom-color: var(--separator); }
+  .sh-toolbar::before { background: var(--bar); border-bottom-color: var(--separator); }
 }
 @keyframes sh-bar-edge { to { background-color: var(--bar); border-bottom-color: var(--separator); } }
+/* Beside the floating sidebar the material and the hairline fade in across the gutter instead of butting against
+   the panel, and the panel sits above the bar (z-sidebar), so its shadow falls on the bar instead of being blurred
+   by it. Only the layer is masked: the sort menu inside the bar is never clipped. Attached, bar and sidebar meet
+   edge to edge. */
+@media (min-width: 901px) {
+  html:not(.sb-attached) .sh-toolbar::before {
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--space-6));
+    mask-image: linear-gradient(to right, transparent, #000 var(--space-6));
+  }
+}
 .sh-toolbar__title { flex: none; display: flex; align-items: baseline; gap: var(--space-2); margin: 0; font: 600 17px/22px var(--font-sans); letter-spacing: -0.01em; white-space: nowrap; }
 
 /* ---------- Breadcrumbs: where the item lives and the way back ----------
@@ -833,7 +848,8 @@ button.sh-menu__item { appearance: none; margin: 0; border: 0; width: 100%; back
   html.sidebar-open .sh-sidebar-scrim { display: block; position: fixed; inset: 0; z-index: var(--z-menu); background: var(--scrim); }
   .sh-toolbar .sh-sidebar-toggle { display: inline-flex; }
   .sh-sb__edge { display: none; }
-  .sh-toolbar { flex-wrap: wrap; padding: 8px var(--space-3); gap: var(--space-2); }
+  .sh-toolbar { flex-wrap: wrap; padding: 8px var(--space-4); gap: var(--space-2); }
+  .sh-toolbar .sh-sidebar-toggle { margin-left: -6px; }
   .sh-toolbar .sh-chips--scroll { order: 10; flex: 1 0 100%; }
   .sh-zoom, .sh-toolbar .sh-vsep { display: none; }
   .sh-grid { gap: var(--space-6) var(--space-4); padding: var(--space-4); }

@@ -103,8 +103,8 @@
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
   --ease-spring: linear(0, 0.049 4%, 0.163 8%, 0.341 13%, 0.55 19%, 0.745 26%, 0.891 34%, 0.976 43%, 1.01 53%, 1.014 65%, 1.007 80%, 1);
-  --z-sidebar: 10;
   --z-toolbar: 20;
+  --z-sidebar: 30;
   --z-menu: 40;
   --z-sheet: 50;
   --z-palette: 60;
