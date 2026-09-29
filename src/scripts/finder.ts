@@ -12,7 +12,7 @@ import type { Key, Lang } from '../lib/i18n';
 
 export interface FinderEntry {
   slug: string; title: string; type: string; typeLabel: string; tech: string[]; tags: string[];
-  jobs: string[]; collections: string[]; poster: string | null; url: string; added: string;
+  jobs: string[]; collections: string[]; poster: string | null; loop: string | null; summary: string; url: string; added: string;
 }
 export interface FinderAction { label: string; icon: string; key?: string; run: () => void }
 export type FinderIcon = 'kind' | 'task' | 'collection' | 'stack' | 'tag' | 'item' | 'query' | 'go' | 'clear' | 'arrow';
@@ -134,7 +134,7 @@ export function initFinder(root: HTMLElement, d: FinderDeps): FinderApi {
     inner ? `<div class="sh-finder__section" role="group" aria-label="${esc(head)}">${head ? `<div class="sh-finder__head" aria-hidden="true">${esc(head)}</div>` : ''}<div class="${cls}">${inner}</div></div>` : '';
   const app = (e: FinderEntry, q = '') => {
     const id = add(() => go({ k: 'item', v: e.slug }));
-    return `<div class="sh-finder__app" role="option" id="${id}" aria-selected="false" aria-label="${esc(e.title)}, ${esc(e.typeLabel)}">` +
+    return `<div class="sh-finder__app" role="option" id="${id}" aria-selected="false" data-slug="${esc(e.slug)}" aria-label="${esc(e.title)}, ${esc(e.typeLabel)}">` +
       `<span class="sh-finder__app-img">${e.poster ? `<img src="${esc(e.poster)}" alt="" loading="lazy" decoding="async">` : ''}</span>` +
       `<span class="sh-finder__app-label" aria-hidden="true">${mark(e.title, q)}</span></div>`;
   };
@@ -249,6 +249,7 @@ export function initFinder(root: HTMLElement, d: FinderDeps): FinderApi {
     const q = input.value.trim();
     const prev = keep && active >= 0 ? active : 0;
     seq++;
+    hidePeek();
     opts = [];
     active = -1;
     const chipIds = renderRecent(q);
@@ -307,11 +308,83 @@ export function initFinder(root: HTMLElement, d: FinderDeps): FinderApi {
     if (best >= 0) setActive(best);
     else if (dir === 'right') setActive(active + 1);
     else if (dir === 'left') setActive(active - 1);
+    peekAt(document.getElementById(opts[active]?.id ?? ''), 350);
   }
 
   function switchTab(step: number) {
     tab = TABS[(TABS.indexOf(tab) + step + TABS.length) % TABS.length];
     render();
+  }
+
+  /* ---------- peek: a closer look at the item under the pointer or the arrows ---------- */
+  // As Mobbin shows a card for the app under the pointer: the moving loop (or the poster), the name, the kind and the
+  // stack, the summary. It waits a beat, so sweeping across the icons does not flash cards; once one is up, the next
+  // icon swaps it at once. Below the icon if it fits, above if not, else beside. Not on touch screens: no hover there.
+  const dialog = $('.sh-finder')!;
+  const peek = document.createElement('div');
+  peek.className = 'sh-finder__peek';
+  peek.setAttribute('aria-hidden', 'true');
+  peek.hidden = true;
+  dialog.append(peek);
+  const still = matchMedia('(prefers-reduced-motion: reduce)');
+  let peekTimer = 0;
+  let peekEl: HTMLElement | null = null;
+
+  function hidePeek() {
+    clearTimeout(peekTimer);
+    peekEl = null;
+    if (peek.hidden) return;
+    peek.hidden = true;
+    peek.innerHTML = '';
+  }
+  function peekAt(el: HTMLElement | null, delay: number) {
+    const app = el?.classList.contains('sh-finder__app') ? el : null;
+    if (touch.matches || !app) {
+      // a short grace, so the gap between two icons does not drop the card
+      if (!peek.hidden) { clearTimeout(peekTimer); peekTimer = window.setTimeout(hidePeek, delay ? 140 : 0); } else hidePeek();
+      return;
+    }
+    if (app === peekEl && !peek.hidden) { clearTimeout(peekTimer); return; }
+    clearTimeout(peekTimer);
+    peekTimer = window.setTimeout(() => showPeek(app), peek.hidden ? delay : 0);
+  }
+  function showPeek(el: HTMLElement) {
+    const e = bySlug.get(el.dataset.slug ?? '');
+    if (!e || !el.isConnected || root.hidden) return;
+    peekEl = el;
+    const poster = e.poster ? ` poster="${esc(e.poster)}"` : '';
+    const media = e.loop && !still.matches
+      ? `<video src="${esc(e.loop)}"${poster} muted loop playsinline autoplay preload="auto"></video>`
+      : e.poster ? `<img src="${esc(e.poster)}" alt="" decoding="async">` : '';
+    const meta = [e.typeLabel, ...e.tech.slice(0, 3)].join(' · ');
+    peek.innerHTML = `<span class="sh-finder__peek-media">${media}</span><span class="sh-finder__peek-body">` +
+      `<span class="sh-finder__peek-title">${esc(e.title)}</span><span class="sh-finder__peek-meta">${esc(meta)}</span>` +
+      `${e.summary ? `<span class="sh-finder__peek-text" lang="ru">${esc(e.summary)}</span>` : ''}</span>`;
+    const v = peek.querySelector('video');
+    if (v) { v.muted = true; v.play().catch(() => {}); }
+    peek.hidden = false;
+    placePeek();
+  }
+  function placePeek() {
+    if (peek.hidden || !peekEl) return;
+    const box = dialog.getBoundingClientRect();
+    const view = panel.getBoundingClientRect();
+    // the whole cell, name included: the card never hides the name, and the icon's lift does not shift it
+    const r = peekEl.getBoundingClientRect();
+    // scrolled out of the panel: the card goes with it
+    if (r.bottom < view.top || r.top > view.bottom) { hidePeek(); return; }
+    const w = peek.offsetWidth, h = peek.offsetHeight, gap = 6, edge = 16;
+    const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+    let left = clamp(r.left + r.width / 2 - w / 2, box.left + edge, box.right - w - edge);
+    let top: number;
+    if (r.bottom + gap + h <= box.bottom - edge) top = r.bottom + gap;
+    else if (r.top - gap - h >= box.top + edge) top = r.top - gap - h;
+    else {
+      top = clamp(r.top + r.height / 2 - h / 2, box.top + edge, box.bottom - h - edge);
+      left = r.right + gap + w <= box.right - edge ? r.right + gap : r.left - gap - w;
+    }
+    peek.style.left = `${Math.round(left - box.left)}px`;
+    peek.style.top = `${Math.round(top - box.top)}px`;
   }
 
   /* ---------- open, close, keys ---------- */
@@ -330,6 +403,7 @@ export function initFinder(root: HTMLElement, d: FinderDeps): FinderApi {
   function close(restore = true) {
     if (root.hidden) return;
     root.hidden = true;
+    hidePeek();
     d.lock(false);
     if (restore) returnTo?.focus?.();
   }
@@ -337,6 +411,8 @@ export function initFinder(root: HTMLElement, d: FinderDeps): FinderApi {
   input.addEventListener('input', () => render());
   // the panel scrolls with the arrows through the field; if it takes focus (a click on its gap), typing goes on
   panel.addEventListener('focus', () => input.focus());
+  panel.addEventListener('scroll', placePeek, { passive: true });
+  root.addEventListener('pointerleave', () => peekAt(null, 0));
   tabs.forEach((b) => b.addEventListener('click', () => { tab = b.dataset.tab as TabId; render(); input.focus(); }));
   root.addEventListener('click', (e) => {
     if (e.target === root || (e.target as HTMLElement).closest('[data-finder-close]')) { close(); return; }
@@ -352,6 +428,7 @@ export function initFinder(root: HTMLElement, d: FinderDeps): FinderApi {
     px = e.clientX; py = e.clientY;
     root.dataset.nav = 'pointer';
     const opt = (e.target as HTMLElement).closest<HTMLElement>('[role="option"]');
+    peekAt(opt, 450);
     const i = opt ? opts.findIndex((o) => o.id === opt.id) : -1;
     if (i >= 0 && i !== active) {
       active = i;
