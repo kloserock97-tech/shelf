@@ -149,9 +149,9 @@ html.sb-resizing { cursor: col-resize; user-select: none; }
 .sh-search__input::placeholder { color: var(--label-secondary); opacity: 1; }
 .sh-search__input::-webkit-search-cancel-button { -webkit-appearance: none; }
 
-.sh-search--toolbar { flex: 0 1 184px; min-width: 120px; width: 184px; height: var(--control-sm); padding: 0 6px 0 9px; border-radius: var(--radius-pill); transition: width var(--duration-base) var(--ease-out), background-color var(--duration-fast) var(--ease-standard), box-shadow var(--duration-fast) var(--ease-standard); }
-.sh-search--toolbar:focus-within { width: 240px; }
-.sh-search--toolbar .sh-search__input { font-size: 13px; }
+/* Words to look for in this list: the first thing in the filter row, as wide as its placeholder */
+.sh-search--filter { flex: 0 0 auto; width: 200px; height: var(--control-sm); padding: 0 6px 0 9px; border-radius: var(--radius-pill); }
+.sh-search--filter .sh-search__input { font-size: 13px; }
 
 /* ---------- Kbd ---------- */
 .sh-kbd {
@@ -441,6 +441,7 @@ html[data-from="favorites"] .sh-crumbs li[data-crumb="all"], html[data-from="fav
 .sh-toolbar:has(> .sh-filters) { flex-wrap: wrap; row-gap: 8px; padding-block: 10px; }
 html:has(.sh-filters) { scroll-padding-top: calc(var(--toolbar-height) + 56px); }
 .sh-filters { order: 20; flex: 1 0 100%; display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.sh-filters__row { flex: 1 1 auto; display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
 .sh-filters .sh-chips--scroll { flex: 0 1 auto; }
 .sh-filters__clear { flex: none; margin-left: auto; }
 .sh-facet {
@@ -835,8 +836,6 @@ button.sh-menu__item { appearance: none; margin: 0; border: 0; width: 100%; back
   .sh-toolbar { flex-wrap: wrap; padding: 8px var(--space-3); gap: var(--space-2); }
   .sh-toolbar .sh-chips--scroll { order: 10; flex: 1 0 100%; }
   .sh-zoom, .sh-toolbar .sh-vsep { display: none; }
-  .sh-search--toolbar { order: 9; flex: 1 0 100%; width: auto; }
-  .sh-search--toolbar:focus-within { width: auto; }
   .sh-grid { gap: var(--space-6) var(--space-4); padding: var(--space-4); }
   .sh-hero { grid-template-columns: minmax(0, 1fr); min-height: 0; margin: var(--space-4) var(--space-4) 0; }
   .sh-hero__art { aspect-ratio: 16 / 10; }
@@ -888,8 +887,10 @@ button.sh-menu__item { appearance: none; margin: 0; border: 0; width: 100%; back
 
 /* ---------- Filters on a narrow screen: one scrolling row of pills and chips under the search ---------- */
 @media (max-width: 900px) {
-  .sh-filters { order: 30; overflow-x: auto; scrollbar-width: none; padding: 2px; margin: -2px; }
-  .sh-filters::-webkit-scrollbar { display: none; }
+  .sh-filters { order: 30; flex-wrap: wrap; row-gap: var(--space-2); }
+  .sh-search--filter { flex: 1 0 100%; width: auto; }
+  .sh-filters__row { flex: 1 0 100%; overflow-x: auto; scrollbar-width: none; padding: 2px; margin: -2px; }
+  .sh-filters__row::-webkit-scrollbar { display: none; }
   .sh-filters .sh-chips--scroll { order: 0; flex: none; overflow: visible; -webkit-mask-image: none; mask-image: none; animation: none; }
   .sh-filters__clear { margin-left: 0; }
   html:has(.sh-filters) { scroll-padding-top: calc(var(--toolbar-height) + 104px); }

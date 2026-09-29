@@ -130,7 +130,10 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
     if (countEl) countEl.textContent = String(found.length);
     const filtered = Boolean(state.q.trim()) || active() > 0;
     hero?.toggleAttribute('hidden', filtered);
-    if (clearBtn) clearBtn.hidden = active() === 0;
+    if (clearBtn) clearBtn.hidden = !filtered;
+    // the words search only this page's items: the placeholder says how many (Favorites changes as you star)
+    const own = entries.filter(inMode).length;
+    if (input) input.placeholder = tr('searchHere', { n: own, items: itemsWord(lang, own) });
     renderEmpty(found.length, filtered);
     syncControls();
     if (status) status.textContent = filtered ? tr('resultsCount', { n: found.length, items: itemsWord(lang, found.length) }) : '';

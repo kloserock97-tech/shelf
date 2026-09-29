@@ -33,6 +33,8 @@ const en = {
 
   filter: 'Filter',
   filterPage: 'Filter {title}',
+  searchHere: 'Search {n} {items}',
+  searchHereLabel: 'Search in {title}',
   filterByTech: 'Filter by technology',
   all: 'All',
   gridSize: 'Grid size',
@@ -85,7 +87,7 @@ const en = {
   thisItem: 'this item',
 
   paletteLabel: 'Search and commands',
-  palettePlaceholder: 'Search items, types and actions',
+  palettePlaceholder: 'Find an item, type, filter or action',
   results: 'Results',
   navigate: 'Navigate',
   open: 'Open',
@@ -196,6 +198,8 @@ const ru: Record<Key, string> = {
 
   filter: 'Фильтр',
   filterPage: 'Фильтр: {title}',
+  searchHere: 'Искать среди {n}',
+  searchHereLabel: 'Искать в разделе «{title}»',
   filterByTech: 'Фильтр по технологии',
   all: 'Все',
   gridSize: 'Размер сетки',
@@ -248,7 +252,7 @@ const ru: Record<Key, string> = {
   thisItem: 'элемент',
 
   paletteLabel: 'Поиск и команды',
-  palettePlaceholder: 'Искать элементы, типы и действия',
+  palettePlaceholder: 'Найти элемент, тип, фильтр или действие',
   results: 'Результаты',
   navigate: 'Выбор',
   open: 'Открыть',

@@ -34,10 +34,6 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
   <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm sh-sidebar-toggle" type="button" data-action="sidebar-toggle" aria-label={t(lang, 'showSidebar')}><Icon name="PanelLeft" /></button>
   <h1 class="sh-toolbar__title">{title} <span class="sh-toolbar__count" data-count="visible">{mode === 'all' || mode === 'type' ? items.length : ''}</span></h1>
   <div class="sh-toolbar__spacer"></div>
-  <label class="sh-search sh-search--toolbar">
-    <Icon name="Search" />
-    <input class="sh-search__input" id="search" type="search" placeholder={t(lang, 'filter')} aria-label={t(lang, 'filterPage', { title })} autocomplete="off" spellcheck="false">
-  </label>
   <div class="sh-zoom" title={t(lang, 'gridSize')}>
     <Icon name="LayoutGrid" class="sh-i--xs" />
     <input class="sh-slider" type="range" min="0" max="2" step="1" value="1" aria-label={t(lang, 'gridSize')} data-zoom>
@@ -56,24 +52,35 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
       ))}
     </div>
   </div>
-  {filterable && (
-    <div class="sh-filters" role="group" aria-label={t(lang, 'filters')} data-filters>
-      {FACETS.filter((f) => f.id !== 'type' || mode !== 'type').map((f) => (
-        <button class="sh-facet" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="facet-pop" data-facet={f.id}>
-          {t(lang, f.key)}<span class="sh-facet__n" data-facet-n hidden></span><Icon name="ChevronDown" class="sh-i--xs sh-facet__chev" />
-        </button>
-      ))}
-      {techs.length > 1 && <span class="sh-vsep" aria-hidden="true"></span>}
-      {techs.length > 1 && (
-        <div class="sh-chips sh-chips--scroll" role="group" aria-label={t(lang, 'filterByTech')} data-filter="tech">
-          {techs.map(([tech, n]) => (
-            <button class="sh-chip" type="button" aria-pressed="false" data-value={tech}>{tech} <span class="sh-chip__count">{n}</span></button>
-          ))}
-        </div>
-      )}
-      <button class="sh-btn sh-btn--plain sh-btn--sm sh-filters__clear" type="button" data-action="clear-filters" hidden>{t(lang, 'clear')}</button>
-    </div>
-  )}
+  {/* The second row says what to show: words to look for in this list, then Type, Stack and Tags. The words search
+      only this page's items (the sidebar's Search ⌘K goes anywhere on the shelf); library.ts keeps the count in the
+      placeholder true, Favorites included. */}
+  <div class="sh-filters" role="group" aria-label={t(lang, 'filters')} data-filters={filterable ? '' : undefined}>
+    <label class="sh-search sh-search--filter">
+      <Icon name="Search" />
+      <input class="sh-search__input" id="search" type="search"
+        placeholder={mode === 'favorites' ? t(lang, 'search') : t(lang, 'searchHere', { n: items.length, items: itemsWord(lang, items.length) })}
+        aria-label={t(lang, 'searchHereLabel', { title })} autocomplete="off" spellcheck="false">
+    </label>
+    {filterable && (
+      <div class="sh-filters__row">
+        {FACETS.filter((f) => f.id !== 'type' || mode !== 'type').map((f) => (
+          <button class="sh-facet" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="facet-pop" data-facet={f.id}>
+            {t(lang, f.key)}<span class="sh-facet__n" data-facet-n hidden></span><Icon name="ChevronDown" class="sh-i--xs sh-facet__chev" />
+          </button>
+        ))}
+        {techs.length > 1 && <span class="sh-vsep" aria-hidden="true"></span>}
+        {techs.length > 1 && (
+          <div class="sh-chips sh-chips--scroll" role="group" aria-label={t(lang, 'filterByTech')} data-filter="tech">
+            {techs.map(([tech, n]) => (
+              <button class="sh-chip" type="button" aria-pressed="false" data-value={tech}>{tech} <span class="sh-chip__count">{n}</span></button>
+            ))}
+          </div>
+        )}
+        <button class="sh-btn sh-btn--plain sh-btn--sm sh-filters__clear" type="button" data-action="clear-filters" hidden>{t(lang, 'clear')}</button>
+      </div>
+    )}
+  </div>
 </header>
 {filterable && (
   <div class="sh-pop" id="facet-pop" role="dialog" aria-labelledby="facet-pop-title" hidden data-facet-pop>
