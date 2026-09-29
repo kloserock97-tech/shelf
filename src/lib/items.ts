@@ -109,6 +109,7 @@ export function indexEntry(e: Item, lang: Lang = 'en') {
     bg: d.demo.background,
     grid: d.demo.grid,
     added: d.added.toISOString().slice(0, 10),
+    updated: (d.updated ?? d.added).toISOString().slice(0, 10),
     private: isPrivate(e)
   };
 }

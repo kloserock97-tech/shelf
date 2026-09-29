@@ -2,7 +2,7 @@
 import Icon from './Icon.astro';
 import Logo from './Logo.astro';
 import { GROUPS, TYPES, typeLabel, groupLabel } from '../lib/taxonomy';
-import { lurl } from '../lib/url';
+import { lurl, url } from '../lib/url';
 import { t, itemsWord, type Lang } from '../lib/i18n';
 import type { Item } from '../lib/items';
 
@@ -99,4 +99,5 @@ const n = items.length;
   <button class="sh-menu__item" type="button" data-action="shortcuts"><Icon name="Keyboard" />{t(lang, 'shortcuts')}<span class="sh-menu__key">?</span></button>
   <div class="sh-menu__sep"></div>
   <a class="sh-menu__item" href="https://github.com/kloserock97-tech/shelf" target="_blank" rel="noopener"><Icon name="ExternalLink" />{t(lang, 'sourceOnGithub')}</a>
+  <a class="sh-menu__item" href={url('THIRD_PARTY_NOTICES.txt')}><Icon name="Scale" />{t(lang, 'credits')}</a>
 </div>

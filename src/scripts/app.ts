@@ -1,13 +1,16 @@
 // Shelf in the browser: theme, copy, favourites, the grid, Quick Look, the ⌘K palette and the item page.
 import MiniSearch from 'minisearch';
-import { Check, Contrast, Copy, Keyboard, Languages, MessageSquareCode, PanelLeft, TriangleAlert } from 'lucide-static';
+import { Check, Contrast, Copy, Keyboard, Languages, MessageSquareCode, PanelLeft, SlidersHorizontal, TriangleAlert } from 'lucide-static';
 import { cleanSvg } from '../lib/svg';
 import { t, langOf, type Key } from '../lib/i18n';
+import { initLibrary, type LibApi } from './library';
+import { FACETS, tagInLang, type FacetId } from '../lib/facets';
+import { typeLabel, typeOf } from '../lib/taxonomy';
 
 interface Entry {
   slug: string; title: string; type: string; typeLabel: string; tech: string[]; tags: string[]; status: string;
   summary: string; notes: string; url: string; poster: string | null; loop: string | null; demo: string | null;
-  external: boolean; bg: 'auto' | 'light' | 'dark'; grid: boolean; added: string; private: boolean;
+  external: boolean; bg: 'auto' | 'light' | 'dark'; grid: boolean; added: string; updated: string; private: boolean;
 }
 
 const $ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document) => root.querySelector(sel) as T | null;
@@ -425,29 +428,11 @@ function wireLoop(thumb: HTMLElement) {
 /* ---------- the grid ---------- */
 const ZOOM = [180, 232, 320];
 let gridApi: { apply: () => void; visible: () => HTMLElement[] } | null = null;
+let libApi: LibApi | null = null;
 
 function initGrid(grid: HTMLElement) {
-  const mode = grid.dataset.mode ?? 'all';
   const cards = $$('.sh-card', grid);
   const bySlug = new Map(cards.map((c) => [c.dataset.slug!, c]));
-  const countEl = $('[data-count="visible"]');
-  const input = $<HTMLInputElement>('#search');
-  const params = new URLSearchParams(location.search);
-  let query = params.get('q') ?? '';
-  let tech = params.get('tech') ?? '';
-  let sort = store.get('shelf:sort') === 'name' ? 'name' : 'new';
-  let visible: HTMLElement[] = cards;
-  if (input && query) input.value = query;
-
-  const chips = $('[data-filter="tech"]');
-  const chipEls = chips ? $$<HTMLButtonElement>('.sh-chip', chips) : [];
-  const syncChips = () => chipEls.forEach((c) => c.setAttribute('aria-pressed', String((c.dataset.value ?? '') === tech)));
-  if (tech && !chipEls.some((c) => c.dataset.value === tech)) tech = '';
-  syncChips();
-  chipEls.forEach((c) => c.addEventListener('click', () => { tech = c.dataset.value ?? ''; syncChips(); apply(); }));
-
-  const sortSeg = wireSeg($('[data-sort]'), (v) => { sort = v === 'name' ? 'name' : 'new'; store.set('shelf:sort', sort); apply(); });
-  sortSeg?.select(sort === 'name' ? 1 : 0, false);
 
   const zoom = $<HTMLInputElement>('[data-zoom]');
   if (zoom) {
@@ -463,53 +448,11 @@ function initGrid(grid: HTMLElement) {
     setZoom();
   }
 
-  const writeUrl = () => {
-    const p = new URLSearchParams(location.search);
-    if (query) p.set('q', query); else p.delete('q');
-    if (tech) p.set('tech', tech); else p.delete('tech');
-    const qs = p.toString();
-    history.replaceState(history.state, '', `${location.pathname}${qs ? `?${qs}` : ''}${location.hash}`);
-  };
-
-  function apply() {
-    let list = cards.slice();
-    if (mode === 'favorites') list = list.filter((c) => favs.has(c.dataset.slug!));
-    if (tech) list = list.filter((c) => (c.dataset.tech ?? '').split('|').includes(tech));
-    const q = query.trim();
-    if (q) {
-      const hits = find(q);
-      const rank = new Map(hits.map((s, i) => [s, i]));
-      list = list.filter((c) => rank.has(c.dataset.slug!));
-      list.sort((a, b) => rank.get(a.dataset.slug!)! - rank.get(b.dataset.slug!)!);
-    } else {
-      list.sort(sort === 'name'
-        ? (a, b) => (a.dataset.title ?? '').localeCompare(b.dataset.title ?? '')
-        : (a, b) => (b.dataset.added ?? '').localeCompare(a.dataset.added ?? '') || (a.dataset.title ?? '').localeCompare(b.dataset.title ?? ''));
-    }
-    const keep = new Set(list);
-    cards.forEach((c) => { c.hidden = !keep.has(c); if (c.hidden) c.removeAttribute('data-selected'); });
-    list.forEach((c) => grid.append(c));
-    visible = list;
-    if (countEl) countEl.textContent = String(list.length);
-    const empty = list.length ? '' : q || tech ? 'search' : mode === 'favorites' ? 'favorites' : 'none';
-    $$('[data-empty]').forEach((el) => (el.hidden = el.dataset.empty !== empty));
-    const titleEl = $('[data-empty-title]');
-    if (titleEl) titleEl.textContent = (titleEl.dataset.emptyTitle ?? '').replace('{q}', q || tech);
-    $('[data-hero]')?.toggleAttribute('hidden', Boolean(q || tech));
-    grid.hidden = list.length === 0;
-  }
-
-  input?.addEventListener('input', () => { query = input.value; writeUrl(); apply(); });
-  $('[data-action="clear-filters"]')?.addEventListener('click', () => {
-    query = ''; tech = '';
-    if (input) input.value = '';
-    syncChips(); writeUrl(); apply();
-  });
-  chipEls.forEach((c) => c.addEventListener('click', writeUrl));
   cards.forEach((c) => { const t = $('.sh-card__thumb', c); if (t) wireLoop(t); });
 
-  apply();
-  gridApi = { apply, visible: () => visible };
+  // filter, sort, the URL and the empty state live in library.ts
+  libApi = initLibrary(grid, { lang: L, tr, index: BY_SLUG, find, store, favs, narrow });
+  gridApi = { apply: libApi.apply, visible: libApi.visible };
 
   if (location.hash.length > 1) {
     const slug = decodeURIComponent(location.hash.slice(1));
@@ -651,6 +594,21 @@ const PAL_ICON: Record<string, string> = {
   keyboard: cleanSvg(Keyboard),
   lang: cleanSvg(Languages)
 };
+const FILTER_ICON = cleanSvg(SlidersHorizontal);
+const facetName = (f: FacetId) => tr(f === 'tag' ? 'facetTagOne' : FACETS.find((x) => x.id === f)!.key);
+function paletteFilters(q: string): { label: string; kind: string; run: () => void }[] {
+  if (libApi) return libApi.suggest(q).map((s) => ({ label: s.label, kind: facetName(s.facet), run: () => libApi?.choose(s.facet, s.value) }));
+  // away from the library: offer the same values and open All items filtered by the chosen one
+  const n = q.toLowerCase();
+  const all = $<HTMLAnchorElement>('#sidebar a.sh-sb__row[href]')?.href;
+  if (!all) return [];
+  const go = (param: string, value: string) => () => { const u = new URL(all); u.search = ''; u.searchParams.set(param, value); location.href = u.toString(); };
+  const out: { label: string; kind: string; run: () => void }[] = [];
+  for (const type of new Set(INDEX.map((e) => e.type))) { const label = typeLabel(typeOf(type), L); if (label.toLowerCase().includes(n)) out.push({ label, kind: facetName('type'), run: go('type', type) }); }
+  for (const v of new Set(INDEX.flatMap((e) => e.tech))) if (v.toLowerCase().includes(n)) out.push({ label: v, kind: facetName('stack'), run: go('stack', v) });
+  for (const v of new Set(INDEX.flatMap((e) => e.tags))) if (tagInLang(v, L) && v.toLowerCase().startsWith(n)) out.push({ label: v, kind: facetName('tag'), run: go('tag', v) });
+  return out.slice(0, 4);
+}
 function renderPalette() {
   if (!palList || !palInput) return;
   const q = palInput.value.trim();
@@ -667,6 +625,18 @@ function renderPalette() {
         `<span class="sh-palette__sub">${esc([e.typeLabel, ...e.tech.slice(0, 2)].join(' · '))}</span></span>`,
       () => { location.href = e.url; }
     );
+  }
+  // Mobbin's search suggests filters as well as things: a row names the value and its facet, and picking it applies it
+  const filters = q.length >= 2 ? paletteFilters(q) : [];
+  if (filters.length) {
+    rows.push(`<div class="sh-palette__group">${tr('filters')}</div>`);
+    for (const f of filters) {
+      add(
+        `<span class="sh-palette__icon"><span class="sh-i">${FILTER_ICON}</span></span><span class="sh-palette__text"><span class="sh-palette__title">${highlightMatch(f.label, q)}</span>` +
+          `<span class="sh-palette__sub">${esc(f.kind)}</span></span><span class="sh-palette__trail">${esc(tr('filterRow'))}</span>`,
+        () => { closePalette(); f.run(); }
+      );
+    }
   }
   const places = $$<HTMLAnchorElement>('#sidebar .sh-sb__row[href]')
     .map((a) => ({ label: a.querySelector('.sh-sb__label')?.textContent?.trim() ?? '', href: a.href, icon: a.querySelector('.sh-i')?.innerHTML ?? '' }));

@@ -5,6 +5,7 @@ import ShelfArt from './ShelfArt.astro';
 import { type Item, itemUrl, posterUrl, subtitle } from '../lib/items';
 import { typeOf, typeAbout, type TypeDef } from '../lib/taxonomy';
 import { t, itemsWord, type Lang } from '../lib/i18n';
+import { FACETS, SORTS } from '../lib/facets';
 
 interface Props {
   title: string;
@@ -32,14 +33,6 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
 <header class="sh-toolbar">
   <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm sh-sidebar-toggle" type="button" data-action="sidebar-toggle" aria-label={t(lang, 'showSidebar')}><Icon name="PanelLeft" /></button>
   <h1 class="sh-toolbar__title">{title} <span class="sh-toolbar__count" data-count="visible">{mode === 'all' || mode === 'type' ? items.length : ''}</span></h1>
-  {filterable && techs.length > 1 && (
-    <div class="sh-chips sh-chips--scroll" role="group" aria-label={t(lang, 'filterByTech')} data-filter="tech">
-      <button class="sh-chip" type="button" aria-pressed="true" data-value="">{t(lang, 'all')}</button>
-      {techs.map(([tech, n]) => (
-        <button class="sh-chip" type="button" aria-pressed="false" data-value={tech}>{tech} <span class="sh-chip__count">{n}</span></button>
-      ))}
-    </div>
-  )}
   <div class="sh-toolbar__spacer"></div>
   <label class="sh-search sh-search--toolbar">
     <Icon name="Search" />
@@ -51,11 +44,53 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
     <Icon name="LayoutGrid" class="sh-i--md" />
   </div>
   <span class="sh-vsep"></span>
-  <div class="sh-seg sh-seg--sm" role="group" aria-label={t(lang, 'sort')} data-sort>
-    <button class="sh-seg__opt" type="button" data-value="new" aria-pressed="true">{t(lang, 'newest')}</button>
-    <button class="sh-seg__opt" type="button" data-value="name" aria-pressed="false">{t(lang, 'az')}</button>
+  <div class="sh-sortwrap">
+    <button class="sh-btn sh-btn--ghost sh-btn--sm sh-sort" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="sort-menu" data-sort-trigger>
+      <Icon name="ArrowUpDown" /><span data-sort-label>{t(lang, 'newest')}</span><Icon name="ChevronDown" class="sh-i--xs sh-facet__chev" />
+    </button>
+    <div class="sh-menu sh-sortmenu" id="sort-menu" role="menu" aria-label={t(lang, 'sort')} hidden data-sort-menu>
+      {SORTS.map((s) => (
+        <button class="sh-menu__item" type="button" role="menuitemradio" aria-checked={s.id === 'new' ? 'true' : 'false'} tabindex="-1" data-value={s.id}>
+          <span class="sh-menu__check"><Icon name="Check" /></span>{t(lang, s.key)}
+        </button>
+      ))}
+    </div>
   </div>
+  {filterable && (
+    <div class="sh-filters" role="group" aria-label={t(lang, 'filters')} data-filters>
+      {FACETS.filter((f) => f.id !== 'type' || mode !== 'type').map((f) => (
+        <button class="sh-facet" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="facet-pop" data-facet={f.id}>
+          {t(lang, f.key)}<span class="sh-facet__n" data-facet-n hidden></span><Icon name="ChevronDown" class="sh-i--xs sh-facet__chev" />
+        </button>
+      ))}
+      {techs.length > 1 && <span class="sh-vsep" aria-hidden="true"></span>}
+      {techs.length > 1 && (
+        <div class="sh-chips sh-chips--scroll" role="group" aria-label={t(lang, 'filterByTech')} data-filter="tech">
+          {techs.map(([tech, n]) => (
+            <button class="sh-chip" type="button" aria-pressed="false" data-value={tech}>{tech} <span class="sh-chip__count">{n}</span></button>
+          ))}
+        </div>
+      )}
+      <button class="sh-btn sh-btn--plain sh-btn--sm sh-filters__clear" type="button" data-action="clear-filters" hidden>{t(lang, 'clear')}</button>
+    </div>
+  )}
 </header>
+{filterable && (
+  <div class="sh-pop" id="facet-pop" role="dialog" aria-labelledby="facet-pop-title" hidden data-facet-pop>
+    <div class="sh-pop__head">
+      <span class="sh-pop__title" id="facet-pop-title" data-pop-title></span>
+      <button class="sh-btn sh-btn--plain sh-btn--sm" type="button" hidden data-pop-clear>{t(lang, 'clear')}</button>
+    </div>
+    <label class="sh-search sh-pop__search" hidden data-pop-search-wrap>
+      <Icon name="Search" />
+      <input class="sh-search__input" type="search" autocomplete="off" spellcheck="false" data-pop-search>
+    </label>
+    <div class="sh-pop__list" data-pop-list></div>
+    <div class="sh-pop__peek" aria-hidden="true" data-pop-peek></div>
+    <div class="sh-pop__foot"><button class="sh-btn sh-btn--primary sh-pop__show" type="button" data-pop-show></button></div>
+  </div>
+)}
+<div class="sh-visually-hidden" role="status" aria-live="polite" data-results-status></div>
 
 {hero && (
   <section class="sh-hero" data-hero aria-labelledby="hero-title">
@@ -98,8 +133,9 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
 </div>
 <div class="sh-empty" data-empty="search" hidden>
   <ShelfArt kind="search" />
-  <p class="sh-empty__title" data-empty-title={t(lang, 'noResultsTitle')}></p>
-  <p class="sh-empty__text">{t(lang, 'noResultsText')}</p>
+  <p class="sh-empty__title" data-empty-title={t(lang, 'noResultsTitle')} data-empty-title-filters={t(lang, 'noMatchTitle')}></p>
+  <p class="sh-empty__text" data-empty-text={t(lang, 'noResultsText')} data-empty-text-filters={t(lang, 'noMatchText')}>{t(lang, 'noResultsText')}</p>
+  <div class="sh-empty__fixes" data-empty-fixes></div>
   <button class="sh-btn" type="button" data-action="clear-filters">{t(lang, 'clearFilters')}</button>
 </div>
 <div class="sh-empty" data-empty="none" hidden>

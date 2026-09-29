@@ -412,6 +412,110 @@ button.sh-menu__item, a.sh-menu__item { appearance: none; margin: 0; border: 0; 
 .sh-toolbar__spacer { flex: 1 1 auto; }
 .sh-toolbar__group { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
 
+/* ---------- Filters (after Mobbin's catalogue) ----------
+   The toolbar grows a second row: facet pills (Type, Stack, Tags) with the applied count inside, the quick
+   Stack chips, and Clear. A pill opens a popover anchored to it (a bottom sheet on a phone); the sort is a menu. */
+.sh-toolbar:has(> .sh-filters) { flex-wrap: wrap; row-gap: 8px; padding-block: 10px; }
+html:has(.sh-filters) { scroll-padding-top: calc(var(--toolbar-height) + 56px); }
+.sh-filters { order: 20; flex: 1 0 100%; display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.sh-filters .sh-chips--scroll { flex: 0 1 auto; }
+.sh-filters__clear { flex: none; margin-left: auto; }
+.sh-facet {
+  appearance: none; margin: 0; border: 0; flex: none;
+  display: inline-flex; align-items: center; gap: 6px;
+  height: var(--control-sm); padding: 0 8px 0 12px; border-radius: var(--radius-pill);
+  font: 500 13px/18px var(--font-sans); white-space: nowrap; color: var(--label);
+  background: transparent; box-shadow: inset 0 0 0 1px var(--separator); cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard), transform var(--duration-instant) var(--ease-standard);
+}
+.sh-facet:hover { background: var(--fill); }
+.sh-facet:active { transform: scale(0.97); }
+.sh-facet[aria-expanded="true"] { background: var(--fill-hover); }
+.sh-facet.is-on { background: var(--inverse); color: var(--on-inverse); box-shadow: none; }
+.sh-facet__n {
+  display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: var(--radius-pill);
+  font: 600 11px/1 var(--font-sans); font-variant-numeric: tabular-nums; background: var(--on-inverse); color: var(--inverse);
+}
+.sh-facet__n[hidden] { display: none; }
+.sh-facet__chev { opacity: 0.6; transition: transform var(--duration-fast) var(--ease-out); }
+.sh-facet[aria-expanded="true"] .sh-facet__chev, .sh-sort[aria-expanded="true"] .sh-facet__chev { transform: rotate(180deg); }
+
+/* Sort: a small menu with a check, anchored to its button */
+.sh-sortwrap { position: relative; flex: none; }
+.sh-sort { gap: 6px; }
+.sh-sortmenu { position: fixed; z-index: var(--z-menu); min-width: 208px; transform-origin: top right; }
+.sh-sortmenu:not([hidden]) { transition: opacity 180ms var(--ease-out), transform 180ms var(--ease-out); }
+@starting-style { .sh-sortmenu:not([hidden]) { opacity: 0; transform: scale(0.96); } }
+.sh-menu__check { display: inline-flex; width: 16px; opacity: 0; }
+.sh-menu__item[aria-checked="true"] .sh-menu__check { opacity: 1; }
+button.sh-menu__item { appearance: none; margin: 0; border: 0; width: 100%; background: transparent; font: inherit; color: inherit; text-align: left; }
+
+/* The facet popover */
+.sh-pop {
+  position: fixed; z-index: var(--z-menu); left: 0; top: 0;
+  display: flex; flex-direction: column; width: 320px; max-width: calc(100vw - 24px); max-height: 440px; overflow: hidden;
+  border-radius: var(--radius-lg); background: var(--surface-raised); box-shadow: var(--shadow-overlay);
+  font: 400 14px/20px var(--font-sans); color: var(--label);
+  transform-origin: top left;
+}
+.sh-pop:not([hidden]) { transition: opacity 160ms var(--ease-out), transform 160ms var(--ease-out); }
+@starting-style { .sh-pop:not([hidden]) { opacity: 0; transform: translateY(-4px) scale(0.98); } }
+.sh-pop[hidden] { display: none; }
+.sh-pop__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: 40px; padding: 6px 8px 2px 14px; }
+.sh-pop__title { font: 600 13px/18px var(--font-sans); color: var(--label-secondary); }
+.sh-pop__search { margin: 4px 8px 6px; width: auto; }
+.sh-pop__search[hidden] { display: none; }
+.sh-pop__list { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 6px 6px; }
+.sh-pop__set { margin: 0; padding: 0; border: 0; min-width: 0; }
+.sh-pop__set + .sh-pop__set { margin-top: 4px; }
+.sh-pop__group { padding: 8px 8px 4px; font: 600 11px/16px var(--font-sans); letter-spacing: 0.02em; text-transform: uppercase; color: var(--label-secondary); }
+.sh-pop__none { margin: 0; padding: 16px 12px; color: var(--label-secondary); }
+.sh-opt {
+  position: relative; display: flex; align-items: center; gap: 10px; min-height: 32px; padding: 0 8px;
+  border-radius: var(--radius-sm); cursor: pointer; user-select: none;
+}
+.sh-opt:hover { background: var(--fill); }
+.sh-opt:has(input:focus-visible) { box-shadow: var(--focus); }
+.sh-opt input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; pointer-events: none; }
+.sh-opt__box {
+  flex: none; display: grid; place-items: center; width: 16px; height: 16px; border-radius: 5px;
+  box-shadow: inset 0 0 0 1.5px var(--control-off); transition: background-color var(--duration-instant) var(--ease-standard);
+}
+.sh-opt input:checked + .sh-opt__box { background: var(--accent); box-shadow: none; }
+.sh-opt input:checked + .sh-opt__box::after {
+  content: ""; width: 8px; height: 4.5px; margin-top: -2px;
+  border-left: 1.75px solid var(--on-accent); border-bottom: 1.75px solid var(--on-accent); transform: rotate(-45deg);
+}
+.sh-opt__label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sh-opt__n { flex: none; font: 500 12px/16px var(--font-sans); font-variant-numeric: tabular-nums; color: var(--label-secondary); }
+/* would give nothing with the other filters: kept in place so the list doesn't jump, just quieter */
+.sh-opt.is-empty .sh-opt__label, .sh-opt.is-empty .sh-opt__n { color: var(--label-tertiary); }
+.sh-pop__peek { flex: none; padding: 10px 12px 12px; border-top: 0.5px solid var(--separator); }
+.sh-pop__peek[hidden] { display: none; }
+.sh-pop__about { margin: 0 0 8px; font: 400 12px/16px var(--font-sans); color: var(--label-secondary); }
+.sh-pop__thumbs { display: flex; gap: 6px; }
+.sh-pop__thumbs img { width: 88px; height: 66px; object-fit: cover; border-radius: 8px; background: var(--tile); box-shadow: var(--shadow-edge); }
+.sh-pop__foot { display: none; }
+.sh-pop-scrim { position: fixed; inset: 0; z-index: var(--z-menu); background: var(--scrim); }
+.sh-pop-scrim[hidden] { display: none; }
+/* on a phone the popover is a sheet from the bottom with a button that shows the result */
+.sh-pop.sh-pop--sheet {
+  left: 0; right: 0; top: auto; bottom: 0; width: auto; max-width: none; max-height: min(78dvh, 560px);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0; box-shadow: var(--shadow-sheet); transform-origin: bottom center;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.sh-pop.sh-pop--sheet:not([hidden]) { transition: transform 240ms var(--ease-drawer), opacity 240ms var(--ease-out); }
+@starting-style { .sh-pop.sh-pop--sheet:not([hidden]) { opacity: 1; transform: translateY(40%); } }
+.sh-pop--sheet .sh-pop__head { min-height: 52px; padding: 10px 12px 4px 18px; }
+.sh-pop--sheet .sh-pop__title { font: 600 17px/22px var(--font-sans); color: var(--label); }
+.sh-pop--sheet .sh-opt { min-height: 44px; }
+.sh-pop--sheet .sh-pop__foot { display: block; flex: none; padding: 10px 12px 12px; border-top: 0.5px solid var(--separator); }
+.sh-pop__show { width: 100%; justify-content: center; }
+
+/* zero results: each filter that caused it, with what comes back without it */
+.sh-empty__fixes { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-2); max-width: 520px; }
+.sh-empty__fixes[hidden], .sh-empty__fixes:empty { display: none; }
+
 /* ---------- Grid and item card ---------- */
 .sh-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--card-min-width), 1fr));
@@ -744,4 +848,17 @@ button.sh-menu__item, a.sh-menu__item { appearance: none; margin: 0; border: 0; 
   .sh-toast, .sh-tip { transition-property: opacity; }
   .sh-hero:hover .sh-hero__art img { transform: none; }
   .sh-spinner i { animation-duration: 1.6s; }
+}
+
+/* ---------- Filters on a narrow screen: one scrolling row of pills and chips under the search ---------- */
+@media (max-width: 900px) {
+  .sh-filters { order: 30; overflow-x: auto; scrollbar-width: none; padding: 2px; margin: -2px; }
+  .sh-filters::-webkit-scrollbar { display: none; }
+  .sh-filters .sh-chips--scroll { order: 0; flex: none; overflow: visible; -webkit-mask-image: none; mask-image: none; animation: none; }
+  .sh-filters__clear { margin-left: 0; }
+  html:has(.sh-filters) { scroll-padding-top: calc(var(--toolbar-height) + 104px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sh-pop, .sh-pop.sh-pop--sheet, .sh-sortmenu, .sh-facet, .sh-facet__chev { transition-duration: 1ms !important; }
+  .sh-facet:active { transform: none; }
 }
