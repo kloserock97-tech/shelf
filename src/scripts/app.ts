@@ -5,6 +5,7 @@ import { cleanSvg } from '../lib/svg';
 import { t, langOf, type Key } from '../lib/i18n';
 import { initLibrary, type LibApi } from './library';
 import { initFinder, type FinderAction, type FinderApi, type FinderIcon } from './finder';
+import { initFace } from './face';
 
 interface Entry {
   slug: string; title: string; type: string; typeLabel: string; tech: string[]; tags: string[]; jobs: string[]; collections: string[]; status: string;
@@ -862,6 +863,7 @@ styleSeg?.select(html.classList.contains('sb-attached') ? 1 : 0, false);
 setRail(html.classList.contains('sidebar-rail'));
 initSections();
 initEdge();
+initFace();
 
 const searchInput = $<HTMLInputElement>('#search');
 const grid = $('#grid');

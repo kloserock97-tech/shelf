@@ -334,6 +334,45 @@ html.sec-closed-graphics [data-section="graphics"] .sh-sb__list, html.sec-closed
 .sh-sb__profile:hover { background: var(--fill-subtle); }
 .sh-sb__profile[aria-expanded="true"] { background: var(--fill); }
 .sh-sb__avatar { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: var(--radius-pill); background: var(--inverse); color: var(--on-inverse); font: 600 13px/1 var(--font-sans); }
+/* Profile face: googly eyes on the avatar (face.ts). White eyes with dark pupils on the inverse circle; on the light
+   circle of the dark theme a faint ring keeps the whites apart from it. The mouth and the z's are drawn in on-inverse.
+   Squint and grin under the pointer, blink, squish when pressed, sleep with z's rising; reduced motion keeps it still. */
+.sh-face { position: relative; overflow: visible; transition: transform var(--duration-base) var(--ease-spring); }
+.sh-face svg { display: block; width: 28px; height: 28px; overflow: visible; }
+.sh-face__white { fill: #fff; stroke: var(--on-inverse); stroke-opacity: 0.22; stroke-width: 0.6; }
+.sh-face__pupil { fill: #141416; }
+.sh-face__eye { transform-box: fill-box; transform-origin: center; transition: transform 90ms var(--ease-out); }
+.sh-face__mouth, .sh-face__grin, .sh-face__snore, .sh-face__lid { fill: none; stroke: var(--on-inverse); stroke-width: 1.4; stroke-linecap: round; transition: opacity var(--duration-fast) var(--ease-standard); }
+.sh-face__grin, .sh-face__snore, .sh-face__lid { opacity: 0; }
+.sh-face__snore { stroke-width: 1.1; transform-box: fill-box; transform-origin: center; }
+.sh-face.is-blink .sh-face__eye { transform: scaleY(0.1); }
+.sh-face.is-startled .sh-face__eye { transform: scale(1.2); }
+.sh-face.is-boop { transform: scale(1.12, 0.84); transition-duration: var(--duration-instant); }
+@media (hover: hover) and (pointer: fine) {
+  .sh-sb__profile:hover .sh-face:not(.is-asleep) .sh-face__eye { transform: scaleY(0.55); }
+  .sh-sb__profile:hover .sh-face:not(.is-asleep) .sh-face__mouth { opacity: 0; }
+  .sh-sb__profile:hover .sh-face:not(.is-asleep) .sh-face__grin { opacity: 1; }
+}
+/* asleep: closed lids instead of the whites */
+.sh-face.is-asleep .sh-face__eye { opacity: 0; }
+.sh-face.is-asleep .sh-face__lid { opacity: 1; }
+.sh-face.is-asleep .sh-face__mouth { opacity: 0; }
+.sh-face.is-asleep .sh-face__snore { opacity: 1; animation: sh-snore 3s var(--ease-in-out) infinite; }
+.sh-face__z { position: absolute; top: -4px; right: -6px; width: 0; height: 0; pointer-events: none; }
+.sh-face__z i { position: absolute; left: 0; bottom: 0; font: italic 700 9px/1 var(--font-sans); color: var(--label-secondary); opacity: 0; }
+.sh-face.is-asleep .sh-face__z i { animation: sh-z 3s var(--ease-out) infinite; }
+.sh-face.is-asleep .sh-face__z i:nth-child(2) { animation-delay: 1s; font-size: 11px; }
+.sh-face.is-asleep .sh-face__z i:nth-child(3) { animation-delay: 2s; font-size: 13px; }
+@keyframes sh-snore { 50% { transform: scale(1.5); } }
+@keyframes sh-z {
+  0% { opacity: 0; transform: translate(0, 0); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translate(9px, -16px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sh-face, .sh-face__eye { transition: none; }
+  .sh-face.is-asleep .sh-face__snore, .sh-face.is-asleep .sh-face__z i { animation: none; }
+}
 .sh-sb__who { display: grid; }
 .sh-sb__name { font: 600 13px/18px var(--font-sans); overflow: hidden; text-overflow: ellipsis; }
 .sh-sb__meta { font: 400 12px/16px var(--font-sans); color: var(--label-secondary); overflow: hidden; text-overflow: ellipsis; }
