@@ -1060,17 +1060,24 @@ a.sh-meter__name:hover { background: var(--fill); }
 }
 
 /* ---------- Search, after Mobbin's search bar ----------
-   One dark glass panel in both themes, as Mobbin's search and macOS HUD windows: the page stays visible under a blur.
-   Recent picks on top, tabs on the left, tiles with covers on the right. Hover and the keyboard's active option look
-   the same (a lighter fill); matches with the words are light blue. The panel keeps the palette's ids and class. */
-.sh-finder-overlay { padding: max(5vh, 32px) var(--space-6) var(--space-6); background: rgba(0, 0, 0, 0.16); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+   One dark panel in both themes, as Mobbin's search and macOS HUD windows. Nearly opaque, so the page under it does
+   not muddy the greys. Each kind of thing has its own look, so nothing blends:
+   - tabs are a plain list, the chosen one a light pill with dark text;
+   - chips are outlined pills;
+   - kind, task, collection and technology tiles are raised solid cards;
+   - items are app icons with no plate under them;
+   - "Show all" is the one row tinted with the accent.
+   The pointer lightens what it is over. The keyboard's option (the one Enter picks) also gets a light blue ring,
+   shown only while the keyboard leads (data-nav="key" on the overlay), as :focus-visible does.
+   The panel keeps the palette's ids and class. */
+.sh-finder-overlay { padding: max(5vh, 32px) var(--space-6) var(--space-6); background: rgba(0, 0, 0, 0.3); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
 .sh-palette.sh-finder {
   --fx-pad: 24px;
   display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto;
   width: min(1120px, 100%); max-width: none; height: min(740px, calc(100dvh - max(5vh, 32px) - 24px)); max-height: none;
   border-radius: 28px; color: var(--hud-label); color-scheme: dark;
   background: var(--hud);
-  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.38), 0 0 0 0.5px rgba(0, 0, 0, 0.45), inset 0 0 0 0.5px var(--hud-edge), inset 0 1px 0 var(--hud-edge);
+  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.42), 0 0 0 0.5px rgba(0, 0, 0, 0.5), inset 0 0 0 0.5px var(--hud-edge), inset 0 1px 0 var(--hud-edge);
   -webkit-backdrop-filter: blur(var(--hud-blur)) saturate(160%);
   backdrop-filter: blur(var(--hud-blur)) saturate(160%);
 }
@@ -1078,7 +1085,7 @@ a.sh-meter__name:hover { background: var(--fill); }
 .sh-finder mark { background: transparent; color: var(--hud-accent); font-weight: inherit; }
 .sh-finder [role="option"] { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 
-.sh-finder__field { grid-row: 1; display: flex; align-items: center; gap: 14px; height: 76px; padding: 0 var(--fx-pad) 0 28px; }
+.sh-finder__field { grid-row: 1; display: flex; align-items: center; gap: 14px; height: 76px; padding: 0 20px 0 28px; }
 .sh-finder__lens { width: 22px; height: 22px; color: var(--hud-label-secondary); }
 .sh-finder__input {
   flex: 1; min-width: 0; margin: 0; padding: 0; border: 0; outline: none; background: transparent;
@@ -1086,61 +1093,78 @@ a.sh-meter__name:hover { background: var(--fill); }
 }
 .sh-finder__input:focus-visible { box-shadow: none; }
 .sh-finder__input::placeholder { color: var(--hud-label-secondary); opacity: 1; }
-.sh-finder__close { appearance: none; margin: 0; padding: 0; border: 0; background: transparent; color: var(--hud-label-secondary); cursor: pointer; }
-.sh-finder__close-label { display: none; }
+/* a round cross, as sheets and search fields close on Apple platforms; Esc still closes and the footer says so */
+.sh-finder__close {
+  appearance: none; flex: none; display: grid; place-items: center; width: 36px; height: 36px; margin: 0; padding: 0; border: 0;
+  border-radius: 50%; background: var(--hud-fill); color: var(--hud-label-secondary); cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard);
+}
+.sh-finder__close .sh-i { width: 18px; height: 18px; }
+.sh-finder__close:hover { background: var(--hud-fill-selected); color: var(--hud-label); }
+.sh-finder__close:focus-visible { outline: 2px solid var(--hud-accent); outline-offset: 2px; }
 
 .sh-finder__recent { grid-row: 2; display: flex; gap: 10px; min-width: 0; padding: 0 var(--fx-pad) 20px; overflow-x: auto; scrollbar-width: none; }
 .sh-finder__recent::-webkit-scrollbar { display: none; }
 .sh-finder__chips { display: flex; flex-wrap: wrap; gap: 10px; }
+/* chips: outlined, so they read as filters to add, not as cards */
 .sh-finder__chip {
-  flex: none; display: inline-flex; align-items: center; gap: 8px; max-width: 260px; height: 42px; padding: 0 17px 0 14px;
-  border-radius: var(--radius-pill); background: var(--hud-fill); color: var(--hud-label);
+  flex: none; display: inline-flex; align-items: center; gap: 8px; max-width: 260px; height: 40px; padding: 0 16px 0 13px;
+  border-radius: var(--radius-pill); background: transparent; box-shadow: inset 0 0 0 1px var(--hud-outline); color: var(--hud-label);
   font: 600 15px/20px var(--font-sans); white-space: nowrap;
-  transition: background-color var(--duration-fast) var(--ease-standard);
+  transition: background-color var(--duration-fast) var(--ease-standard), box-shadow var(--duration-fast) var(--ease-standard);
 }
 .sh-finder__chip .sh-i { width: 18px; height: 18px; color: var(--hud-label-secondary); }
 .sh-finder__chip-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .sh-finder__chip-sub { font: 500 12px/16px var(--font-sans); color: var(--hud-label-secondary); }
 
-.sh-finder__body { grid-row: 3; display: grid; grid-template-columns: 264px minmax(0, 1fr); gap: 20px; min-height: 0; padding-left: var(--fx-pad); }
+.sh-finder__body { grid-row: 3; display: grid; grid-template-columns: 256px minmax(0, 1fr); gap: 24px; min-height: 0; padding-left: var(--fx-pad); }
+/* tabs: a plain list; the chosen one is a light pill with dark text, the strongest mark in the panel */
 .sh-finder__tabs { display: flex; flex-direction: column; gap: 4px; min-height: 0; }
 .sh-finder__tab {
-  appearance: none; margin: 0; border: 0; display: flex; align-items: center; gap: 14px; height: 54px; padding: 0 14px;
+  appearance: none; margin: 0; border: 0; display: flex; align-items: center; gap: 14px; height: 52px; padding: 0 16px;
   border-radius: 16px; background: transparent; color: var(--hud-label); text-align: left; cursor: pointer;
-  font: 600 18px/24px var(--font-sans); letter-spacing: -0.01em;
+  font: 600 17px/22px var(--font-sans); letter-spacing: -0.01em;
   transition: background-color var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard);
 }
 .sh-finder__tab .sh-i { width: 22px; height: 22px; color: var(--hud-label-secondary); }
 .sh-finder__tab:hover { background: var(--hud-fill); }
-.sh-finder__tab[aria-selected="true"] { background: var(--hud-fill-selected); }
-.sh-finder__tab[aria-selected="true"] .sh-i { color: var(--hud-label); }
-.sh-finder__tab.is-empty { color: var(--hud-label-secondary); }
+.sh-finder__tab[aria-selected="true"] { background: var(--hud-tab-selected); color: var(--hud-on-tab-selected); }
+.sh-finder__tab[aria-selected="true"] .sh-i { color: var(--hud-on-tab-selected); }
+.sh-finder__tab.is-empty:not([aria-selected="true"]) { color: var(--hud-label-secondary); }
 .sh-finder__tab-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sh-finder__tab-n { font: 500 13px/18px var(--font-sans); font-variant-numeric: tabular-nums; color: var(--hud-label-secondary); }
+.sh-finder__tab[aria-selected="true"] .sh-finder__tab-n { color: var(--hud-on-tab-selected); opacity: 0.62; }
+.sh-finder__tab:focus-visible { outline: 2px solid var(--hud-accent); outline-offset: 2px; }
 
 .sh-finder__panel {
-  min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 var(--fx-pad) var(--fx-pad) 2px;
+  min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 4px var(--fx-pad) var(--fx-pad) 4px;
   scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
 }
 .sh-finder__section + .sh-finder__section { margin-top: 28px; }
 .sh-finder__head { margin: 0 0 12px; font: 600 15px/20px var(--font-sans); color: var(--hud-label-secondary); }
 .sh-finder__none { margin: 48px 0; text-align: center; font: 500 15px/22px var(--font-sans); color: var(--hud-label-secondary); }
 
-/* New on the shelf: covers as app icons, a squircle each, the name under it */
+/* New on the shelf: covers as app icons, a squircle each, the name under it, no plate */
 .sh-finder__apps { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
-.sh-finder__app { display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; padding: 8px 6px 10px; border-radius: 22px; transition: background-color var(--duration-fast) var(--ease-standard); }
-.sh-finder__app-img { position: relative; display: block; width: 100%; max-width: 104px; aspect-ratio: 1; overflow: hidden; border-radius: 26%; background: var(--hud-fill); box-shadow: inset 0 0 0 0.5px var(--hud-edge), 0 6px 18px rgba(0, 0, 0, 0.25); }
+.sh-finder__app { display: flex; flex-direction: column; align-items: center; gap: 10px; min-width: 0; padding: 8px 6px 6px; }
+.sh-finder__app-img {
+  position: relative; display: block; width: 100%; max-width: 104px; aspect-ratio: 1; overflow: hidden; border-radius: 26%;
+  background: var(--hud-card); box-shadow: inset 0 0 0 0.5px var(--hud-edge), 0 6px 18px rgba(0, 0, 0, 0.3);
+  transition: transform var(--duration-base) var(--ease-out);
+}
 .sh-finder__app-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-.sh-finder__app-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 500 12px/16px var(--font-sans); color: var(--hud-label-secondary); }
+.sh-finder__app-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 500 13px/18px var(--font-sans); color: var(--hud-label-secondary); transition: color var(--duration-fast) var(--ease-standard); }
 
-/* Kinds, tasks, collections, technologies: a tile with its name, how many, and two or three covers leaning in from
-   the bottom right, as Mobbin's screen tiles show two phones */
+/* Kinds, tasks, collections, technologies: a raised card with its name, how many, and two or three covers leaning in
+   from the bottom right, as Mobbin's screen tiles show two phones */
 .sh-finder__tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
 .sh-finder__tiles--wide { grid-template-columns: repeat(auto-fill, minmax(268px, 1fr)); }
 .sh-finder__tiles--small { grid-template-columns: repeat(auto-fill, minmax(164px, 1fr)); }
 .sh-finder__tile {
   position: relative; isolation: isolate; display: block; height: 176px; overflow: hidden; border-radius: 22px;
-  background: var(--hud-fill); transition: background-color var(--duration-fast) var(--ease-standard);
+  background-color: var(--hud-card); background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent 55%);
+  box-shadow: inset 0 0 0 0.5px var(--hud-edge), inset 0 1px 0 var(--hud-edge), 0 8px 24px rgba(0, 0, 0, 0.22);
+  transition: background-color var(--duration-fast) var(--ease-standard), transform var(--duration-base) var(--ease-out);
 }
 .sh-finder__tile--wide { height: 196px; }
 .sh-finder__tile--small { height: 136px; }
@@ -1150,8 +1174,8 @@ a.sh-meter__name:hover { background: var(--fill); }
 .sh-finder__tile-n { flex: none; font: 500 13px/18px var(--font-sans); font-variant-numeric: tabular-nums; color: var(--hud-label-secondary); }
 .sh-finder__art { position: absolute; right: 14px; bottom: -12px; width: 70%; height: 64%; }
 .sh-finder__art img {
-  position: absolute; width: 62%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; background: var(--hud-fill);
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.38), 0 0 0 0.5px rgba(255, 255, 255, 0.14);
+  position: absolute; width: 62%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 10px; background: var(--hud-card);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.42), 0 0 0 0.5px rgba(255, 255, 255, 0.14);
   transition: transform var(--duration-base) var(--ease-out);
 }
 .sh-finder__art img:nth-child(1) { left: 0; top: 26%; }
@@ -1159,19 +1183,37 @@ a.sh-meter__name:hover { background: var(--fill); }
 .sh-finder__art img:nth-child(3) { left: 20%; top: 46%; z-index: 2; }
 .sh-finder__art img:only-child { left: auto; right: 6%; top: 10%; width: 78%; }
 
-/* Show all, places, actions */
+/* Show all (tinted with the accent: the one way out to the full list), places, actions (plain rows) */
 .sh-finder__rows { display: flex; flex-direction: column; gap: 2px; }
 .sh-finder__row { display: flex; align-items: center; gap: 12px; min-height: 50px; padding: 0 14px; border-radius: 14px; font: 500 16px/22px var(--font-sans); color: var(--hud-label); transition: background-color var(--duration-fast) var(--ease-standard); }
 .sh-finder__row-icon { width: 20px; height: 20px; color: var(--hud-label-secondary); }
 .sh-finder__row-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sh-finder__row-n { font: 500 13px/18px var(--font-sans); font-variant-numeric: tabular-nums; color: var(--hud-label-secondary); }
 .sh-finder__row-arrow { width: 16px; height: 16px; color: var(--hud-label-secondary); }
+.sh-finder__row--all { min-height: 54px; background: var(--hud-accent-fill); font-weight: 600; }
+.sh-finder__row--all .sh-finder__row-icon, .sh-finder__row--all .sh-finder__row-arrow { color: var(--hud-accent); }
 
-/* one look for the pointer and the keyboard */
-.sh-finder__chip:hover, .sh-finder__row:hover, .sh-finder__app:hover, .sh-finder__tile:hover { background: var(--hud-fill-hover); }
-.sh-finder__chip[aria-selected="true"], .sh-finder__row[aria-selected="true"], .sh-finder__app[aria-selected="true"], .sh-finder__tile[aria-selected="true"] { background: var(--hud-fill-selected); }
-.sh-finder__app[aria-selected="true"] .sh-finder__app-label { color: var(--hud-label); }
-.sh-finder__tile[aria-selected="true"] .sh-finder__art img:nth-child(2), .sh-finder__tile:hover .sh-finder__art img:nth-child(2) { transform: translateY(-4px); }
+/* The pointer: what it is over lightens. Only while the pointer leads, so a resting mouse and the arrows never light
+   two things at once. */
+.sh-finder-overlay:not([data-nav="key"]) .sh-finder__chip:hover { background: var(--hud-fill); }
+.sh-finder-overlay:not([data-nav="key"]) .sh-finder__row:hover { background: var(--hud-fill-hover); }
+.sh-finder-overlay:not([data-nav="key"]) .sh-finder__row--all:hover { background: var(--hud-accent-fill-hover); }
+.sh-finder-overlay:not([data-nav="key"]) .sh-finder__tile:hover { background-color: var(--hud-card-hover); transform: translateY(-2px); }
+.sh-finder-overlay:not([data-nav="key"]) .sh-finder__tile:hover .sh-finder__art img:nth-child(2) { transform: translateY(-6px); }
+.sh-finder-overlay:not([data-nav="key"]) .sh-finder__app:hover .sh-finder__app-img { transform: translateY(-3px); }
+.sh-finder-overlay:not([data-nav="key"]) .sh-finder__app:hover .sh-finder__app-label { color: var(--hud-label); }
+
+/* The keyboard: the option Enter picks gets the same lift and a light blue ring */
+.sh-finder-overlay[data-nav="key"] [role="option"][aria-selected="true"] { outline: 2px solid var(--hud-accent); outline-offset: -2px; }
+.sh-finder-overlay[data-nav="key"] .sh-finder__chip[aria-selected="true"] { background: var(--hud-fill); }
+.sh-finder-overlay[data-nav="key"] .sh-finder__row[aria-selected="true"] { background: var(--hud-fill-hover); }
+.sh-finder-overlay[data-nav="key"] .sh-finder__row--all[aria-selected="true"] { background: var(--hud-accent-fill-hover); }
+.sh-finder-overlay[data-nav="key"] .sh-finder__tile[aria-selected="true"] { background-color: var(--hud-card-hover); }
+.sh-finder-overlay[data-nav="key"] .sh-finder__tile[aria-selected="true"] .sh-finder__art img:nth-child(2) { transform: translateY(-6px); }
+/* an icon rings its picture, not the column around it */
+.sh-finder-overlay[data-nav="key"] .sh-finder__app[aria-selected="true"] { outline: none; }
+.sh-finder-overlay[data-nav="key"] .sh-finder__app[aria-selected="true"] .sh-finder__app-img { outline: 2px solid var(--hud-accent); outline-offset: 3px; transform: translateY(-3px); }
+.sh-finder-overlay[data-nav="key"] .sh-finder__app[aria-selected="true"] .sh-finder__app-label { color: var(--hud-label); }
 
 .sh-finder__foot { grid-row: 4; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 22px; padding: 12px var(--fx-pad) 14px 28px; border-top: 0.5px solid var(--hud-separator); font: 500 12px/16px var(--font-sans); color: var(--hud-label-secondary); }
 .sh-finder__foot > span { display: inline-flex; align-items: center; gap: 6px; }
@@ -1187,10 +1229,9 @@ a.sh-meter__name:hover { background: var(--fill); }
 @media (max-width: 760px) {
   .sh-finder-overlay { padding: 0; }
   .sh-palette.sh-finder { --fx-pad: 16px; width: 100%; height: 100dvh; border-radius: 0; grid-template-rows: auto auto minmax(0, 1fr); }
-  .sh-finder__field { height: 60px; padding: 0 var(--fx-pad); }
+  .sh-finder__field { height: 60px; padding: 0 12px 0 var(--fx-pad); }
   .sh-finder__input { font-size: 18px; line-height: 24px; }
-  .sh-finder__close .sh-kbd { display: none; }
-  .sh-finder__close-label { display: inline; font: 500 15px/20px var(--font-sans); color: var(--hud-accent); }
+  .sh-finder__close { width: 40px; height: 40px; }
   .sh-finder__recent { padding-bottom: 12px; }
   .sh-finder__chip { height: 36px; font-size: 14px; }
   .sh-finder__body { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); gap: 12px; padding: 0; }
@@ -1209,6 +1250,6 @@ a.sh-meter__name:hover { background: var(--fill); }
   .sh-finder__foot { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .sh-finder__art img { transition: none; }
-  .sh-finder__tile[aria-selected="true"] .sh-finder__art img:nth-child(2), .sh-finder__tile:hover .sh-finder__art img:nth-child(2) { transform: none; }
+  .sh-finder__art img, .sh-finder__tile, .sh-finder__app-img { transition: none; }
+  .sh-finder-overlay .sh-finder__tile:hover, .sh-finder-overlay .sh-finder__tile .sh-finder__art img, .sh-finder-overlay .sh-finder__app .sh-finder__app-img { transform: none !important; }
 }

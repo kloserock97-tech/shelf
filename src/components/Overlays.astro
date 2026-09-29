@@ -22,8 +22,8 @@ const TABS: { id: string; icon: string; key: 'finderNew' | 'finderKinds' | 'find
       <Icon name="Search" class="sh-finder__lens" />
       <input class="sh-finder__input" id="palette-input" type="text" placeholder={t(lang, 'finderPlaceholder')} aria-label={t(lang, 'finderPlaceholder')}
         autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="finder-list" aria-autocomplete="list">
-      {/* Esc on a keyboard; on a phone, where the panel fills the screen, a plain Close */}
-      <button class="sh-finder__close" type="button" aria-label={t(lang, 'close')} data-finder-close><kbd class="sh-kbd">Esc</kbd><span class="sh-finder__close-label">{t(lang, 'close')}</span></button>
+      {/* a round cross; Esc closes too, the footer says so */}
+      <button class="sh-finder__close" type="button" aria-label={`${t(lang, 'close')} (Esc)`} data-finder-close><Icon name="X" /></button>
     </div>
     <div class="sh-finder__recent" data-finder-recent hidden></div>
     <div class="sh-finder__body">

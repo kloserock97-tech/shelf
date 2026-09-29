@@ -57,7 +57,7 @@
   --code-punct: #57575c;
   --code-line: rgba(0,113,227,0.07);
   --code-gutter: var(--label-tertiary);
-  --hud: rgba(36, 36, 38, 0.86);
+  --hud: rgba(28, 28, 30, 0.95);
   --hud-fill: rgba(255, 255, 255, 0.07);
   --hud-fill-hover: rgba(255, 255, 255, 0.11);
   --hud-fill-selected: rgba(255, 255, 255, 0.16);
@@ -66,6 +66,13 @@
   --hud-separator: rgba(255, 255, 255, 0.12);
   --hud-edge: rgba(255, 255, 255, 0.14);
   --hud-accent: #7cb8ff;
+  --hud-card: #2c2c2e;
+  --hud-card-hover: #3f3f42;
+  --hud-outline: rgba(255, 255, 255, 0.2);
+  --hud-tab-selected: #f2f2f7;
+  --hud-on-tab-selected: #1c1c1e;
+  --hud-accent-fill: rgba(124, 184, 255, 0.14);
+  --hud-accent-fill-hover: rgba(124, 184, 255, 0.24);
   --shadow-edge: inset 0 0 0 1px rgba(0,0,0,0.05);
   --shadow-thumb: 0 1px 3px rgba(0,0,0,0.12), 0 0 0 0.5px rgba(0,0,0,0.06);
   --shadow-lift: 0 12px 32px rgba(0,0,0,0.1), 0 2px 8px rgba(0,0,0,0.05);

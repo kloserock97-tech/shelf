@@ -51,6 +51,7 @@ export function initFinder(root: HTMLElement, d: FinderDeps): FinderApi {
   const list = $('[data-finder-list]')!;
   const panel = $('[data-finder-panel]')!;
   const phone = matchMedia('(max-width: 760px)');
+  const touch = matchMedia('(hover: none)');
   const recentRow = $('[data-finder-recent]')!;
   const tabs = [...root.querySelectorAll<HTMLButtonElement>('[data-tab]')];
 
@@ -149,9 +150,9 @@ export function initFinder(root: HTMLElement, d: FinderDeps): FinderApi {
     return `<div class="sh-finder__chip" role="option" id="${id}" aria-selected="false" aria-label="${esc(label)}${sub ? `, ${esc(sub)}` : ''}">` +
       `<span class="sh-i" aria-hidden="true">${icon}</span><span class="sh-finder__chip-label" aria-hidden="true">${labelHtml}</span>${sub ? `<span class="sh-finder__chip-sub" aria-hidden="true">${esc(sub)}</span>` : ''}</div>`;
   };
-  const row = (label: string, icon: string, run: () => void, labelHtml = esc(label), trail = '') => {
+  const row = (label: string, icon: string, run: () => void, labelHtml = esc(label), trail = '', cls = '') => {
     const id = add(run);
-    return `<div class="sh-finder__row" role="option" id="${id}" aria-selected="false" aria-label="${esc(label)}">` +
+    return `<div class="sh-finder__row${cls}" role="option" id="${id}" aria-selected="false" aria-label="${esc(label)}">` +
       `<span class="sh-finder__row-icon sh-i" aria-hidden="true">${icon}</span><span class="sh-finder__row-label" aria-hidden="true">${labelHtml}</span>${trail}</div>`;
   };
   const kindTile = (g: Group, q = '') => tile(g, { k: 'type', v: g.id }, q);
@@ -205,7 +206,7 @@ export function initFinder(root: HTMLElement, d: FinderDeps): FinderApi {
     const none = `<p class="sh-finder__none">${esc(tr('finderNone', { q }))}</p>`;
     if (t === 'new') {
       // built in the order they stand on screen, so the first option is the one Enter picks: Show all
-      const all = section('', row(tr('finderShowAll', { q }), icons.query, () => go({ k: 'q', v: q }), esc(tr('finderShowAll', { q })), `<span class="sh-finder__row-n">${m.items.length}</span><span class="sh-i sh-finder__row-arrow" aria-hidden="true">${icons.arrow}</span>`), 'sh-finder__rows');
+      const all = section('', row(tr('finderShowAll', { q }), icons.query, () => go({ k: 'q', v: q }), esc(tr('finderShowAll', { q })), `<span class="sh-finder__row-n">${m.items.length}</span><span class="sh-i sh-finder__row-arrow" aria-hidden="true">${icons.arrow}</span>`, ' sh-finder__row--all'), 'sh-finder__rows');
       const items = section(tr('palItems'), m.items.slice(0, appsRow()).map((e) => app(e, q)).join(''), 'sh-finder__apps');
       const filters = section(tr('filters'), [
         ...m.kinds.map((g) => chip(g.label, icons.kind, () => go({ k: 'type', v: g.id }), mark(g.label, q), tr('facetType'))),
@@ -317,6 +318,7 @@ export function initFinder(root: HTMLElement, d: FinderDeps): FinderApi {
   function open(initial = '') {
     returnTo = document.activeElement as HTMLElement | null;
     root.hidden = false;
+    root.dataset.nav = touch.matches ? 'pointer' : 'key';
     input.value = initial;
     input.placeholder = tr(phone.matches ? 'search' : 'finderPlaceholder');
     tab = 'new';
@@ -342,7 +344,13 @@ export function initFinder(root: HTMLElement, d: FinderDeps): FinderApi {
     const i = opt ? opts.findIndex((o) => o.id === opt.id) : -1;
     if (i >= 0) { setActive(i); opts[i].run(); }
   });
+  // Who leads, the pointer or the keys: the ring on the option Enter picks shows only for the keys (see shelf.css).
+  // Only a real move counts: content scrolling under a resting mouse must not take the lead from the arrows.
+  let px = -1, py = -1;
   root.addEventListener('pointermove', (e) => {
+    if (e.clientX === px && e.clientY === py) return;
+    px = e.clientX; py = e.clientY;
+    root.dataset.nav = 'pointer';
     const opt = (e.target as HTMLElement).closest<HTMLElement>('[role="option"]');
     const i = opt ? opts.findIndex((o) => o.id === opt.id) : -1;
     if (i >= 0 && i !== active) {
@@ -353,6 +361,7 @@ export function initFinder(root: HTMLElement, d: FinderDeps): FinderApi {
   });
   root.addEventListener('keydown', (e) => {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
+    root.dataset.nav = 'key';
     const caret = input.selectionStart === input.selectionEnd ? input.selectionStart ?? 0 : -1;
     if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); }
     else if (e.key === 'Tab') { e.preventDefault(); e.stopPropagation(); switchTab(e.shiftKey ? -1 : 1); }
