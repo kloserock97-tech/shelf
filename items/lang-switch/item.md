@@ -16,6 +16,9 @@ demo:
 variants:
   - { id: ts, label: TypeScript, files: [i18n.ts, en.ts, ru.ts, langToggle.ts, main.ts] }
 poster: poster.webp
+jobs: [input]
+usedIn: [ts2]
+pairs: [not-found-page, social-card, ru-typograph]
 ---
 - Статичный текст размечен атрибутами: `data-i18n` (текст), `data-i18n-html` (с тегами внутри), `data-i18n-label`, `-alt`, `-title`. При смене языка один проход подставляет строки, остальная страница не пересобирается: WebGL-сцена продолжает крутиться.
 - Всё, что собирает код, берёт строки через `t(key, vars)` и подписывается на `onLang`. Подстановки вида `{n}` делает тот же `t()`.

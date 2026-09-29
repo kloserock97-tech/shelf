@@ -16,6 +16,9 @@ variants:
   - { id: ts, label: TypeScript, files: [caseStoryView.ts, caseHero.ts] }
   - { id: css, label: CSS, files: [case-story.css] }
 poster: poster.webp
+jobs: [storytelling, showcase, navigation]
+usedIn: [ts2]
+pairs: [toc-capsule, sticky-film-screen, before-after-slider, spot-gallery]
 ---
 - Навигация одна. Сверху панель: назад, название кейса с линией прогресса (проявляется, когда герой ушёл вверх), соседние кейсы. Снизу плавающая капсула: текущий раздел и кольцо прочитанного, по клику — лист оглавления. Разборы в глубину вложены в раздел «Решения» как `<details>` и открываются на месте, адрес `#/work/<кейс>/<разбор>` сохраняется.
 - Текущий раздел считается по прокрутке, а не через IntersectionObserver: это последний заголовок, поднявшийся выше 150 px от верха. После прыжка по оглавлению заголовок встаёт у самой панели и в полосу наблюдателя не попадает.

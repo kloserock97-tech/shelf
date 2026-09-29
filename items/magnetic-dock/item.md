@@ -18,6 +18,10 @@ variants:
   - { id: html, label: HTML, files: [dock.js, dock.css, index.html] }
   - { id: react, label: React, files: [MagneticDock.tsx, magnetic-dock.css] }
 poster: poster.webp
+jobs: [navigation]
+collections: [feels-expensive, playful]
+usedIn: [ts2]
+pairs: [quiet-hill-hero, work-mega-menu, line-icons]
 ---
 - Рост — не `:hover`, а близость: каждый пункт меряет, как далеко курсор по горизонтали, и растёт на smoothstep от этого расстояния, до 16%, вниз от верхней кромки (`transform-origin: 50% 0`). Тянет на 2,6 высоты дока в стороны, на одну выше и на 2,2 ниже.
 - Значения сглаживаются `1 − e^(−rate·dt)` — не зависит от частоты кадров. Один `requestAnimationFrame` на всё, в DOM пишется только изменившееся число (округление до 0,001). Прямоугольники меряются, когда док изменился (ResizeObserver, resize, scroll), а не каждый кадр. Цикл засыпает, когда всё успокоилось.

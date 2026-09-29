@@ -10,7 +10,7 @@ const out = path.join(ROOT, '.smoke');
 fs.rmSync(out, { recursive: true, force: true });
 fs.mkdirSync(out, { recursive: true });
 
-const PAGES = ['', 'type/webgl/', 'favorites/', 'items/spring-toggle/', 'items/windcrest/', 'nope/', 'ru/', 'ru/type/webgl/', 'ru/items/spring-toggle/', 'ru/nope/'];
+const PAGES = ['', 'type/webgl/', 'favorites/', 'coverage/', 'collection/calm/', 'items/spring-toggle/', 'items/windcrest/', 'nope/', 'ru/', 'ru/type/webgl/', 'ru/coverage/', 'ru/items/spring-toggle/', 'ru/nope/'];
 const problems = [];
 const browser = await chromium.launch({ channel: 'chrome', headless: true, args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] });
 

@@ -16,6 +16,10 @@ demo:
 variants:
   - { id: html, label: HTML, files: [studio.css, index.html] }
 poster: poster.webp
+jobs: [atmosphere, loading]
+collections: [feels-expensive, no-assets]
+usedIn: [ts2]
+pairs: [garden-loader]
 ---
 - Весь фон — один `background` из пяти слоёв: виньетка, две полосы оконного света под 104°, свечение пола, пятно за предметом и циклорама. Пресет подменяет слои целиком через custom properties, `none` выключает слой.
 - Циклорама — один вертикальный градиент: стена светлеет к месту, где пол загибается в стену (60 % высоты у серой студии, 68 % у светлой), пол темнеет к камере. Предмет ставится чуть ниже этой линии.

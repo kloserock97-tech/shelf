@@ -18,6 +18,9 @@ variants:
   - { id: html, label: HTML, files: [bento-lightbox.js, bento-lightbox.css, index.html] }
   - { id: react, label: React, files: [BentoLightbox.tsx, bento-lightbox.css] }
 poster: poster.webp
+jobs: [showcase]
+usedIn: [ts2]
+pairs: [phone-fan-stack]
 ---
 - Сетка — `repeat(auto-fit, minmax(min(100%, 340px), 1fr))` с `align-items: start`, у каждого экрана своя сцена не выше `clamp(220px, 44svh, 400px)`. Размер экрана считается явно через `cqw` и `--ar`, поэтому телефон и десктоп стоят целиком и ничего не прыгает, пока файл грузится.
 - Окно просмотра — `<dialog>` с `showModal()`: фокус, Esc и верхний слой браузер даёт сам. `display: grid` задан только для `[open]`, иначе авторский стиль перебивает `dialog:not([open])` и закрытое окно остаётся на экране.

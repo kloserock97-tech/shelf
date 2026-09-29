@@ -1,0 +1,7 @@
+---
+import CoveragePage from '../../components/CoveragePage.astro';
+import { allItems } from '../../lib/items';
+
+const items = await allItems();
+---
+<CoveragePage items={items} lang="ru" />

@@ -18,6 +18,10 @@ variants:
   - { id: glsl, label: GLSL, files: [glitch-bands.frag, fullscreen.vert] }
   - { id: js, label: WebGL2 JS, files: [glitch-bands.js] }
 poster: poster.webp
+jobs: [storytelling]
+collections: [retro]
+usedIn: [ts2]
+pairs: [hash-kit]
 ---
 - На каждом рывке кадр режется на 14–60 полос. В полную силу сдвигаются три полосы из четырёх, до ±9% ширины. Часть сдвинутых становится блоками 90 рядов (клетка в 1,6 раза шире высоты), и у всего кадра разъезжаются красный и синий каналы.
 - Рывки, а не плавание: зерно случайности целое, `floor(time·18) + floor(progress·60)`. Полосы прыгают 18 раз в секунду и от самой прокрутки.

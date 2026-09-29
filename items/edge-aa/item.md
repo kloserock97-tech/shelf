@@ -18,6 +18,9 @@ variants:
   - { id: glsl, label: GLSL, files: [edge-aa.frag, fullscreen.vert] }
   - { id: js, label: WebGL2 JS, files: [edge-aa.js] }
 poster: poster.webp
+jobs: [quality]
+usedIn: [ts2]
+pairs: [gpu-quality-governor, vogel-disk-blur]
 ---
 - Метод «вдоль края», четыре шага.
   - Окрестность 3 × 3 читается точно, через `texelFetch`. Сначала только крест: плоские места отсеиваются после четырёх лишних выборок.

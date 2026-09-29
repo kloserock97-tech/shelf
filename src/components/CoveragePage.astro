@@ -1,0 +1,110 @@
+---
+// What the shelf holds for each task and each kind, and where it is thin. Rendered for /coverage/ and /ru/coverage/.
+// The rows are a table with a bar beside each count: one hue, the value at the tip, zero rows without a bar.
+import App from '../layouts/App.astro';
+import Icon from './Icon.astro';
+import { type Item } from '../lib/items';
+import { GROUPS, TYPES, typeLabel, groupLabel } from '../lib/taxonomy';
+import { JOBS, nameOf, aboutOf } from '../lib/curation';
+import { lurl } from '../lib/url';
+import { t, itemsWord, type Lang } from '../lib/i18n';
+
+interface Props {
+  items: Item[];
+  lang: Lang;
+}
+const { items, lang } = Astro.props;
+const title = t(lang, 'coverage');
+
+const jobRows = JOBS.map((j) => ({ j, n: items.filter((i) => i.data.jobs.includes(j.id)).length }));
+const kindRows = TYPES.map((ty) => ({ ty, n: items.filter((i) => i.data.type === ty.id).length }));
+const maxJob = Math.max(1, ...jobRows.map((r) => r.n));
+const maxKind = Math.max(1, ...kindRows.map((r) => r.n));
+const pct = (n: number, max: number) => `${Math.round((n / max) * 1000) / 10}%`;
+
+const blind = jobRows.filter((r) => r.n === 0).map((r) => r.j);
+const thin = [
+  ...jobRows.filter((r) => r.n === 1).map((r) => ({ label: nameOf(r.j, lang), href: lurl(lang, `?job=${r.j.id}`) })),
+  ...kindRows.filter((r) => r.n === 1).map((r) => ({ label: typeLabel(r.ty, lang), href: lurl(lang, `type/${r.ty.id}/`) }))
+];
+// Next find: one blind spot a week (the thinnest tasks when there are none), so the hint changes but never nags.
+const hunt = (blind.length ? blind : [...jobRows].sort((a, b) => a.n - b.n).slice(0, 3).map((r) => r.j));
+---
+<App title={title} nav="coverage" lang={lang}>
+  <header class="sh-toolbar">
+    <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm sh-sidebar-toggle" type="button" data-action="sidebar-toggle" aria-label={t(lang, 'showSidebar')}><Icon name="PanelLeft" /></button>
+    <h1 class="sh-toolbar__title">{title} <span class="sh-toolbar__count">{items.length}</span></h1>
+  </header>
+
+  <div class="sh-cov">
+    <p class="sh-cov__intro">{t(lang, 'coverageIntro')}</p>
+
+    <section class="sh-cov__hunt" aria-labelledby="cov-hunt" data-hunt>
+      <p class="sh-cov__eyebrow" id="cov-hunt">{t(lang, 'nextFind')}</p>
+      {hunt.map((j, i) => (
+        <p class="sh-cov__find" data-hunt-option hidden={i !== 0}>
+          <span class="sh-cov__find-icon" aria-hidden="true"><Icon name={j.icon} /></span>
+          <span>{t(lang, 'nextFindText', { job: nameOf(j, lang).toLowerCase(), about: aboutOf(j, lang) })}</span>
+        </p>
+      ))}
+      {blind.length > 0 && (
+        <div class="sh-cov__spots">
+          <p class="sh-cov__spots-title">{t(lang, 'blindSpots')} <span class="sh-cov__muted">{t(lang, 'blindSpotsText')}</span></p>
+          <ul class="sh-cov__chips">{blind.map((j) => <li class="sh-badge"><Icon name={j.icon} />{nameOf(j, lang)}</li>)}</ul>
+        </div>
+      )}
+      {thin.length > 0 && (
+        <div class="sh-cov__spots">
+          <p class="sh-cov__spots-title">{t(lang, 'thinSpots')}</p>
+          <ul class="sh-cov__chips">{thin.map((x) => <li><a class="sh-badge sh-badge--tech" href={x.href}>{x.label}</a></li>)}</ul>
+        </div>
+      )}
+    </section>
+
+    <div class="sh-cov__cols">
+      <section aria-labelledby="cov-jobs">
+        <h2 class="sh-h2" id="cov-jobs">{t(lang, 'byJob')}</h2>
+        <ul class="sh-meter">
+          {jobRows.map(({ j, n }) => (
+            <li class:list={['sh-meter__row', n === 0 && 'is-zero']}>
+              {n > 0
+                ? <a class="sh-meter__name" href={lurl(lang, `?job=${j.id}`)} title={aboutOf(j, lang)}><Icon name={j.icon} />{nameOf(j, lang)}</a>
+                : <span class="sh-meter__name" title={aboutOf(j, lang)}><Icon name={j.icon} />{nameOf(j, lang)}</span>}
+              <span class="sh-meter__track" aria-hidden="true">{n > 0 && <span class="sh-meter__bar" style={`--w:${pct(n, maxJob)}`}></span>}</span>
+              <span class="sh-meter__n">{n}<span class="sh-visually-hidden"> {itemsWord(lang, n)}</span></span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section aria-labelledby="cov-kinds">
+        <h2 class="sh-h2" id="cov-kinds">{t(lang, 'byKind')}</h2>
+        {GROUPS.map((g) => (
+          <>
+            <h3 class="sh-meter__group">{groupLabel(g, lang)}</h3>
+            <ul class="sh-meter">
+              {kindRows.filter((r) => r.ty.group === g.id).map(({ ty, n }) => (
+                <li class:list={['sh-meter__row', n === 0 && 'is-zero']}>
+                  {n > 0
+                    ? <a class="sh-meter__name" href={lurl(lang, `type/${ty.id}/`)}><Icon name={ty.icon} />{typeLabel(ty, lang)}</a>
+                    : <span class="sh-meter__name"><Icon name={ty.icon} />{typeLabel(ty, lang)}</span>}
+                  <span class="sh-meter__track" aria-hidden="true">{n > 0 && <span class="sh-meter__bar" style={`--w:${pct(n, maxKind)}`}></span>}</span>
+                  <span class="sh-meter__n">{n}<span class="sh-visually-hidden"> {itemsWord(lang, n)}</span></span>
+                </li>
+              ))}
+            </ul>
+          </>
+        ))}
+      </section>
+    </div>
+  </div>
+  <script is:inline>
+    // the hint of the week: the same one all week, the next one the week after
+    (function () {
+      var opts = document.querySelectorAll("[data-hunt-option]");
+      if (opts.length < 2) return;
+      var week = Math.floor((Date.now() / 86400000 + 3) / 7);
+      opts.forEach(function (el, i) { el.hidden = i !== week % opts.length; });
+    })();
+  </script>
+</App>

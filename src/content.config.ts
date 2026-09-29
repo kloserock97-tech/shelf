@@ -2,6 +2,7 @@ import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 import { TYPE_IDS } from './lib/taxonomy';
+import { JOB_IDS, COLLECTION_IDS, PROJECT_IDS } from './lib/curation';
 
 // One item = one folder: items/<slug>/item.md (public) or private/<slug>/item.md (this machine only).
 const items = defineCollection({
@@ -39,7 +40,15 @@ const items = defineCollection({
     variants: z
       .array(z.object({ id: z.string(), label: z.string(), files: z.array(z.string()).optional() }))
       .default([]),
-    collections: z.array(z.string()).default([]),
+    // what the piece does for the person on the page (curation.ts), the main job first
+    jobs: z.array(z.enum(JOB_IDS)).default([]),
+    // taste collections (curation.ts)
+    collections: z.array(z.enum(COLLECTION_IDS)).default([]),
+    // projects where the piece runs (curation.ts)
+    usedIn: z.array(z.enum(PROJECT_IDS)).default([]),
+    // works well with: pieces that complement this one. Naming it on either side is enough, the page shows both ways
+    pairs: z.array(z.string()).default([]),
+    // pinned at the top of Similar; the rest of Similar is computed (similar.ts)
     related: z.array(z.string()).default([])
   })
 });

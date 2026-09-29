@@ -16,6 +16,10 @@ demo:
 variants:
   - { id: js, label: JavaScript, files: [look-at.js, bird.js, main.js] }
 poster: poster.webp
+jobs: [first-impression, atmosphere]
+collections: [playful]
+usedIn: [ts2]
+pairs: [umbrella-hat, polaroid-tape]
 ---
 - Каждый кадр кости возвращаются к позе покоя (кватернионы сняты один раз), и повороты накладываются заново. Ничего не копится и не уплывает.
 - Поворот делается вокруг осей персонажа (вверх, вбок), пересчитанных в систему родителя кости: `local' = parent⁻¹ · R · parent · local`. Кости из Blender смотрят +Y вдоль себя и несут свой крен, поэтому наивное `bone.rotation.y = yaw` крутит голову вокруг шеи. У птицы кости нарочно с кренами, а переключатель в демо показывает наивный вариант.

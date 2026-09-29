@@ -18,6 +18,9 @@ variants:
   - { id: ts, label: TypeScript, files: [hash-kit.ts] }
 poster: poster.webp
 related: [edge-aa, god-rays, procedural-tree-rocks]
+jobs: [quality]
+usedIn: [ts2, windcrest, driftfield, nightsail, meadow-walk]
+pairs: [god-rays, vogel-disk-blur, moss-shell-texturing, glitch-bands]
 ---
 - Хэш — миксер «сдвиг-xor и умножение»: `x ^= x >> 16; x *= 0x3f9c86cb; x ^= x >> 14; x *= 0x1ae9dacf; x ^= x >> 15`. Сдвиги и множители подобраны перебором. Качество — лавинный тест: переворачиваем по одному входному биту и считаем, как часто переворачивается каждый выходной. Смещение — 1000 · RMS(p − 0,5), из него вычтен шум выборки.
   - Сначала 28 000 случайных кандидатов.

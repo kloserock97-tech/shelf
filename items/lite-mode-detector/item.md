@@ -16,6 +16,9 @@ demo:
 variants:
   - { id: ts, label: TypeScript, files: [lite.ts, lite.css, main.ts] }
 poster: poster.webp
+jobs: [quality, loading, error]
+usedIn: [ts2]
+pairs: [garden-loader, gpu-quality-governor]
 ---
 - Главная проверка — `getContext("webgl2", { failIfMajorPerformanceCaveat: true })`: браузер не отдаёт контекст, если рисовать будет процессор. Отказал, а обычный WebGL2 есть — значит, программный рендер; нет и его — значит, 3D выключено. Дальше строка рендерера проверяется на SwiftShader, llvmpipe и «Basic Render»: в нагрузочном прогоне холм шёл там 0,2 кадра в секунду.
 - Каждый пробный контекст сразу отпускается через `WEBGL_lose_context`: у страницы лимит живых контекстов. Проверка не бесплатная: в холодном Chrome первый контекст создавался 0,2–0,4 с.

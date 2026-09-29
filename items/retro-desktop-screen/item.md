@@ -17,6 +17,10 @@ variants:
   - { id: ts, label: TypeScript, files: [retro-screen.ts, retro-content.ts, monitor.ts, main.ts] }
 related: [crt-screen-shader]
 poster: poster.webp
+jobs: [showcase, atmosphere]
+collections: [retro, no-assets]
+usedIn: [ts2]
+pairs: [crt-screen-shader]
 ---
 - Две текстуры: `chrome` — всё неподвижное (обои, рамка окна, меню, адрес, панель задач) с прозрачной дырой под страницу, и `page` — вся страница одной длинной полосой. Шейдер склеивает их и сдвигает страницу на величину прокрутки: при скролле ничего не перерисовывается и не грузится в видеокарту.
 - Ползунок полосы прокрутки тоже рисует шейдер; часы перерисовывают только `chrome`, раз в минуту.

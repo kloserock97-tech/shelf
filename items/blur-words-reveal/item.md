@@ -18,6 +18,9 @@ variants:
   - { id: html, label: HTML, files: [blur-words-reveal.css, blur-words-reveal.js, index.html] }
   - { id: react, label: React, files: [BlurWordsReveal.tsx, blur-words-reveal.css] }
 poster: poster.webp
+jobs: [storytelling]
+usedIn: [ts2]
+pairs: [experiments-deck]
 ---
 - Слово i проявляется на отрезке прогресса `0,06 + 0,045·i … 0,28 + 0,045·i` со smoothstep: прозрачность 0 → 1, размытие 16 px → 0, подъём на 0,45em. Надзаголовок входит на 0,02–0,16, подпись на 0,34–0,52, а на 0,72–1 вся заставка гаснет, поднимается на 9vh и размывается на 10 px.
 - Слова один раз режутся на span с номером в `--i`, а кадр прокрутки пишет только `--k` на секцию. Остальное считает CSS через `clamp()` и `calc()`.

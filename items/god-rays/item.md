@@ -18,6 +18,10 @@ variants:
   - { id: glsl, label: GLSL, files: [rays-mask.frag, rays-blur.frag, rays-composite.frag, fullscreen.vert] }
   - { id: js, label: WebGL2 JS, files: [god-rays.js] }
 poster: poster.webp
+jobs: [atmosphere]
+collections: [calm, feels-expensive]
+usedIn: [ts2]
+pairs: [procedural-tree-rocks, sky-ridges, hash-kit]
 ---
 - В маску попадает только яркое у самого солнца: яркость 0,85–2,2 в линейном HDR, умноженная на гауссов ореол вокруг солнца. Белое небо (~0,9) почти не проходит, иначе веер шёл бы от каждого светлого пятна.
 - Размытие к солнцу: 36 выборок с затуханием 0,96, два прохода в четверти разрешения (0,9 и 0,35 пути до солнца). Начало каждого луча сдвинуто дизером Hash Kit, и ступеньки выборок становятся мелким зерном.

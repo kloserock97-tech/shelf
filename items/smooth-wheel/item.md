@@ -16,6 +16,9 @@ demo:
 variants:
   - { id: ts, label: TypeScript, files: [smoothScroll.ts, scrollFeel.ts, main.ts] }
 poster: poster.webp
+jobs: [quality]
+usedIn: [ts2]
+pairs: [toc-capsule, scroll-chapter-timeline]
 ---
 - Расстояние 1:1: щелчок проезжает ровно столько, сколько без скрипта, сглаживается только рывок. Позиция догоняет цель по экспоненте `1 − e^(−6,5·dt)`, 95% пути примерно за 0,46 с. Скорость и направление прокрутки не меняются.
 - Шаг считается от настоящего времени кадра, поэтому на слабом устройстве с редкими кадрами движение занимает те же полсекунды. Прокрутка настоящая (`scrollTo`, `scrollTop`), без transform: sticky, якоря и IntersectionObserver работают как обычно.

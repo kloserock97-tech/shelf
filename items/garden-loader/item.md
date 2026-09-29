@@ -17,6 +17,10 @@ demo:
 variants:
   - { id: ts, label: TypeScript, files: [garden-loader.ts, garden-scene.ts, garden-surface.ts, garden-sheet.ts, garden-slab.ts, garden-ice.ts, garden-moss.ts, garden-flowers.ts, garden-water.ts, garden-post.ts, garden-loader.css, main.ts] }
 poster: poster.webp
+jobs: [loading, first-impression]
+collections: [feels-expensive, no-assets]
+usedIn: [ts2]
+pairs: [moss-shell-texturing, css-photo-studio, lite-mode-detector]
 ---
 - Рост честный: `progress()` держится ниже 94 % до `ready()`, время — только хореография (полный рост не быстрее 2,8 с). 100 % — это готовая страница и уже отрисованный заросший кадр, стенки плиты тоже.
 - Мох — shell texturing: 8–20 слоёв одним instanced-вызовом, край ворсинки сглаживает alpha-to-coverage на MSAA ×4. Слои не пишут альфу (`colorMask`), непрозрачность даёт «оболочка» на высоте кончиков. Приём отдельно — Moss Shell Texturing.

@@ -18,6 +18,8 @@ variants:
   - { id: react, label: React }
   - { id: vue, label: Vue }
 poster: poster.webp
+jobs: [input, feedback]
+collections: [playful]
 ---
 - Пружина задана через `linear()`: 12 точек дают перелёт 1,5% за 400 мс. Safari понимает `linear()` с 17.2; для старых браузеров подойдёт `cubic-bezier(0.34, 1.3, 0.64, 1)`.
 - Ручку двигает `transform`, а не `left`: иначе на 120 Гц видно дрожание.

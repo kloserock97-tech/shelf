@@ -16,6 +16,10 @@ demo:
 variants:
   - { id: html, label: HTML, files: [index.html, contact-footer.css, contact-footer.js] }
 poster: poster.webp
+jobs: [contact]
+collections: [feels-expensive]
+usedIn: [ts2]
+pairs: [line-icons, copy-address-button, not-found-page]
 ---
 - Акцент — одно слово курсивной антиквой внутри гротеска (`.serif-accent`): Playfair Display Italic 400, на 6% крупнее — антиква оптически мельче гротеска того же кегля. Одно слово на заголовок, не чаще.
 - Заголовок без широкой размытой тени: на DPR 2,25 её растр при входе давал кадр около 100 мс. Хватает тени 1–2 px и тёмного неба.

@@ -4,8 +4,10 @@ import { render } from 'astro:content';
 import App from '../layouts/App.astro';
 import Icon from './Icon.astro';
 import {
-  variantsOf, promptFor, itemUrl, posterUrl, demoUrl, isExternal, isPrivate, subtitle, type Item
+  variantsOf, promptFor, itemUrl, collectionUrl, posterUrl, demoUrl, isExternal, isPrivate, subtitle, type Item
 } from '../lib/items';
+import { pairsOf, similarTo } from '../lib/similar';
+import { jobOf, collectionOf, projectOf, nameOf } from '../lib/curation';
 import { highlight, codeStyles } from '../lib/highlight';
 import { typeOf, typeLabel, typeOne } from '../lib/taxonomy';
 import { url, lurl } from '../lib/url';
@@ -31,17 +33,21 @@ const prompt = promptFor(item, variants);
 const demo = demoUrl(item);
 const external = isExternal(item);
 const poster = posterUrl(item);
-const related = (
-  d.related.length
-    ? d.related.map((s) => items.find((i) => i.id === s))
-    : items.filter((i) => i.id !== item.id && i.data.type === d.type)
-).filter((i): i is Item => Boolean(i)).slice(0, 3);
+const pairs = pairsOf(item, items);
+const similar = similarTo(item, items, 4);
+const lists = [
+  { key: 'worksWith' as const, items: pairs },
+  { key: 'related' as const, items: similar }
+].filter((l) => l.items.length);
+const cols = d.collections.map(collectionOf);
+// Opened from a collection, the trail starts at it: the inline script in Sidebar.astro sets html[data-from-collection].
+const colCrumbs = cols.map((c) => `html[data-from-collection="${c.id}"] .sh-crumbs li[data-crumb-collection="${c.id}"]{display:flex}`).join('');
 const registryUrl = d.registry && variants.some((v) => v.id === 'react') ? new URL(url(`r/${d.registry}.json`), Astro.site).href : undefined;
 const license = d.license === 'PolyForm-Noncommercial-1.0.0' ? 'PolyForm Noncommercial 1.0.0' : d.license;
 // Summaries and notes are written in Russian: on English pages screen readers should read them as Russian.
 const contentLang = lang === 'ru' ? undefined : 'ru';
 ---
-<App title={d.title} nav={`type:${d.type}`} lang={lang} item={item.id}>
+<App title={d.title} nav={`type:${d.type}`} lang={lang} item={item.id} collections={d.collections}>
   <header class="sh-toolbar">
     <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm sh-sidebar-toggle" type="button" data-action="sidebar-toggle" aria-label={t(lang, 'showSidebar')}><Icon name="PanelLeft" /></button>
     {/* Where the item lives: All items › its kind › the item. Opened from Favorites, the trail starts there instead
@@ -51,10 +57,14 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
       <ol>
         <li data-crumb="all"><a class="sh-crumbs__link" href={lurl(lang, '')} data-crumb-nav="all">{t(lang, 'allItems')}</a><Icon name="ChevronRight" class="sh-crumbs__sep" /></li>
         <li data-crumb="favorites"><a class="sh-crumbs__link" href={lurl(lang, 'favorites/')} data-crumb-nav="favorites">{t(lang, 'favorites')}</a><Icon name="ChevronRight" class="sh-crumbs__sep" /></li>
+        {cols.map((c) => (
+          <li data-crumb="collection" data-crumb-collection={c.id}><a class="sh-crumbs__link" href={collectionUrl(c.id, lang)} data-crumb-nav={`collection:${c.id}`}>{nameOf(c, lang)}</a><Icon name="ChevronRight" class="sh-crumbs__sep" /></li>
+        ))}
         <li data-crumb="type"><a class="sh-crumbs__link" href={lurl(lang, `type/${d.type}/`)} data-crumb-nav={`type:${d.type}`}>{typeLabel(type, lang)}</a><Icon name="ChevronRight" class="sh-crumbs__sep" /></li>
         <li data-crumb="current"><span class="sh-crumbs__current" aria-current="page">{d.title}</span></li>
       </ol>
     </nav>
+    {colCrumbs && <Fragment set:html={`<style>${colCrumbs}</style>`} />}
     <div class="sh-toolbar__spacer"></div>
     <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm sh-fav" type="button" data-fav={item.id} aria-pressed="false" aria-label={t(lang, 'favAdd', { title: d.title })}><Icon name="Star" /></button>
     <button class="sh-btn sh-btn--sm sh-hide-narrow" type="button" data-copy-link data-toast={t(lang, 'linkCopied')}><Icon name="Link" /><span class="sh-btn__label">{t(lang, 'copyLink')}</span></button>
@@ -190,6 +200,9 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
           <h2 class="sh-h2">{t(lang, 'details')}</h2>
           <dl class="sh-details">
             <dt>{t(lang, 'type')}</dt><dd><a class="sh-link" href={lurl(lang, `type/${d.type}/`)}>{typeOne(type, lang)}</a></dd>
+            {d.jobs.length > 0 && (<><dt>{t(lang, 'solves')}</dt><dd class="sh-details__list">{d.jobs.map(jobOf).map((j) => <a class="sh-link" href={lurl(lang, `?job=${j.id}`)}>{nameOf(j, lang)}</a>)}</dd></>)}
+            {d.usedIn.length > 0 && (<><dt>{t(lang, 'usedIn')}</dt><dd class="sh-details__list">{d.usedIn.map(projectOf).map((p) => <a class="sh-link" href={p.url} target="_blank" rel="noopener" title={t(lang, 'seeInProject', { project: p.label })}>{p.label}</a>)}</dd></>)}
+            {cols.length > 0 && (<><dt>{t(lang, 'inCollections')}</dt><dd class="sh-details__list">{cols.map((c) => <a class="sh-link" href={collectionUrl(c.id, lang)}>{nameOf(c, lang)}</a>)}</dd></>)}
             {variants.length > 0 && (<><dt>{t(lang, 'variants')}</dt><dd>{variants.map((v) => v.label).join(' · ')}</dd></>)}
             <dt>{t(lang, 'dependsOn')}</dt><dd>{d.depends.length ? d.depends.join(', ') : t(lang, 'nothing')}</dd>
             {d.registry && (<><dt>{t(lang, 'registry')}</dt><dd><code>{d.registry}</code></dd></>)}
@@ -205,11 +218,11 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
             </div>
           )}
         </section>
-        {related.length > 0 && (
-          <section>
-            <h2 class="sh-h2">{t(lang, 'related')}</h2>
+        {lists.map((l) => (
+          <section data-list={l.key}>
+            <h2 class="sh-h2">{t(lang, l.key)}</h2>
             <div class="sh-related">
-              {related.map((r) => (
+              {l.items.map((r) => (
                 <a class="sh-related__row" href={itemUrl(r, lang)}>
                   <span class="sh-related__thumb">{posterUrl(r) && <img src={posterUrl(r)} alt="" loading="lazy" decoding="async">}</span>
                   <span class="sh-related__text"><span class="sh-card__title">{r.data.title}</span><span class="sh-card__sub">{subtitle(r, lang)}</span></span>
@@ -217,7 +230,7 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
               ))}
             </div>
           </section>
-        )}
+        ))}
       </div>
     </div>
   </article>

@@ -1,14 +1,15 @@
 // Shelf in the browser: theme, copy, favourites, the grid, Quick Look, the ⌘K palette and the item page.
 import MiniSearch from 'minisearch';
-import { Check, Contrast, Copy, Keyboard, Languages, MessageSquareCode, PanelLeft, SlidersHorizontal, TriangleAlert } from 'lucide-static';
+import { Check, Contrast, Copy, Keyboard, Languages, MessageSquareCode, PanelLeft, Shuffle, SlidersHorizontal, TriangleAlert } from 'lucide-static';
 import { cleanSvg } from '../lib/svg';
 import { t, langOf, type Key } from '../lib/i18n';
 import { initLibrary, type LibApi } from './library';
 import { FACETS, tagInLang, type FacetId } from '../lib/facets';
 import { typeLabel, typeOf } from '../lib/taxonomy';
+import { JOBS, nameOf } from '../lib/curation';
 
 interface Entry {
-  slug: string; title: string; type: string; typeLabel: string; tech: string[]; tags: string[]; status: string;
+  slug: string; title: string; type: string; typeLabel: string; tech: string[]; tags: string[]; jobs: string[]; status: string;
   summary: string; notes: string; url: string; poster: string | null; loop: string | null; demo: string | null;
   external: boolean; bg: 'auto' | 'light' | 'dark'; grid: boolean; added: string; updated: string; private: boolean;
 }
@@ -307,6 +308,12 @@ function setSidebarStyle(style: string, animate = true) {
 
 // Keyboard shortcuts sheet.
 const shortcuts = $('#shortcuts');
+// Surprise me: any piece on the shelf but the one on screen, each as likely as the next.
+function openRandom() {
+  const pool = INDEX.filter((e) => e.slug !== html.dataset.itemPage);
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  if (pick) location.href = pick.url;
+}
 function openShortcuts() {
   if (!shortcuts) return;
   closeMenu(false);
@@ -589,6 +596,7 @@ function highlightMatch(text: string, q: string) {
 }
 function paletteActions(): { label: string; icon: string; key?: string; run: () => void }[] {
   const actions: { label: string; icon: string; key?: string; run: () => void }[] = [
+    { label: tr('randomItem'), icon: 'shuffle', key: 'R', run: openRandom },
     { label: tr('actAppearance'), icon: 'contrast', run: cycleTheme },
     { label: tr('actLanguage'), icon: 'lang', run: () => switchLang(L === 'en' ? 'ru' : 'en') },
     { label: tr(isRail() ? 'expandSidebar' : 'collapseSidebar'), icon: 'panel', key: fmtKbd('mod+B'), run: toggleSidebar },
@@ -608,7 +616,8 @@ const PAL_ICON: Record<string, string> = {
   copy: cleanSvg(Copy),
   prompt: cleanSvg(MessageSquareCode),
   keyboard: cleanSvg(Keyboard),
-  lang: cleanSvg(Languages)
+  lang: cleanSvg(Languages),
+  shuffle: cleanSvg(Shuffle)
 };
 const FILTER_ICON = cleanSvg(SlidersHorizontal);
 const facetName = (f: FacetId) => tr(f === 'tag' ? 'facetTagOne' : FACETS.find((x) => x.id === f)!.key);
@@ -621,6 +630,7 @@ function paletteFilters(q: string): { label: string; kind: string; run: () => vo
   const go = (param: string, value: string) => () => { const u = new URL(all); u.search = ''; u.searchParams.set(param, value); location.href = u.toString(); };
   const out: { label: string; kind: string; run: () => void }[] = [];
   for (const type of new Set(INDEX.map((e) => e.type))) { const label = typeLabel(typeOf(type), L); if (label.toLowerCase().includes(n)) out.push({ label, kind: facetName('type'), run: go('type', type) }); }
+  for (const j of JOBS) { const label = nameOf(j, L); if (INDEX.some((e) => e.jobs.includes(j.id)) && label.toLowerCase().includes(n)) out.push({ label, kind: facetName('job'), run: go('job', j.id) }); }
   for (const v of new Set(INDEX.flatMap((e) => e.tech))) if (v.toLowerCase().includes(n)) out.push({ label: v, kind: facetName('stack'), run: go('stack', v) });
   for (const v of new Set(INDEX.flatMap((e) => e.tags))) if (tagInLang(v, L) && v.toLowerCase().startsWith(n)) out.push({ label: v, kind: facetName('tag'), run: go('tag', v) });
   return out.slice(0, 4);
@@ -828,7 +838,7 @@ function initItem(article: HTMLElement) {
 // filters and sort, and how far you had scrolled. The item page reads that back: the inline script in Sidebar.astro
 // keeps that list selected, and here the matching breadcrumb returns to it exactly.
 interface ListVisit { nav: string; url: string; y: number }
-const LIST_NAV = /^(all|favorites|type:[\w-]+)$/;
+const LIST_NAV = /^(all|favorites|type:[\w-]+|collection:[\w-]+)$/;
 const readSession = <T>(k: string): T | null => { try { return JSON.parse(sessionStorage.getItem(k) || 'null') as T | null; } catch { return null; } };
 const writeSession = (k: string, v: unknown) => { try { sessionStorage.setItem(k, JSON.stringify(v)); } catch { /* storage may be blocked */ } };
 function rememberList() {
@@ -980,6 +990,7 @@ document.addEventListener('keydown', (e) => {
   }
   if (mod || e.altKey) return;
   if (e.key === '?') { e.preventDefault(); openShortcuts(); return; }
+  if (e.key.toLowerCase() === 'r') { e.preventDefault(); openRandom(); return; }
   if (e.key === '/') {
     e.preventDefault();
     if (searchInput) { searchInput.focus(); searchInput.select(); } else openPalette('');

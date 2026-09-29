@@ -18,6 +18,10 @@ variants:
   - { id: html, label: HTML, files: [metal-button.css, metal-button.js, index.html] }
   - { id: react, label: React, files: [MetalButton.tsx, metal-button.css] }
 poster: poster.webp
+jobs: [feedback, first-impression]
+collections: [feels-expensive]
+usedIn: [ts2]
+pairs: [quiet-hill-hero]
 ---
 - Свет по кромке — неподвижный конический градиент на слое `.metal-rim`, который вращается под кольцевой маской (`mask-composite: exclude`). Поворот слоя ведёт видеокарта; анимация угла градиента через `@property` стоила бы около 2 мс главного потока на кадр.
 - Кольцо маски лежит у внутреннего края рамки: саму рамку обрезает `overflow: hidden` кнопки. Проблеск по той же причине едет `translate` слоя шириной 2,5 кнопки (−78% → 18%), а не `background-position`.

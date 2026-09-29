@@ -16,8 +16,10 @@ interface Props {
   lang?: Lang;
   page?: 'not-found';
   item?: string;
+  /** the item's collections, so the sidebar can keep the one it was opened from selected */
+  collections?: string[];
 }
-const { title, nav = '', lang = 'en', page, item } = Astro.props;
+const { title, nav = '', lang = 'en', page, item, collections } = Astro.props;
 const items = await allItems();
 const index = JSON.stringify(items.map((e) => indexEntry(e, lang))).replace(/</g, '\\u003c');
 
@@ -29,7 +31,7 @@ const rel = here.replace(/^ru\//, '');
 const alt = page === 'not-found' ? (lang === 'en' ? url('ru/404/') : url('')) : lang === 'en' ? url(`ru/${rel}`) : url(rel);
 ---
 <!doctype html>
-<html lang={lang} data-alt={alt} data-page={page} data-nav={nav || undefined} data-item-page={item}>
+<html lang={lang} data-alt={alt} data-page={page} data-nav={nav || undefined} data-item-page={item} data-collections={collections?.length ? collections.join(' ') : undefined}>
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">

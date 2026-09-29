@@ -1,12 +1,13 @@
-// The library's filter and sort, after Mobbin's catalogue: facets (Type, Stack, Tags) as pills with a popover,
+// The library's filter and sort, after Mobbin's catalogue: facets (Type, Task, Stack, Tags) as pills with a popover,
 // counts beside every value recomputed against the other filters, several values per facet (OR), facets and the
 // text query together (AND), the applied count inside the pill, a sort menu, a readable URL, filters kept when the
 // sidebar changes the type, and an empty state that names the filter to drop. On a phone the popover is a sheet.
 import { FACETS, SORTS, STACK_GROUPS, defaultSort, sortsFor, stackGroupOf, tagInLang, type FacetId, type SortId } from '../lib/facets';
 import { GROUPS, TYPES, typeLabel, typeAbout, typeOf } from '../lib/taxonomy';
+import { JOBS, jobOf, nameOf, aboutOf } from '../lib/curation';
 import { itemsWord, type Key, type Lang } from '../lib/i18n';
 
-export interface LibEntry { slug: string; title: string; type: string; tech: string[]; tags: string[]; added: string; updated: string; poster: string | null }
+export interface LibEntry { slug: string; title: string; type: string; jobs: string[]; tech: string[]; tags: string[]; added: string; updated: string; poster: string | null }
 export interface LibDeps {
   lang: Lang;
   tr: (k: Key, vars?: Record<string, string | number>) => string;
@@ -28,7 +29,7 @@ export interface LibApi {
 const $ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document) => root.querySelector(sel) as T | null;
 const $$ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document) => Array.from(root.querySelectorAll(sel)) as T[];
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
-const CARRY = ['stack', 'tag', 'sort']; // what follows you to another type in the sidebar
+const CARRY = ['job', 'stack', 'tag', 'sort']; // what follows you to another type in the sidebar
 const CARRY_SORTS: SortId[] = ['updated', 'az']; // orders that mean the same on every list
 const TAG_POPULAR = 2; // a tag used this many times is listed before you search
 
@@ -49,7 +50,7 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
   const facetsOn = Boolean($('[data-filters]'));
 
   /* ---------- state and the URL ---------- */
-  type State = { q: string; type: Set<string>; stack: Set<string>; tag: Set<string>; sort: SortId };
+  type State = { q: string; type: Set<string>; job: Set<string>; stack: Set<string>; tag: Set<string>; sort: SortId };
   const params = new URLSearchParams(location.search);
   const list = (k: string) => new Set((params.get(k) ?? '').split(',').map((s) => s.trim()).filter(Boolean));
   const baseSort = defaultSort(mode);
@@ -59,6 +60,7 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
   const state: State = {
     q: params.get('q') ?? '',
     type: hasFacet('type') ? list('type') : new Set(),
+    job: facetsOn ? list('job') : new Set(),
     stack: facetsOn ? list('stack') : new Set(),
     tag: facetsOn ? list('tag') : new Set(),
     sort: sortFromParam(params.get('sort')) ?? (storedSort === 'name' ? 'az' : (offered.find((s) => s.id === storedSort)?.id ?? baseSort))
@@ -67,10 +69,10 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
   if (facetsOn && params.get('tech')) state.stack.add(params.get('tech')!);
   if (input && state.q) input.value = state.q;
 
-  const active = () => state.type.size + state.stack.size + state.tag.size;
+  const active = () => state.type.size + state.job.size + state.stack.size + state.tag.size;
   function writeUrl() {
     const p = new URLSearchParams(location.search);
-    ['q', 'type', 'stack', 'tag', 'sort', 'tech'].forEach((k) => p.delete(k));
+    ['q', 'type', 'job', 'stack', 'tag', 'sort', 'tech'].forEach((k) => p.delete(k));
     if (state.q.trim()) p.set('q', state.q.trim());
     for (const f of FACETS) if (state[f.id].size) p.set(f.param, [...state[f.id]].join(','));
     if (state.sort !== baseSort) p.set('sort', SORTS.find((s) => s.id === state.sort)!.param);
@@ -78,9 +80,10 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
     history.replaceState(history.state, '', `${location.pathname}${qs ? `?${qs}` : ''}${location.hash}`);
     carryToSidebar();
   }
-  // Mobbin keeps filters when you switch the content type; here the sidebar links carry Stack, Tags and the sort.
+  // Mobbin keeps filters when you switch the content type; here the sidebar links carry Task, Stack, Tags and the sort.
   function carryToSidebar() {
     const p = new URLSearchParams();
+    if (state.job.size) p.set('job', [...state.job].join(','));
     if (state.stack.size) p.set('stack', [...state.stack].join(','));
     if (state.tag.size) p.set('tag', [...state.tag].join(','));
     if (CARRY_SORTS.includes(state.sort)) p.set('sort', SORTS.find((s) => s.id === state.sort)!.param);
@@ -94,7 +97,8 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
   }
 
   /* ---------- matching ---------- */
-  const has = (e: LibEntry, f: FacetId, v: string) => (f === 'type' ? e.type === v : f === 'stack' ? e.tech.includes(v) : e.tags.includes(v));
+  const has = (e: LibEntry, f: FacetId, v: string) =>
+    f === 'type' ? e.type === v : f === 'job' ? e.jobs.includes(v) : f === 'stack' ? e.tech.includes(v) : e.tags.includes(v);
   const passes = (e: LibEntry, f: FacetId) => state[f].size === 0 || [...state[f]].some((v) => has(e, f, v));
   const inMode = (e: LibEntry) => mode !== 'favorites' || d.favs.has(e.slug);
   let queryHits: Map<string, number> | null = null;
@@ -204,7 +208,7 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
   }
 
   /* ---------- value labels and option lists ---------- */
-  const valueLabel = (f: FacetId, v: string) => (f === 'type' ? typeLabel(typeOf(v), lang) : v);
+  const valueLabel = (f: FacetId, v: string) => (f === 'type' ? typeLabel(typeOf(v), lang) : f === 'job' ? nameOf(jobOf(v), lang) : v);
   type Opt = { value: string; label: string; count: number; group: string };
   function optionsFor(f: FacetId, needle = ''): { groups: { label: string; opts: Opt[] }[]; searchable: boolean } {
     const inPage = entries.filter(inMode);
@@ -218,6 +222,11 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
         opts: TYPES.filter((t) => t.group === g.id && pageHas(t.id)).map((t) => ({ value: t.id, label: typeLabel(t, lang), count: count(t.id), group: g.id }))
       })).filter((g) => g.opts.length);
       return { groups, searchable: false };
+    }
+    // tasks in their own order (the way the Coverage page lists them), only the ones this page has
+    if (f === 'job') {
+      const opts = JOBS.filter((j) => pageHas(j.id)).map((j) => ({ value: j.id as string, label: nameOf(j, lang), count: count(j.id), group: '' }));
+      return { groups: [{ label: tr('facetJob'), opts }], searchable: false };
     }
     if (f === 'stack') {
       const all = [...new Set(inPage.flatMap((e) => e.tech))].filter((v) => !n || v.toLowerCase().includes(n));
@@ -296,7 +305,8 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
   function peek(f: FacetId, v: string) {
     if (!popPeek || d.narrow.matches) return;
     const base = baseFor(f).filter((e) => has(e, f, v) && e.poster).slice(0, 3);
-    const about = f === 'type' ? `<p class="sh-pop__about">${esc(typeAbout(typeOf(v), lang))}</p>` : '';
+    const aboutText = f === 'type' ? typeAbout(typeOf(v), lang) : f === 'job' ? aboutOf(jobOf(v), lang) : '';
+    const about = aboutText ? `<p class="sh-pop__about">${esc(aboutText)}</p>` : '';
     popPeek.innerHTML = base.length || about ? `${about}<div class="sh-pop__thumbs">${base.map((e) => `<img src="${esc(e.poster!)}" alt="" loading="lazy" decoding="async">`).join('')}</div>` : '';
     popPeek.hidden = !popPeek.innerHTML;
   }
@@ -437,7 +447,7 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
   }));
   input?.addEventListener('input', () => { state.q = input.value; writeUrl(); apply(); });
   $$('[data-action="clear-filters"]').forEach((b) => b.addEventListener('click', () => {
-    state.q = ''; state.type.clear(); state.stack.clear(); state.tag.clear();
+    state.q = ''; state.type.clear(); state.job.clear(); state.stack.clear(); state.tag.clear();
     if (input) input.value = '';
     writeUrl();
     apply();
@@ -466,6 +476,10 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
       if (hasFacet('type')) for (const t of TYPES) {
         const label = typeLabel(t, lang);
         if (inPage.some((e) => e.type === t.id) && label.toLowerCase().includes(n)) out.push({ facet: 'type', value: t.id, label });
+      }
+      for (const j of JOBS) {
+        const label = nameOf(j, lang);
+        if (inPage.some((e) => e.jobs.includes(j.id)) && label.toLowerCase().includes(n)) out.push({ facet: 'job', value: j.id, label });
       }
       for (const v of new Set(inPage.flatMap((e) => e.tech))) if (v.toLowerCase().includes(n)) out.push({ facet: 'stack', value: v, label: v });
       for (const v of new Set(inPage.flatMap((e) => e.tags))) if (tagInLang(v, lang) && v.toLowerCase().startsWith(n)) out.push({ facet: 'tag', value: v, label: v });

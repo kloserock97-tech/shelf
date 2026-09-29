@@ -16,6 +16,9 @@ demo:
 variants:
   - { id: ts, label: TypeScript, files: [swipeStrip.ts, swipe-strip.css, main.ts] }
 poster: poster.webp
+jobs: [showcase, discovery]
+usedIn: [ts2]
+pairs: [scroll-chapter-timeline, experiments-deck, object-card]
 ---
 - Лента — обычная горизонтальная прокрутка с `scroll-snap-type: x mandatory` и `scroll-snap-stop: always`. Инерцию, отскок и «один бросок — одна карточка» даёт браузер, скрипт только слушает.
 - Две оси связаны номером карточки. Страница дошла до карточки → `follow(i)` плавно везёт ленту. Человек перелистнул сам → `onUserSettle(i)`, и страница встаёт на ту же карточку. Пока палец на ленте, страница её не трогает.

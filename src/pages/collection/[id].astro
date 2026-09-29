@@ -1,0 +1,20 @@
+---
+import App from '../../layouts/App.astro';
+import Library from '../../components/Library.astro';
+import { allItems, type Item } from '../../lib/items';
+import { COLLECTIONS, nameOf, type CollectionDef } from '../../lib/curation';
+
+// A taste collection: the pieces that name it in their `collections`. Only collections with something in them.
+export async function getStaticPaths() {
+  const items = await allItems();
+  return COLLECTIONS.filter((c) => items.some((i) => i.data.collections.includes(c.id))).map((c) => ({
+    params: { id: c.id },
+    props: { collection: c, items: items.filter((i) => i.data.collections.includes(c.id)) }
+  }));
+}
+const { collection, items } = Astro.props as { collection: CollectionDef; items: Item[] };
+const label = nameOf(collection, 'en');
+---
+<App title={label} nav={`collection:${collection.id}`} lang="en">
+  <Library title={label} items={items} mode="collection" collection={collection} lang="en" />
+</App>

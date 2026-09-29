@@ -16,6 +16,9 @@ demo:
 variants:
   - { id: ts, label: TypeScript, files: [casesWheel.ts, cases-wheel.css, main.ts] }
 poster: poster.webp
+jobs: [discovery, showcase]
+usedIn: [ts2]
+pairs: [scroll-chapter-timeline, depth-tilt-object, case-card-stack]
 ---
 - Каждое название ставится на окружность одним `transform`: `rotate(угол) translateX(−R)` от общего центра. Центр лежит за правым краем окна (R = 0,68 высоты окна, 420–760 px, шаг 18,5°), на телефоне — под нижним краем, и названия идут по касательной.
 - Два барабана. Названия — шкала, они едут вместе с прокруткой. Предметы — вещи: у них своя координата, которая догоняет ближайший целый кейс за ~0,4 с (`1 − e^(−11·dt)`). Иначе на полпути видно два полупрозрачных предмета.

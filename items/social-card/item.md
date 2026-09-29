@@ -16,6 +16,9 @@ demo:
 variants:
   - { id: html, label: HTML, files: [og-card.html, og-card.css, og-tags.html, shoot.mjs] }
 poster: poster.webp
+jobs: [contact]
+usedIn: [ts2]
+pairs: [lang-switch]
 ---
 - Картинка превью — отдельная HTML-карточка 1200×630, которую `shoot.mjs` снимает Playwright-ом в JPEG. WebP не годится: LinkedIn и часть мессенджеров его не разворачивают. Адреса в тегах только абсолютные, относительные краулеры не понимают.
 - Набор тегов: og:site_name, og:title, og:description, og:type, og:locale с alternate, og:url, og:image с type, width, height и alt, плюс twitter:card `summary_large_image` со своими title, description, image и alt. Если язык страницы меняется на лету, og:title и og:description меняются вместе с ним.

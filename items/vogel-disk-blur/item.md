@@ -18,6 +18,9 @@ variants:
   - { id: glsl, label: GLSL, files: [vogel-blur.frag, present.frag, fullscreen.vert] }
   - { id: js, label: WebGL2 JS, files: [vogel-blur.js] }
 poster: poster.webp
+jobs: [atmosphere, quality]
+usedIn: [ts2]
+pairs: [hash-kit, edge-aa]
 ---
 - Выборка k повёрнута на золотой угол (2,39996 рад) от предыдущей и стоит на `sqrt((k + 0,5) / N)` радиуса. Так 16 точек ровно накрывают весь круг вместе с серединой.
 - Выборки на двух кольцах (R и 0,49 R) размывают маленький яркий источник в кольцо с дыркой — «пончик». В демо слева кольца, справа спираль; разница видна на гирлянде.

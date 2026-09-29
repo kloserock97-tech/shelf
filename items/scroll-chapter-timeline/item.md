@@ -16,6 +16,9 @@ demo:
 variants:
   - { id: ts, label: TypeScript, files: [timeline.ts, storyScroll.ts, main.ts] }
 poster: poster.webp
+jobs: [storytelling]
+usedIn: [ts2]
+pairs: [smooth-wheel, case-wheel, experiments-deck, swipe-strip]
 ---
 - Длина истории не записана в CSS. Каждая сцена задана в экранах (1 = 100vh), список — `lead + (n − 1)·step + tail`, и `applyTimeline()` ставит `.story` высоту `(total + 1 − lead)·100vh`. Поэтому карточка занимает одинаковую дистанцию прокрутки на любом экране.
 - Шаг считается от настоящего расстояния между карточками: `step = spacing · 1,3 / высота окна`, в пределах 0,4–0,9 экрана. Лента едет чуть медленнее страницы, и карточку успевают прочитать. На узком экране постоянные сцены короче (×0,88).

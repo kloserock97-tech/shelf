@@ -17,6 +17,9 @@ variants:
   - { id: ts, label: TypeScript, files: [icons.ts, main.ts] }
   - { id: svg, label: SVG sprite, files: [sprite.svg, usage.html] }
 poster: poster.webp
+jobs: [navigation]
+usedIn: [ts2]
+pairs: [magnetic-dock, contact-footer, side-project-card]
 ---
 - Стиль: поле 16×16, линия 1,25 без заливок, круглые концы и стыки, форма из простых дуг и прямых без мелких деталей. Поэтому иконка читается и в 14 px.
 - Цвет — `currentColor`: иконка берёт цвет текста вокруг, на светлом и тёмном фоне ничего не переопределяется.

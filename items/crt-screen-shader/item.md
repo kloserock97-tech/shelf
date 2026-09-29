@@ -19,6 +19,10 @@ variants:
   - { id: js, label: JavaScript, files: [crt.js] }
 related: [retro-desktop-screen]
 poster: poster.webp
+jobs: [atmosphere]
+collections: [retro]
+usedIn: [ts2]
+pairs: [retro-desktop-screen]
 ---
 - Экран — суперэллипс («сквиркл»), а не прямоугольник со скруглёнными углами; степень формы = 0,9 / uCorner, от 4 до 40.
 - Выпуклость — квадратичный член плюс слабый член четвёртой степени (`r²·(1 + 1,6·r²)`): края гнутся сильнее середины, как у настоящего стекла.

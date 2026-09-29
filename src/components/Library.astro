@@ -7,23 +7,25 @@ import { GROUPS, TYPES, typeOf, typeAbout, typeLabel, groupLabel, type TypeDef }
 import { t, itemsWord, type Lang } from '../lib/i18n';
 import { lurl } from '../lib/url';
 import { FACETS, defaultSort, sortsFor } from '../lib/facets';
+import { aboutOf, type CollectionDef } from '../lib/curation';
 
 interface Props {
   title: string;
   items: Item[];
   lang: Lang;
-  mode?: 'all' | 'type' | 'favorites';
+  mode?: 'all' | 'type' | 'favorites' | 'collection';
   type?: TypeDef;
+  collection?: CollectionDef;
 }
-const { title, items, lang, mode = 'all', type } = Astro.props;
+const { title, items, lang, mode = 'all', type, collection } = Astro.props;
 const techCount = new Map<string, number>();
 for (const it of items) for (const tech of it.data.tech) techCount.set(tech, (techCount.get(tech) ?? 0) + 1);
 const techs = [...techCount.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 8);
-const filterable = mode === 'all' || mode === 'type';
+const filterable = mode !== 'favorites';
 // All items opens in sections by kind group, a header over each (its name, how many, links to its kinds); library.ts
 // keeps them in step with filters and the sort. Rendered in that order already, so nothing moves when the script runs.
 const firstSort = defaultSort(mode);
-const sectioned = mode === 'all' || mode === 'favorites';
+const sectioned = mode !== 'type';
 const typeIndex = new Map(TYPES.map((ty, i) => [ty.id as string, i]));
 const byKind = (a: Item, b: Item) => (typeIndex.get(a.data.type)! - typeIndex.get(b.data.type)!) || a.data.title.localeCompare(b.data.title, lang);
 const sections = sectioned
@@ -39,14 +41,14 @@ const FEATURED = ['garden-loader', 'glass-diorama', 'quiet-hill-hero', 'windcres
 const hero = mode === 'all'
   ? FEATURED.map((s) => items.find((i) => i.id === s)).find((i) => i && posterUrl(i)) ?? items.find((i) => posterUrl(i))
   : undefined;
-// A kind opens with a fan of its own covers: the colour comes from the content, not from the chrome.
-const covers = mode === 'type' ? items.map((i) => posterUrl(i)).filter((u): u is string => Boolean(u)).slice(0, 3) : [];
+// A kind or a collection opens with a fan of its own covers: the colour comes from the content, not from the chrome.
+const covers = mode === 'type' || mode === 'collection' ? items.map((i) => posterUrl(i)).filter((u): u is string => Boolean(u)).slice(0, 3) : [];
 // Summaries and notes are written in Russian; say so to screen readers on English pages.
 const contentLang = lang === 'ru' ? undefined : 'ru';
 ---
 <header class="sh-toolbar">
   <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm sh-sidebar-toggle" type="button" data-action="sidebar-toggle" aria-label={t(lang, 'showSidebar')}><Icon name="PanelLeft" /></button>
-  <h1 class="sh-toolbar__title">{title} <span class="sh-toolbar__count" data-count="visible">{mode === 'all' || mode === 'type' ? items.length : ''}</span></h1>
+  <h1 class="sh-toolbar__title">{title} <span class="sh-toolbar__count" data-count="visible">{filterable ? items.length : ''}</span></h1>
   <div class="sh-toolbar__spacer"></div>
   <div class="sh-zoom" title={t(lang, 'gridSize')}>
     <Icon name="LayoutGrid" class="sh-i--xs" />
@@ -130,15 +132,15 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
   </section>
 )}
 
-{mode === 'type' && type && (
+{((mode === 'type' && type) || (mode === 'collection' && collection)) && (
   <section class="sh-typehead" aria-label={title}>
     <div class="sh-typehead__stack" aria-hidden="true" style={`--n:${Math.max(1, covers.length)}`}>
       {covers.length
         ? covers.map((src, i) => <img src={src} alt="" style={`--i:${i}`} loading="lazy" decoding="async">)
-        : <span class="sh-typehead__glyph"><Icon name={type.icon} stroke={1.5} /></span>}
+        : <span class="sh-typehead__glyph"><Icon name={(type ?? collection)!.icon} stroke={1.5} /></span>}
     </div>
     <div>
-      <p class="sh-typehead__about">{typeAbout(type, lang)}</p>
+      <p class="sh-typehead__about">{type ? typeAbout(type, lang) : aboutOf(collection!, lang)}</p>
       <p class="sh-typehead__count">{items.length} {itemsWord(lang, items.length)}</p>
     </div>
   </section>

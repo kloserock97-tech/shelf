@@ -18,6 +18,10 @@ variants:
   - { id: html, label: HTML, files: [object-card.css, object-card.js, index.html] }
   - { id: react, label: React, files: [ObjectCard.tsx, object-card.css] }
 poster: poster.webp
+jobs: [showcase]
+collections: [depth, feels-expensive]
+usedIn: [ts2]
+pairs: [swipe-strip]
 ---
 - Всё внутри карточки — в `cqw` при `container-type: size`: карточка бывает от 220 до 400 px, а композиция «текст сверху, предмет снизу» остаётся той же. Набок (`@container (min-aspect-ratio: 1.2)`) текст уходит влево, предмет вправо.
 - Цвета и раскладка предмета приходят переменными на саму карточку: `--s1`/`--s2` — сцена, `--ink` — текст и кнопка, `--accent` — метка, `--ow`/`--ox`/`--oy` — ширина и место предмета в долях карточки. Одна разметка на все проекты.

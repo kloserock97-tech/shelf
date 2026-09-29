@@ -34,6 +34,7 @@ status: draft
 summary: Одно предложение о том, что делает элемент.
 tech: [HTML, CSS]
 tags: []
+jobs: []
 added: ${today}
 origin: own
 source: ""

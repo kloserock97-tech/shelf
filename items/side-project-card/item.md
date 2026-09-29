@@ -18,6 +18,9 @@ variants:
   - { id: html, label: HTML, files: [side-project-card.js, side-project-card.css, projects.js, index.html] }
   - { id: react, label: React, files: [SideProjectCard.tsx, side-project-card.css] }
 poster: poster.webp
+jobs: [showcase]
+usedIn: [ts2]
+pairs: [quiet-hill-hero, cursor-parallax, line-icons]
 ---
 - Описание раскрывается сеткой `grid-template-rows: 0fr → 1fr` за 0,7 с — высота берётся от содержимого, без замеров. Текст внутри проявляется с задержкой 0,25 с, а `visibility` выключается только после закрытия, чтобы ссылки не ловили Tab.
 - Открытая карточка растёт вниз. Если низ уходит за окно, она поднимается (`--note-lift`, отрицательный `margin-top`), потом картинка отдаёт до 38% высоты, и только потом описание прокручивается внутри (`.is-tight`). Высоты считаются от единицы кадра, а не от `offsetHeight`, который посреди перехода врёт. На узком экране карточка просто растёт, страница листается.

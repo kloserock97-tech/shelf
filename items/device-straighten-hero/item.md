@@ -17,6 +17,8 @@ variants:
   - { id: html, label: HTML, files: [hero.css, hero.js, index.html] }
   - { id: ts, label: TypeScript, files: [hero.ts, hero.css] }
 poster: poster.webp
+jobs: [first-impression, showcase]
+collections: [depth]
 ---
 - Разворот целиком в CSS от одной переменной: `rotateY(−15° + 11°·hs)`, `rotateX(5° − 4°·hs)`, `rotateZ(1,2° − 1,2°·hs)`, у телефона свои числа. Скрипт пишет только `--hs`, одно свойство на кадр.
 - `--hs` доходит до 1, когда за верхний край ушло 80% высоты героя вместе с плитками фактов. `transition: transform 0.9s` сглаживает рывки колеса: устройство догоняет прокрутку, а не дёргается за ней.

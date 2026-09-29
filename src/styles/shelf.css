@@ -440,13 +440,13 @@ button.sh-menu__item, a.sh-menu__item { appearance: none; margin: 0; border: 0; 
 .sh-toolbar__title { flex: none; display: flex; align-items: baseline; gap: var(--space-2); margin: 0; font: 600 17px/22px var(--font-sans); letter-spacing: -0.01em; white-space: nowrap; }
 
 /* ---------- Breadcrumbs: where the item lives and the way back ----------
-   All items › kind › item; from Favorites it reads Favorites › item. Links are quiet text with a pill on hover,
+   All items › kind › item; from Favorites it reads Favorites › item, from a collection Collection › item. Links are quiet text with a pill on hover,
    pulled left by their padding so the first word lines up with the page title below. The item's own name is the
    first to shrink. */
 .sh-crumbs { flex: 0 1 auto; min-width: 0; margin-left: -8px; }
 .sh-crumbs ol { display: flex; align-items: center; min-width: 0; margin: 0; padding: 0; list-style: none; }
 .sh-crumbs li { flex: none; display: flex; align-items: center; min-width: 0; }
-.sh-crumbs li[data-crumb="type"], .sh-crumbs li[data-crumb="favorites"] { flex: 0 1 auto; }
+.sh-crumbs li[data-crumb="type"], .sh-crumbs li[data-crumb="favorites"], .sh-crumbs li[data-crumb="collection"] { flex: 0 1 auto; }
 .sh-crumbs li[data-crumb="current"] { flex: 0 100 auto; }
 .sh-crumbs__link {
   display: block; min-width: 0; height: var(--control-sm); padding: 0 8px; border-radius: var(--radius-pill);
@@ -458,9 +458,11 @@ button.sh-menu__item, a.sh-menu__item { appearance: none; margin: 0; border: 0; 
 .sh-crumbs__link:active { background: var(--fill-hover); }
 .sh-crumbs__sep { flex: none; width: 12px; height: 12px; color: var(--label-tertiary); }
 .sh-crumbs__current { min-width: 0; padding: 0 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 13px/18px var(--font-sans); color: var(--label); }
-.sh-crumbs li[data-crumb="favorites"] { display: none; }
+.sh-crumbs li[data-crumb="favorites"], .sh-crumbs li[data-crumb="collection"] { display: none; }
 html[data-from="favorites"] .sh-crumbs li[data-crumb="favorites"] { display: flex; }
-html[data-from="favorites"] .sh-crumbs li[data-crumb="all"], html[data-from="favorites"] .sh-crumbs li[data-crumb="type"] { display: none; }
+html[data-from="favorites"] .sh-crumbs li[data-crumb="all"], html[data-from="favorites"] .sh-crumbs li[data-crumb="type"],
+html[data-from="collection"] .sh-crumbs li[data-crumb="all"], html[data-from="collection"] .sh-crumbs li[data-crumb="type"] { display: none; }
+/* the collection you came from is shown by a rule the item page writes for its own collections (ItemPage.astro) */
 .sh-toolbar__count { font: 500 13px/18px var(--font-sans); font-variant-numeric: tabular-nums; color: var(--label-secondary); }
 .sh-toolbar__spacer { flex: 1 1 auto; }
 .sh-toolbar__group { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
@@ -742,6 +744,7 @@ button.sh-menu__item { appearance: none; margin: 0; border: 0; width: 100%; back
 .sh-details dt { color: var(--label-secondary); }
 .sh-details dd { margin: 0; min-width: 0; color: var(--label); overflow-wrap: anywhere; }
 .sh-details code { font: 400 12px/18px var(--font-mono); }
+.sh-details__list { display: flex; flex-wrap: wrap; gap: 2px 12px; }
 .sh-link { color: var(--accent-text); text-decoration: none; }
 .sh-link:hover { text-decoration: underline; text-underline-offset: 2px; }
 .sh-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: var(--space-3); }
@@ -872,6 +875,33 @@ button.sh-menu__item { appearance: none; margin: 0; border: 0; width: 100%; back
 .sh-empty__title { margin: 0; font: 600 17px/22px var(--font-sans); letter-spacing: -0.01em; color: var(--label); }
 .sh-empty__text { margin: 0; max-width: 42ch; font: 400 14px/20px var(--font-sans); color: var(--label-secondary); text-wrap: balance; }
 
+/* ---------- Coverage: counts by task and by kind ----------
+   A table with a bar beside each count: one hue, bars grow from one baseline with a rounded tip, the number sits at
+   the end in text colour. A zero row has no bar and fades, so blind spots read at a glance. */
+.sh-cov { display: grid; gap: var(--space-8); max-width: 1040px; padding: var(--space-6) var(--space-8) var(--space-10); }
+.sh-cov__intro { margin: 0; max-width: 56ch; font: 500 17px/24px var(--font-sans); letter-spacing: -0.01em; color: var(--label); text-wrap: balance; }
+.sh-cov__hunt { display: grid; gap: var(--space-4); padding: var(--space-5) var(--space-6); border-radius: var(--radius-lg); background: var(--tile); box-shadow: var(--shadow-edge); }
+.sh-cov__eyebrow { margin: 0; font: 600 12px/16px var(--font-sans); letter-spacing: 0.02em; text-transform: uppercase; color: var(--label-secondary); }
+.sh-cov__find { display: flex; align-items: flex-start; gap: var(--space-3); margin: 0; font: 600 17px/24px var(--font-sans); letter-spacing: -0.01em; text-wrap: balance; }
+.sh-cov__find-icon { display: grid; place-items: center; flex: none; width: 24px; height: 24px; color: var(--accent-text); }
+.sh-cov__find-icon .sh-i { width: 20px; height: 20px; }
+.sh-cov__spots { display: grid; gap: var(--space-2); }
+.sh-cov__spots-title { margin: 0; font: 600 13px/18px var(--font-sans); }
+.sh-cov__muted { font-weight: 400; color: var(--label-secondary); }
+.sh-cov__chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.sh-cov__cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-8) var(--space-10); align-items: start; }
+.sh-meter { display: grid; margin: 0 0 var(--space-4); padding: 0; list-style: none; }
+.sh-meter__group { margin: var(--space-3) 0 var(--space-1); font: 600 12px/16px var(--font-sans); color: var(--label-secondary); }
+.sh-meter__row { display: grid; grid-template-columns: minmax(120px, 190px) minmax(0, 1fr) 2.5ch; align-items: center; gap: var(--space-3); min-height: 32px; }
+.sh-meter__name { display: flex; align-items: center; gap: var(--space-2); min-width: 0; margin: 0 -6px; padding: 4px 6px; border-radius: var(--radius-sm); font: 500 13px/18px var(--font-sans); color: var(--label); text-decoration: none; }
+.sh-meter__name .sh-i { flex: none; width: 16px; height: 16px; color: var(--label-secondary); }
+a.sh-meter__name:hover { background: var(--fill); }
+.sh-meter__track { position: relative; height: 8px; }
+.sh-meter__bar { position: absolute; inset: 0 auto 0 0; width: var(--w); min-width: 4px; border-radius: 0 4px 4px 0; background: var(--accent); }
+.sh-meter__n { font: 500 13px/18px var(--font-sans); font-variant-numeric: tabular-nums; text-align: right; color: var(--label); }
+.sh-meter__row.is-zero .sh-meter__name, .sh-meter__row.is-zero .sh-meter__n { color: var(--label-tertiary); }
+.sh-meter__row.is-zero .sh-meter__track { border-left: 1px solid var(--separator); }
+
 /* ---------- Medium widths: the grid-size slider steps aside, the filter may shrink ---------- */
 @media (max-width: 1100px) {
   .sh-zoom, .sh-zoom + .sh-vsep { display: none; }
@@ -904,6 +934,11 @@ button.sh-menu__item { appearance: none; margin: 0; border: 0; width: 100%; back
   .sh-typehead__about { font-size: 15px; line-height: 22px; }
   .sh-item { padding: var(--space-4) var(--space-4) var(--space-10); gap: var(--space-6); }
   .sh-item__cols { grid-template-columns: minmax(0, 1fr); }
+  .sh-cov { padding: var(--space-4) var(--space-4) var(--space-10); gap: var(--space-6); }
+  .sh-cov__intro { font-size: 15px; line-height: 22px; }
+  .sh-cov__hunt { padding: var(--space-4); }
+  .sh-cov__cols { grid-template-columns: minmax(0, 1fr); }
+  .sh-meter__row { grid-template-columns: minmax(0, 11em) minmax(0, 1fr) 2.5ch; }
   .sh-stage--item { height: min(70vh, 520px); min-height: 320px; }
   .sh-hide-narrow { display: none; }
 }
@@ -915,8 +950,9 @@ button.sh-menu__item { appearance: none; margin: 0; border: 0; width: 100%; back
 }
 @media (max-width: 600px) {
   .sh-crumbs li[data-crumb="current"] { display: none; }
-  html:not([data-from="favorites"]) .sh-crumbs li[data-crumb="type"] .sh-crumbs__sep,
-  html[data-from="favorites"] .sh-crumbs li[data-crumb="favorites"] .sh-crumbs__sep { display: none; }
+  html:not([data-from="favorites"]):not([data-from="collection"]) .sh-crumbs li[data-crumb="type"] .sh-crumbs__sep,
+  html[data-from="favorites"] .sh-crumbs li[data-crumb="favorites"] .sh-crumbs__sep,
+  html[data-from="collection"] .sh-crumbs li[data-crumb="collection"] .sh-crumbs__sep { display: none; }
   .sh-demo-btn { width: var(--control-sm); padding: 0; }
   .sh-demo-btn__label { display: none; }
 }

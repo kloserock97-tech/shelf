@@ -15,6 +15,10 @@ demo:
 variants:
   - { id: ts, label: HTML + CSS + TS, files: [hero.html, hero.css, hero-enter.css, heroUi.ts] }
 poster: poster.webp
+jobs: [first-impression]
+collections: [calm, depth]
+usedIn: [ts2]
+pairs: [magnetic-dock, metal-button, cursor-parallax, side-project-card]
 ---
 - В вариантах только интерфейсный слой, без сцены холма (three.js, шейдеры). Демо — живой сайт с `?intro=0`, без загрузчика.
 - Кадр 1600 × 880 в своих единицах: `--u = min(100vw / 1600, 1900px / 1600)`, любой отступ и кегль — `calc(N * var(--u))`. Экран масштабируется целиком, а до 900 px переключается на колонку шириной 760u.

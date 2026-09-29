@@ -5,7 +5,7 @@
 // `npm run check` only validates.
 import fs from 'node:fs';
 import path from 'node:path';
-import { ROOT, TYPES, readItems, isFile, walk } from './lib/items.mjs';
+import { ROOT, TYPES, JOBS, COLLECTIONS, PROJECTS, readItems, isFile, walk } from './lib/items.mjs';
 import { CODE, borrowedIn } from './lib/provenance.mjs';
 
 const checkOnly = process.argv.includes('--check');
@@ -34,6 +34,10 @@ for (const it of items) {
   for (const key of ['title', 'type', 'summary', 'added']) if (!d[key]) errors.push(`${where}: missing "${key}"`);
   if (d.type && !TYPES.includes(d.type)) errors.push(`${where}: unknown type "${d.type}" (one of ${TYPES.join(', ')})`);
   if (d.status && !['stable', 'draft'].includes(d.status)) errors.push(`${where}: status is stable or draft`);
+  for (const [key, known] of [['jobs', JOBS], ['collections', COLLECTIONS], ['usedIn', PROJECTS]]) {
+    for (const v of d[key] ?? []) if (!known.includes(v)) errors.push(`${where}: unknown ${key} "${v}" (one of ${known.join(', ')})`);
+  }
+  if (!(d.jobs ?? []).length) warnings.push(`${where}: no jobs yet — say what it does for the person on the page`);
   if (!it.private && d.origin === 'third-party') errors.push(`${where}: third-party code can't be public. Rewrite it, or move the folder to private/`);
   if (d.origin === 'adapted' && !d.priorArt) errors.push(`${where}: an adapted item names its prior art (priorArt)`);
   if (d.demo?.path && !isFile(path.join(it.dir, d.demo.path))) errors.push(`${where}: demo.path "${d.demo.path}" doesn't exist`);
@@ -52,6 +56,14 @@ for (const it of items) {
       // someone else's code, recognised by its constants and names: rewrite it with our own (items/hash-kit, items/edge-aa)
       if (CODE.test(file)) for (const hit of borrowedIn(text)) errors.push(`${where}: ${path.relative(it.dir, file)}:${hit.line} looks like ${hit.what} — rewrite it as our own`);
     }
+  }
+}
+
+// pairs and related point at other items, which must exist
+for (const it of items) for (const key of ['pairs', 'related']) {
+  for (const s of it.data[key] ?? []) {
+    if (s === it.slug) errors.push(`${it.base}/${it.slug}: ${key} names the item itself`);
+    else if (!slugs.has(s)) errors.push(`${it.base}/${it.slug}: ${key} names "${s}", which isn't on the shelf`);
   }
 }
 

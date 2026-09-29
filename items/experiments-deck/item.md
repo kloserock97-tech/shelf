@@ -16,6 +16,10 @@ demo:
 variants:
   - { id: html, label: HTML, files: [experiments-deck.css, experiments-deck.js, index.html] }
 poster: poster.webp
+jobs: [showcase]
+collections: [depth]
+usedIn: [ts2]
+pairs: [scroll-chapter-timeline, blur-words-reveal, swipe-strip]
 ---
 - Одна карточка — один шаг прокрутки (0,7 экрана), поэтому длина секции считается от числа карточек, а не записана в CSS.
 - Позиция колоды идёт через `dwell(x) = x − k/(2π)·sin(2πx)` с k = 0,5: у каждой карточки колода едет вдвое медленнее средней скорости, между карточками быстрее. Остановок и рывков нет, а каждую карточку успевают прочитать.

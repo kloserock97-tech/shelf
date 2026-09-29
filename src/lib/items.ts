@@ -21,6 +21,7 @@ export async function allItems() {
 }
 
 export const itemUrl = (e: Item, lang: Lang = 'en') => lurl(lang, `items/${e.id}/`);
+export const collectionUrl = (id: string, lang: Lang = 'en') => lurl(lang, `collection/${id}/`);
 export const mediaUrl = (e: Item, file?: string) => (file ? url(`media/${e.id}/${file}`) : undefined);
 export const posterUrl = (e: Item) => mediaUrl(e, e.data.poster);
 export const loopUrl = (e: Item) => mediaUrl(e, e.data.loop);
@@ -98,6 +99,7 @@ export function indexEntry(e: Item, lang: Lang = 'en') {
     typeLabel: typeOne(typeOf(d.type), lang),
     tech: d.tech,
     tags: d.tags,
+    jobs: d.jobs,
     status: d.status,
     summary: d.summary,
     notes: notesText(e).slice(0, 1500),

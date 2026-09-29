@@ -17,6 +17,10 @@ demo:
 variants:
   - { id: ts, label: TypeScript, files: [weather.ts, meadow.ts, main.ts] }
 poster: poster.webp
+jobs: [atmosphere]
+collections: [calm, no-assets]
+usedIn: [ts2]
+pairs: [nature-ambience, sky-ridges, umbrella-hat, procedural-tree-rocks]
 ---
 - Состояние — не картинка, а три числа: overcast, rain, dusk. Они догоняют цель за пару секунд (`1 − e^(−dt/2,2)`), и каждый кадр из них собираются солнце, небо, туман, дымка и экспозиция. Трава намокает за ~3 с, а сохнет ~25.
 - Тени облаков — сумма четырёх синусоид, а не шум с хэшем: ту же формулу считает JS (`cloudShadeAt`), поэтому реквизит темнеет ровно тогда, когда под ним проходит тень. В демо так гаснет свет на указателе.

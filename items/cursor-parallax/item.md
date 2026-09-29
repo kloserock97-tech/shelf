@@ -18,6 +18,10 @@ variants:
   - { id: html, label: HTML, files: [index.html, cursor-parallax.css, cursor-parallax.js] }
   - { id: react, label: React, files: [CursorParallax.tsx, cursor-parallax.css] }
 poster: poster.webp
+jobs: [first-impression]
+collections: [depth]
+usedIn: [ts2]
+pairs: [quiet-hill-hero, side-project-card]
 ---
 - Скрипт пишет на корень только две переменные, `--px` и `--py` (−1…1). Слой сдвигается в CSS на свою глубину `--pd`: по горизонтали `px · pd` пикселей, по вертикали 0,6 от этого. Глубины — от 5 (док) до 22 (карточка).
 - Сглаживание `1 − e^(−3.2·dt)` одинаковое на 60 и 120 Гц, шаг кадра ограничен 50 мс, чтобы после свёрнутой вкладки ничего не прыгало. Стиль пишется, только когда значение, округлённое до 0,001, изменилось: неподвижный курсор не трогает DOM.

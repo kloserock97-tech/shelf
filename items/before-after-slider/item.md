@@ -18,6 +18,9 @@ variants:
   - { id: html, label: HTML, files: [before-after.js, before-after.css, index.html] }
   - { id: react, label: React, files: [BeforeAfterSlider.tsx, before-after-slider.css] }
 poster: poster.webp
+jobs: [comparison, showcase]
+usedIn: [ts2]
+pairs: [case-study-page]
 ---
 - Положение живёт в одной переменной `--pos` на коробке: она режет верхний слой «было» через `clip-path: inset(0 calc(100% − var(--pos)) 0 0)` и двигает линию ручки. Скрипт меняет только эту переменную.
 - Оба экрана видны целиком: `--ar` коробки — меньшее из двух соотношений сторон, у каждой картинки своё `--iar`, размер считается явно через `cqw`, а сцена не выше `clamp(340px, 100svh − 230px, 780px)`.

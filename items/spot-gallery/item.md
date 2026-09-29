@@ -16,6 +16,9 @@ demo:
 variants:
   - { id: html, label: HTML, files: [spot-gallery.js, spot-gallery.css, index.html] }
 poster: poster.webp
+jobs: [showcase, storytelling]
+usedIn: [ts2]
+pairs: [case-study-page]
 ---
 - Точки стоят на самом экране, координаты — проценты от картинки. Обёртка получает размер картинки, посчитанный явно: `aspect-ratio` и `height: min(--stage-h − 2·pad, (100cqw − 2·pad) / --ar)`. Процент от сцены ломается, пока картинка догружается, и точки съезжают.
 - Сцена та же, что у всех экранов кейса: не выше `clamp(340px, 100svh − 230px, 780px)` и не шире колонки, поэтому экран с точками всегда целиком в окне.

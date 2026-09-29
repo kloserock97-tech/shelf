@@ -18,6 +18,9 @@ variants:
   - { id: html, label: HTML, files: [copy-address.js, copy-address.css, index.html] }
   - { id: react, label: React, files: [CopyAddressButton.tsx, copy-address.css] }
 poster: poster.webp
+jobs: [contact, feedback]
+usedIn: [ts2]
+pairs: [contact-footer, sound-button]
 ---
 - Действие и адрес разделены: «Написать письмо» открывает почту, а сам адрес — кнопка копирования, и видно, что именно копируется.
 - Подтверждение прямо в кнопке: иконка копирования меняется на галочку, текст — на «Address copied» цветом `#9fe38b`, через 1,8 с всё возвращается.

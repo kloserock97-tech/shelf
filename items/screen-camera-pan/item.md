@@ -16,6 +16,8 @@ demo:
 variants:
   - { id: ts, label: TypeScript, files: [screenMotion.ts, demoRunner.ts, main.ts, screen-motion.css] }
 poster: poster.webp
+jobs: [storytelling, showcase]
+usedIn: [ts2]
 ---
 - Камера — один `transform` у слоя со скриншотом от левого верхнего угла, фокусы — CSS-пресеты на `[data-focus]`. Сдвиг задан в % от самого экрана, поэтому пресет верен на любой ширине: для фокуса с углом в точке (x, y) — `translate(−s·x, −s·y) scale(s)`.
 - Переезд идёт 1,5 с по `cubic-bezier(.22, 1, .36, 1)`, другое состояние интерфейса проявляется поверх за 0,7 с, пока камера ещё едет.

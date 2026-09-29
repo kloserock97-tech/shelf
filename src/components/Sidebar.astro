@@ -2,6 +2,7 @@
 import Icon from './Icon.astro';
 import Logo from './Logo.astro';
 import { GROUPS, TYPES, typeLabel, groupLabel } from '../lib/taxonomy';
+import { COLLECTIONS, nameOf } from '../lib/curation';
 import { lurl, url } from '../lib/url';
 import { t, itemsWord, type Lang } from '../lib/i18n';
 import type { Item } from '../lib/items';
@@ -16,6 +17,8 @@ const counts = new Map<string, number>();
 for (const it of items) counts.set(it.data.type, (counts.get(it.data.type) ?? 0) + 1);
 // Only kinds that have items, in groups that have kinds.
 const groups = GROUPS.map((g) => ({ ...g, types: TYPES.filter((t) => t.group === g.id && counts.get(t.id)) })).filter((g) => g.types.length);
+// Taste collections that have something in them, below the kinds, the way playlists sit under a music library.
+const collections = COLLECTIONS.map((c) => ({ ...c, n: items.filter((i) => i.data.collections.includes(c.id)).length })).filter((c) => c.n);
 const current = (key: string) => (nav === key ? 'page' : undefined);
 const n = items.length;
 ---
@@ -43,6 +46,9 @@ const n = items.length;
       <a class="sh-sb__row" href={lurl(lang, 'favorites/')} aria-current={current('favorites')} data-tip={t(lang, 'favorites')} data-nav="favorites">
         {nav === 'favorites' && <span class="sh-sb__pill"></span>}<Icon name="Star" /><span class="sh-sb__label">{t(lang, 'favorites')}</span><span class="sh-sb__count" data-count="favorites"></span>
       </a>
+      <a class="sh-sb__row" href={lurl(lang, 'coverage/')} aria-current={current('coverage')} data-tip={t(lang, 'coverage')} data-nav="coverage">
+        {nav === 'coverage' && <span class="sh-sb__pill"></span>}<Icon name="ChartNoAxesColumn" /><span class="sh-sb__label">{t(lang, 'coverage')}</span>
+      </a>
     </div>
 
     {groups.map((g) => (
@@ -59,6 +65,21 @@ const n = items.length;
         </div>
       </section>
     ))}
+
+    {collections.length > 0 && (
+      <section class="sh-sb__group" data-section="collections">
+        <button class="sh-sb__heading" type="button" aria-expanded="true" data-action="section-toggle"><span class="sh-sb__label">{t(lang, 'collections')}</span><Icon name="ChevronDown" class="sh-sb__chev" /></button>
+        <div class="sh-sb__list">
+          <div>
+            {collections.map((c) => (
+              <a class="sh-sb__row" href={lurl(lang, `collection/${c.id}/`)} aria-current={current(`collection:${c.id}`)} data-tip={nameOf(c, lang)} data-nav={`collection:${c.id}`}>
+                {nav === `collection:${c.id}` && <span class="sh-sb__pill"></span>}<Icon name={c.icon} /><span class="sh-sb__label">{nameOf(c, lang)}</span><span class="sh-sb__count">{c.n}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    )}
   </nav>
 
   <div class="sh-sb__foot">
@@ -73,7 +94,7 @@ const n = items.length;
     aria-label={t(lang, 'sidebarEdge')} aria-valuemin="216" aria-valuemax="320" aria-valuenow="248"></div>
 </aside>
 <script is:inline>
-  // An item page keeps the place you came from: opened from All items or Favorites, that row stays selected
+  // An item page keeps the place you came from: opened from All items, Favorites or a collection, that row stays selected
   // (as in Mail or Linear) and the breadcrumb starts there. Runs before the page paints, so nothing jumps.
   // The last list you looked at is written by app.ts as { nav, url, y } when you leave it.
   (function () {
@@ -83,9 +104,12 @@ const n = items.length;
       var s = JSON.parse(sessionStorage.getItem("shelf:list") || "null");
       if (!s || typeof s.nav !== "string") return;
       var favs = JSON.parse(localStorage.getItem("shelf:favorites") || "[]");
-      var from = s.nav === "all" ? "all" : s.nav === "favorites" && favs.indexOf(item) >= 0 ? "favorites" : s.nav === d.dataset.nav ? "type" : "";
+      var cols = (d.dataset.collections || "").split(" ");
+      var col = s.nav.indexOf("collection:") === 0 && cols.indexOf(s.nav.slice(11)) >= 0 ? s.nav.slice(11) : "";
+      var from = s.nav === "all" ? "all" : s.nav === "favorites" && favs.indexOf(item) >= 0 ? "favorites" : col ? "collection" : s.nav === d.dataset.nav ? "type" : "";
       if (!from) return;
       d.dataset.from = from;
+      if (col) d.dataset.fromCollection = col;
       if (from === "type") return;
       var sb = document.getElementById("sidebar");
       var cur = sb.querySelector('[aria-current="page"]'), to = sb.querySelector('[data-nav="' + s.nav + '"]');

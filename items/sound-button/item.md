@@ -18,6 +18,10 @@ variants:
   - { id: html, label: HTML, files: [sound-button.js, sound-engine.js, sound-button.css, index.html] }
   - { id: synth, label: Sound synth (Node), files: [sfx-synth.mjs] }
 poster: poster.webp
+jobs: [feedback, input]
+collections: [playful]
+usedIn: [ts2]
+pairs: [copy-address-button, nature-ambience]
 ---
 - Браузер не играет звук без жеста, а прокрутка жестом не считается. Звук включает кнопка, клавиша M или первый клик, тап или клавиша на странице — если человек раньше его не выключал (localStorage) и не просил экономить трафик (Save-Data).
 - `AudioContext` создаётся прямо в обработчике жеста: iOS требует `resume()` синхронно. Движок — отдельный `sound-engine.js`, он грузится только после первого включения, так что тихая страница не платит за звук ни байтом. На скрытой вкладке контекст засыпает.

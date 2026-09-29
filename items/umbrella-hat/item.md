@@ -16,6 +16,10 @@ demo:
 variants:
   - { id: js, label: JavaScript, files: [umbrella-hat.js, hat-motion.js, main.js] }
 poster: poster.webp
+jobs: [atmosphere]
+collections: [playful, no-assets]
+usedIn: [ts2]
+pairs: [weather-particles, look-at-cursor-rig]
 ---
 - Цвет живёт в вершинах, а не в текстуре: каждую деталь красит `paint()`, геометрия становится неиндексированной, и с `flatShading` у каждой грани своя нормаль. Вся шляпа — один материал и ни одной картинки.
 - Фестоны зонтика — одна лишняя точка на клин: середина края сдвинута внутрь (0,9 радиуса) и вверх (0,22 высоты), край идёт волной. Коралловый и кремовый чередуются через клин.

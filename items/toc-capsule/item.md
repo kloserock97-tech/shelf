@@ -18,6 +18,9 @@ variants:
   - { id: html, label: HTML, files: [toc-capsule.js, toc-capsule.css, index.html] }
   - { id: react, label: React, files: [TocCapsule.tsx, toc-capsule.css] }
 poster: poster.webp
+jobs: [navigation]
+usedIn: [ts2]
+pairs: [case-study-page, smooth-wheel]
 ---
 - Текущий раздел считается по прокрутке, раз в кадр: последний заголовок, поднявшийся выше линии 150 px. IntersectionObserver тут подводит: после прыжка по оглавлению заголовок встаёт у самого верха и в полосу наблюдателя не попадает.
 - Кольцо — `conic-gradient` на доле прочитанного, выдолбленный радиальной маской (`transparent 9.5px, #000 10px`). Одна переменная `--p`, никакого SVG.
