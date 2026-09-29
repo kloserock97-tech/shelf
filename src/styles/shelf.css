@@ -585,8 +585,8 @@ button.sh-menu__item { appearance: none; margin: 0; border: 0; width: 100%; back
 .sh-grid__head:not([hidden]) ~ .sh-grid__head { padding-top: var(--space-6); border-top: 0.5px solid var(--separator); }
 .sh-grid__title { display: flex; align-items: baseline; gap: var(--space-2); margin: 0; font: 600 22px/28px var(--font-sans); letter-spacing: -0.015em; }
 .sh-grid__count { font: 500 13px/18px var(--font-sans); font-variant-numeric: tabular-nums; color: var(--label-secondary); letter-spacing: 0; }
-.sh-grid__kinds { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; }
-.sh-grid__kind { border-radius: 4px; font: 500 13px/18px var(--font-sans); color: var(--label-secondary); text-decoration: none; transition: color var(--duration-fast) var(--ease-standard); }
+.sh-grid__kinds { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 14px; }
+.sh-grid__kind { border-radius: 4px; font: 500 13px/24px var(--font-sans); color: var(--label-secondary); text-decoration: none; transition: color var(--duration-fast) var(--ease-standard); }
 .sh-grid__kind:hover { color: var(--accent-text); }
 .sh-card { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; color: inherit; container-type: inline-size; }
 /* The poster and the Live demo button over it lift together */
