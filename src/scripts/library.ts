@@ -74,7 +74,9 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
     stack: facetsOn ? list('stack') : new Set(),
     tag: facetsOn ? list('tag') : new Set(),
     sort: sortFromParam(params.get('sort')) ?? (storedSort === 'name' ? 'az' : (offered.find((s) => s.id === storedSort)?.id ?? baseSort)),
-    group: groupFromParam(params.get('group')) ?? storedGroup ?? baseGroup,
+    // "No groups" saved before there were shelves meant a flat grid, not "no shelves": with no view saved alongside it,
+    // the page's own grouping stands. Picked now, "No groups" saves the grid view with it.
+    group: groupFromParam(params.get('group')) ?? (storedGroup === 'none' && !storedView && baseView === 'shelves' ? baseGroup : storedGroup) ?? baseGroup,
     view: viewFromParam(params.get('view')) ?? storedView ?? baseView
   };
   // links from before the facets used ?tech=
