@@ -100,6 +100,7 @@ export function indexEntry(e: Item, lang: Lang = 'en') {
     tech: d.tech,
     tags: d.tags,
     jobs: d.jobs,
+    collections: d.collections,
     status: d.status,
     summary: d.summary,
     notes: notesText(e).slice(0, 1500),

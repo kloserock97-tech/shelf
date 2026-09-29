@@ -1,15 +1,13 @@
 // Shelf in the browser: theme, copy, favourites, the grid, Quick Look, the ⌘K palette and the item page.
 import MiniSearch from 'minisearch';
-import { Check, Contrast, Copy, Keyboard, Languages, MessageSquareCode, PanelLeft, Shuffle, SlidersHorizontal, TriangleAlert } from 'lucide-static';
+import { ArrowRight, Bookmark, Box, Check, CodeXml, Contrast, Copy, CornerDownLeft, Hash, Keyboard, Languages, MessageSquareCode, PanelLeft, Search, Shapes, Shuffle, Target, TriangleAlert, X } from 'lucide-static';
 import { cleanSvg } from '../lib/svg';
 import { t, langOf, type Key } from '../lib/i18n';
 import { initLibrary, type LibApi } from './library';
-import { FACETS, tagInLang, type FacetId } from '../lib/facets';
-import { typeLabel, typeOf } from '../lib/taxonomy';
-import { JOBS, nameOf } from '../lib/curation';
+import { initFinder, type FinderAction, type FinderApi, type FinderIcon } from './finder';
 
 interface Entry {
-  slug: string; title: string; type: string; typeLabel: string; tech: string[]; tags: string[]; jobs: string[]; status: string;
+  slug: string; title: string; type: string; typeLabel: string; tech: string[]; tags: string[]; jobs: string[]; collections: string[]; status: string;
   summary: string; notes: string; url: string; poster: string | null; loop: string | null; demo: string | null;
   external: boolean; bg: 'auto' | 'light' | 'dark'; grid: boolean; added: string; updated: string; private: boolean;
 }
@@ -575,42 +573,26 @@ function closeQuickLook() {
   qlReturn?.focus?.();
 }
 
-/* ---------- ⌘K palette ---------- */
+/* ---------- ⌘K: search, after Mobbin's search bar (finder.ts) ---------- */
 const pal = $('#palette');
-const palInput = $<HTMLInputElement>('#palette-input');
-const palList = $('#palette-list');
-let palRows: { el: HTMLElement; run: () => void }[] = [];
-let palSel = 0;
-
-function highlightMatch(text: string, q: string) {
-  const terms = q.toLowerCase().split(/\s+/).filter((t) => t.length > 0);
-  let out = esc(text);
-  for (const t of terms) {
-    const i = text.toLowerCase().indexOf(t);
-    if (i >= 0) {
-      const safe = esc(text.slice(i, i + t.length));
-      out = out.replace(safe, `<mark>${safe}</mark>`);
-    }
-  }
-  return out;
-}
-function paletteActions(): { label: string; icon: string; key?: string; run: () => void }[] {
-  const actions: { label: string; icon: string; key?: string; run: () => void }[] = [
-    { label: tr('randomItem'), icon: 'shuffle', key: 'R', run: openRandom },
-    { label: tr('actAppearance'), icon: 'contrast', run: cycleTheme },
-    { label: tr('actLanguage'), icon: 'lang', run: () => switchLang(L === 'en' ? 'ru' : 'en') },
-    { label: tr(isRail() ? 'expandSidebar' : 'collapseSidebar'), icon: 'panel', key: fmtKbd('mod+B'), run: toggleSidebar },
-    { label: tr('shortcuts'), icon: 'keyboard', key: '?', run: openShortcuts }
+let finder: FinderApi | null = null;
+function paletteActions(): FinderAction[] {
+  const actions: FinderAction[] = [
+    { label: tr('randomItem'), icon: PAL_ICON.shuffle, key: 'R', run: openRandom },
+    { label: tr('actAppearance'), icon: PAL_ICON.contrast, run: cycleTheme },
+    { label: tr('actLanguage'), icon: PAL_ICON.lang, run: () => switchLang(L === 'en' ? 'ru' : 'en') },
+    { label: tr(isRail() ? 'expandSidebar' : 'collapseSidebar'), icon: PAL_ICON.panel, key: fmtKbd('mod+B'), run: toggleSidebar },
+    { label: tr('shortcuts'), icon: PAL_ICON.keyboard, key: '?', run: openShortcuts }
   ];
   if (itemApi) {
     actions.unshift(
-      { label: tr('copyCode'), icon: 'copy', key: 'C', run: () => itemApi?.copyCode() },
-      { label: tr('copyPrompt'), icon: 'prompt', key: 'P', run: () => itemApi?.copyPrompt() }
+      { label: tr('copyCode'), icon: PAL_ICON.copy, key: 'C', run: () => itemApi?.copyCode() },
+      { label: tr('copyPrompt'), icon: PAL_ICON.prompt, key: 'P', run: () => itemApi?.copyPrompt() }
     );
   }
   return actions;
 }
-const PAL_ICON: Record<string, string> = {
+const PAL_ICON = {
   contrast: cleanSvg(Contrast),
   panel: cleanSvg(PanelLeft),
   copy: cleanSvg(Copy),
@@ -619,103 +601,42 @@ const PAL_ICON: Record<string, string> = {
   lang: cleanSvg(Languages),
   shuffle: cleanSvg(Shuffle)
 };
-const FILTER_ICON = cleanSvg(SlidersHorizontal);
-const facetName = (f: FacetId) => tr(f === 'tag' ? 'facetTagOne' : FACETS.find((x) => x.id === f)!.key);
-function paletteFilters(q: string): { label: string; kind: string; run: () => void }[] {
-  if (libApi) return libApi.suggest(q).map((s) => ({ label: s.label, kind: facetName(s.facet), run: () => libApi?.choose(s.facet, s.value) }));
-  // away from the library: offer the same values and open All items filtered by the chosen one
-  const n = q.toLowerCase();
-  const all = $<HTMLAnchorElement>('#sidebar a.sh-sb__row[href]')?.href;
-  if (!all) return [];
-  const go = (param: string, value: string) => () => { const u = new URL(all); u.search = ''; u.searchParams.set(param, value); location.href = u.toString(); };
-  const out: { label: string; kind: string; run: () => void }[] = [];
-  for (const type of new Set(INDEX.map((e) => e.type))) { const label = typeLabel(typeOf(type), L); if (label.toLowerCase().includes(n)) out.push({ label, kind: facetName('type'), run: go('type', type) }); }
-  for (const j of JOBS) { const label = nameOf(j, L); if (INDEX.some((e) => e.jobs.includes(j.id)) && label.toLowerCase().includes(n)) out.push({ label, kind: facetName('job'), run: go('job', j.id) }); }
-  for (const v of new Set(INDEX.flatMap((e) => e.tech))) if (v.toLowerCase().includes(n)) out.push({ label: v, kind: facetName('stack'), run: go('stack', v) });
-  for (const v of new Set(INDEX.flatMap((e) => e.tags))) if (tagInLang(v, L) && v.toLowerCase().startsWith(n)) out.push({ label: v, kind: facetName('tag'), run: go('tag', v) });
-  return out.slice(0, 4);
-}
-function renderPalette() {
-  if (!palList || !palInput) return;
-  const q = palInput.value.trim();
-  const rows: string[] = [];
-  const runs: (() => void)[] = [];
-  const add = (markup: string, run: () => void) => { rows.push(markup); runs.push(run); };
-
-  const items = q ? find(q).map((s) => BY_SLUG.get(s)!).slice(0, 8) : INDEX.slice(0, 6);
-  if (items.length) rows.push(`<div class="sh-palette__group">${tr(q ? 'palItems' : 'palNew')}</div>`);
-  for (const e of items) {
-    add(
-      `<span class="sh-palette__thumb">${e.poster ? `<img src="${esc(e.poster)}" alt="" loading="lazy">` : ''}</span>` +
-        `<span class="sh-palette__text"><span class="sh-palette__title">${highlightMatch(e.title, q)}</span>` +
-        `<span class="sh-palette__sub">${esc([e.typeLabel, ...e.tech.slice(0, 2)].join(' · '))}</span></span>`,
-      () => { location.href = e.url; }
-    );
-  }
-  // Mobbin's search suggests filters as well as things: a row names the value and its facet, and picking it applies it
-  const filters = q.length >= 2 ? paletteFilters(q) : [];
-  if (filters.length) {
-    rows.push(`<div class="sh-palette__group">${tr('filters')}</div>`);
-    for (const f of filters) {
-      add(
-        `<span class="sh-palette__icon"><span class="sh-i">${FILTER_ICON}</span></span><span class="sh-palette__text"><span class="sh-palette__title">${highlightMatch(f.label, q)}</span>` +
-          `<span class="sh-palette__sub">${esc(f.kind)}</span></span><span class="sh-palette__trail">${esc(tr('filterRow'))}</span>`,
-        () => { closePalette(); f.run(); }
-      );
-    }
-  }
-  const places = $$<HTMLAnchorElement>('#sidebar .sh-sb__row[href]')
-    .map((a) => ({ label: a.querySelector('.sh-sb__label')?.textContent?.trim() ?? '', href: a.href, icon: a.querySelector('.sh-i')?.innerHTML ?? '' }));
-  const matchedPlaces = places.filter((p) => !q || p.label.toLowerCase().includes(q.toLowerCase()));
-  if (matchedPlaces.length && q) {
-    rows.push(`<div class="sh-palette__group">${tr('palGoTo')}</div>`);
-    for (const p of matchedPlaces) add(`<span class="sh-palette__icon"><span class="sh-i">${p.icon}</span></span><span class="sh-palette__text"><span class="sh-palette__title">${highlightMatch(p.label, q)}</span></span>`, () => { location.href = p.href; });
-  }
-  const actions = paletteActions().filter((a) => !q || a.label.toLowerCase().includes(q.toLowerCase()));
-  if (actions.length) {
-    rows.push(`<div class="sh-palette__group">${tr('palActions')}</div>`);
-    for (const a of actions) {
-      add(
-        `<span class="sh-palette__icon"><span class="sh-i">${PAL_ICON[a.icon] ?? ''}</span></span><span class="sh-palette__text"><span class="sh-palette__title">${highlightMatch(a.label, q)}</span></span>` +
-          (a.key ? `<span class="sh-palette__trail"><kbd class="sh-kbd">${a.key}</kbd></span>` : ''),
-        () => { closePalette(); a.run(); }
-      );
-    }
-  }
-  if (!runs.length) rows.push(`<div class="sh-palette__empty">${esc(tr('palEmpty', { q }))}</div>`);
-
-  let n = 0;
-  palList.innerHTML = rows.map((r) => (r.startsWith('<div') ? r : `<div class="sh-palette__item" role="option" id="pal-${n++}">${r}</div>`)).join('');
-  palRows = $$('.sh-palette__item', palList).map((el, i) => ({ el, run: runs[i] }));
-  palRows.forEach((r, i) => {
-    r.el.addEventListener('mousemove', () => { if (palSel !== i) selectPal(i); });
-    r.el.addEventListener('click', () => r.run());
+const FINDER_ICONS: Record<FinderIcon, string> = {
+  kind: cleanSvg(Shapes),
+  task: cleanSvg(Target),
+  collection: cleanSvg(Bookmark),
+  stack: cleanSvg(CodeXml),
+  tag: cleanSvg(Hash),
+  item: cleanSvg(Box),
+  query: cleanSvg(Search),
+  go: cleanSvg(CornerDownLeft),
+  clear: cleanSvg(X),
+  arrow: cleanSvg(ArrowRight)
+};
+// Sidebar rows are the places: All items, Favorites, the kinds, the collections, Coverage
+const places = () => $$<HTMLAnchorElement>('#sidebar .sh-sb__row[href]')
+  .map((a) => ({ label: a.querySelector('.sh-sb__label')?.textContent?.trim() ?? '', href: a.href, icon: a.querySelector('.sh-i')?.innerHTML ?? '' }));
+function initFinderOnce() {
+  if (!pal || finder) return;
+  const onAllItems = $('#grid')?.dataset.mode === 'all';
+  finder = initFinder(pal, {
+    lang: L,
+    tr,
+    index: INDEX,
+    find,
+    actions: paletteActions,
+    places,
+    icons: FINDER_ICONS,
+    choose: onAllItems ? (facet, value) => libApi?.choose(facet, value) : null,
+    query: onAllItems ? (q) => { const i = $<HTMLInputElement>('#search'); if (i) { i.value = q; i.dispatchEvent(new Event('input')); i.focus(); } } : null,
+    allItemsUrl: () => $<HTMLAnchorElement>('#sidebar a[data-nav="all"]')?.href ?? BASE,
+    collectionUrl: (id) => `${BASE}${L === 'ru' ? 'ru/' : ''}collection/${id}/`,
+    store,
+    lock: lockScroll
   });
-  selectPal(0);
 }
-function selectPal(i: number) {
-  if (!palRows.length) return;
-  palSel = (i + palRows.length) % palRows.length;
-  palRows.forEach((r, j) => r.el.setAttribute('aria-selected', String(j === palSel)));
-  palRows[palSel].el.scrollIntoView({ block: 'nearest' });
-  palInput?.setAttribute('aria-activedescendant', palRows[palSel].el.id);
-}
-function openPalette(initial = '') {
-  if (!pal || !palInput) return;
-  pal.hidden = false;
-  palInput.value = initial;
-  renderPalette();
-  palInput.focus();
-  palInput.select();
-  lockScroll(true);
-}
-function closePalette() {
-  if (!pal || pal.hidden) return;
-  pal.hidden = true;
-  lockScroll(false);
-}
-palInput?.addEventListener('input', renderPalette);
-pal?.addEventListener('click', (e) => { if (e.target === pal) closePalette(); });
+function openPalette(initial = '') { initFinderOnce(); finder?.open(initial); }
+function closePalette() { finder?.close(); }
 ql?.addEventListener('click', (e) => { if (e.target === ql) closeQuickLook(); });
 
 /* ---------- the item page ---------- */
@@ -967,17 +888,12 @@ document.addEventListener('keydown', (e) => {
   }
   if (mod && e.key.toLowerCase() === 'k') {
     e.preventDefault();
-    if (pal?.hidden === false) closePalette();
+    if (finder?.isOpen()) closePalette();
     else { closeQuickLook(); openPalette(searchInput?.value ?? ''); }
     return;
   }
-  if (pal && !pal.hidden) {
-    if (e.key === 'Escape') { e.preventDefault(); closePalette(); }
-    else if (e.key === 'ArrowDown') { e.preventDefault(); selectPal(palSel + 1); }
-    else if (e.key === 'ArrowUp') { e.preventDefault(); selectPal(palSel - 1); }
-    else if (e.key === 'Enter') { e.preventDefault(); palRows[palSel]?.run(); }
-    return;
-  }
+  // the search overlay handles its own keys (finder.ts); nothing on the page reacts under it
+  if (finder?.isOpen()) return;
   if (ql && !ql.hidden) {
     if (e.key === 'Escape' || (e.key === ' ' && !isTyping(e.target))) { e.preventDefault(); closeQuickLook(); }
     else if (e.key === 'ArrowRight') { e.preventDefault(); stepQuickLook(1); }

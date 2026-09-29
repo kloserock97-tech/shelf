@@ -57,6 +57,15 @@
   --code-punct: #57575c;
   --code-line: rgba(0,113,227,0.07);
   --code-gutter: var(--label-tertiary);
+  --hud: rgba(36, 36, 38, 0.86);
+  --hud-fill: rgba(255, 255, 255, 0.07);
+  --hud-fill-hover: rgba(255, 255, 255, 0.11);
+  --hud-fill-selected: rgba(255, 255, 255, 0.16);
+  --hud-label: #ffffff;
+  --hud-label-secondary: rgba(235, 235, 245, 0.7);
+  --hud-separator: rgba(255, 255, 255, 0.12);
+  --hud-edge: rgba(255, 255, 255, 0.14);
+  --hud-accent: #7cb8ff;
   --shadow-edge: inset 0 0 0 1px rgba(0,0,0,0.05);
   --shadow-thumb: 0 1px 3px rgba(0,0,0,0.12), 0 0 0 0.5px rgba(0,0,0,0.06);
   --shadow-lift: 0 12px 32px rgba(0,0,0,0.1), 0 2px 8px rgba(0,0,0,0.05);
@@ -94,6 +103,7 @@
   --icon-md: 20px;
   --material-blur: 24px;
   --material-saturate: 180%;
+  --hud-blur: 40px;
   --duration-instant: 100ms;
   --duration-fast: 160ms;
   --duration-base: 240ms;

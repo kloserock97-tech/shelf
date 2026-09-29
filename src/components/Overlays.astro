@@ -6,17 +6,41 @@ interface Props {
   lang: Lang;
 }
 const { lang } = Astro.props;
+const TABS: { id: string; icon: string; key: 'finderNew' | 'finderKinds' | 'finderTasks' | 'finderCollections' | 'finderStack' }[] = [
+  { id: 'new', icon: 'Sparkles', key: 'finderNew' },
+  { id: 'kinds', icon: 'Shapes', key: 'finderKinds' },
+  { id: 'tasks', icon: 'Target', key: 'finderTasks' },
+  { id: 'collections', icon: 'Bookmark', key: 'finderCollections' },
+  { id: 'stack', icon: 'CodeXml', key: 'finderStack' }
+];
 ---
-<div class="sh-overlay" id="palette" hidden>
-  <div class="sh-palette" role="dialog" aria-modal="true" aria-label={t(lang, 'paletteLabel')}>
-    <div class="sh-palette__field">
-      <Icon name="Search" class="sh-i--md" />
-      <input class="sh-palette__input" id="palette-input" type="text" placeholder={t(lang, 'palettePlaceholder')} aria-label={t(lang, 'palettePlaceholder')} autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="palette-list">
-      <kbd class="sh-kbd">Esc</kbd>
+{/* Search, after Mobbin's search bar: recent picks, tabs on the left, tiles with covers on the right; typing turns
+    the tabs into matches. finder.ts draws the chips and the panel; the ids stay palette/palette-input for the wiring. */}
+<div class="sh-overlay sh-finder-overlay" id="palette" hidden>
+  <div class="sh-palette sh-finder" role="dialog" aria-modal="true" aria-label={t(lang, 'paletteLabel')}>
+    <div class="sh-finder__field">
+      <Icon name="Search" class="sh-finder__lens" />
+      <input class="sh-finder__input" id="palette-input" type="text" placeholder={t(lang, 'finderPlaceholder')} aria-label={t(lang, 'finderPlaceholder')}
+        autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="finder-list" aria-autocomplete="list">
+      {/* Esc on a keyboard; on a phone, where the panel fills the screen, a plain Close */}
+      <button class="sh-finder__close" type="button" aria-label={t(lang, 'close')} data-finder-close><kbd class="sh-kbd">Esc</kbd><span class="sh-finder__close-label">{t(lang, 'close')}</span></button>
     </div>
-    <div class="sh-palette__list" id="palette-list" role="listbox" aria-label={t(lang, 'results')}></div>
-    <div class="sh-palette__foot" aria-hidden="true">
-      <span><span class="sh-keys"><kbd class="sh-kbd">↑</kbd><kbd class="sh-kbd">↓</kbd></span>{t(lang, 'navigate')}</span>
+    <div class="sh-finder__recent" data-finder-recent hidden></div>
+    <div class="sh-finder__body">
+      <div class="sh-finder__tabs" role="tablist" aria-label={t(lang, 'finderTabs')} aria-orientation="vertical">
+        {TABS.map((tab, i) => (
+          <button class="sh-finder__tab" type="button" role="tab" id={`ftab-${tab.id}`} aria-selected={i === 0 ? 'true' : 'false'} aria-controls="finder-panel" tabindex="-1" data-tab={tab.id}>
+            <Icon name={tab.icon} /><span class="sh-finder__tab-label" data-tab-label>{t(lang, tab.key)}</span><span class="sh-finder__tab-n" data-tab-n></span>
+          </button>
+        ))}
+      </div>
+      <div class="sh-finder__panel" id="finder-panel" role="tabpanel" aria-labelledby="ftab-new" tabindex="0" data-finder-panel>
+        <div id="finder-list" role="listbox" aria-label={t(lang, 'results')} data-finder-list></div>
+      </div>
+    </div>
+    <div class="sh-finder__foot" aria-hidden="true">
+      <span><span class="sh-keys"><kbd class="sh-kbd">↑</kbd><kbd class="sh-kbd">↓</kbd><kbd class="sh-kbd">←</kbd><kbd class="sh-kbd">→</kbd></span>{t(lang, 'navigate')}</span>
+      <span><kbd class="sh-kbd">Tab</kbd>{t(lang, 'finderTabs')}</span>
       <span><kbd class="sh-kbd">↵</kbd>{t(lang, 'open')}</span>
       <span><kbd class="sh-kbd">Esc</kbd>{t(lang, 'close')}</span>
     </div>

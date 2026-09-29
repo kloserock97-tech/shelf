@@ -53,7 +53,7 @@ const check = (ok, what) => { if (!ok) problems.push(`flow: ${what}`); return ok
   check(await page.locator('#palette').isVisible(), '⌘K does not open the palette');
   await page.keyboard.type('grass');
   await page.waitForTimeout(150);
-  check((await page.locator('.sh-palette__item').count()) > 0, 'the palette finds nothing for "grass"');
+  check((await page.locator('#palette [role="option"]').count()) > 1, 'the search finds nothing for "grass"');
   await page.screenshot({ path: path.join(out, 'flow-palette.png') });
   await page.keyboard.press('Escape');
   check(await page.locator('#palette').isHidden(), 'Esc does not close the palette');

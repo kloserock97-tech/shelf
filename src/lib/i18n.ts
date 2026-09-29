@@ -193,7 +193,27 @@ const en = {
   notFound: 'Not found',
   notFoundTitle: 'This shelf is empty',
   notFoundText: 'The page moved or never existed. Everything on the shelf is in the library.',
-  openLibrary: 'Open the library'
+  openLibrary: 'Open the library',
+
+  finderPlaceholder: 'Items, kinds, tasks, collections or words…',
+  finderTabs: 'Tabs',
+  finderNew: 'New',
+  finderTop: 'Top results',
+  finderKinds: 'Kinds',
+  finderTasks: 'Tasks',
+  finderCollections: 'Collections',
+  finderStack: 'Stack & tags',
+  finderRecent: 'Recent',
+  finderPopular: 'Popular filters',
+  finderClearRecent: 'Clear recent',
+  finderNewItems: 'New on the shelf',
+  finderPopularKinds: 'Popular kinds',
+  finderPopularTasks: 'Popular tasks',
+  finderTasksHead: 'What a piece is for',
+  finderCollectionsHead: 'All collections',
+  finderPopularTags: 'Popular tags',
+  finderShowAll: 'Show all for “{q}”',
+  finderNone: 'Nothing for “{q}” here. Try another tab.'
 };
 
 export type Key = keyof typeof en;
@@ -386,7 +406,27 @@ const ru: Record<Key, string> = {
   notFound: 'Не найдено',
   notFoundTitle: 'Такой полки нет',
   notFoundText: 'Страница переехала или её не было. Всё, что есть на полке, собрано в библиотеке.',
-  openLibrary: 'Открыть библиотеку'
+  openLibrary: 'Открыть библиотеку',
+
+  finderPlaceholder: 'Элементы, типы, задачи, подборки или слова…',
+  finderTabs: 'Вкладки',
+  finderNew: 'Новое',
+  finderTop: 'Лучшее',
+  finderKinds: 'Типы',
+  finderTasks: 'Задачи',
+  finderCollections: 'Подборки',
+  finderStack: 'Стек и теги',
+  finderRecent: 'Недавние',
+  finderPopular: 'Популярные фильтры',
+  finderClearRecent: 'Очистить недавние',
+  finderNewItems: 'Новое на полке',
+  finderPopularKinds: 'Популярные типы',
+  finderPopularTasks: 'Популярные задачи',
+  finderTasksHead: 'Для чего',
+  finderCollectionsHead: 'Все подборки',
+  finderPopularTags: 'Популярные теги',
+  finderShowAll: 'Показать всё по «{q}»',
+  finderNone: 'Здесь по «{q}» ничего. Загляни в другую вкладку.'
 };
 
 const DICT: Record<Lang, Record<Key, string>> = { en, ru };
