@@ -8,10 +8,15 @@ import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.j
 
 // items/garden-loader/variants/ts/garden-surface.ts
 var TILE = { width: 3.05, depth: 3.25, modelHeight: 1.5, thickness: 0.42, radius: 0.36 };
-var rand = (n) => {
-  const v = Math.sin(n * 127.1 + 311.7) * 43758.5453;
-  return v - Math.floor(v);
+var hashU = (x) => {
+  x ^= x >>> 16;
+  x = Math.imul(x, 1067222731);
+  x ^= x >>> 14;
+  x = Math.imul(x, 451533519);
+  x ^= x >>> 15;
+  return x >>> 0;
 };
+var rand = (n) => (hashU(Math.floor(n) + 3004995273 >>> 0) >>> 8) / 16777216;
 var smooth = (a, b, x) => {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
   return t * t * (3 - 2 * t);
@@ -46,7 +51,7 @@ function anchorAt(x, z) {
   const yTop = -sy * TILE.radius, yBottom = -(TILE.thickness - sy * TILE.radius);
   return { p: [bx, yTop + (yBottom - yTop) * Math.min(1, wall) - Math.max(0, wall - 1) * 0.12, bz], n: [dx, 0, dz], wall, bx, bz };
 }
-var hash = (i, j) => rand(i * 157.31 + j * 311.7 + 0.5);
+var hash = (i, j) => (hashU(i + hashU(j + 3004995273 >>> 0) >>> 0) >>> 8) / 16777216;
 var ease = (t) => t * t * (3 - 2 * t);
 function noise(x, z) {
   const i = Math.floor(x), j = Math.floor(z), u = ease(x - i), v = ease(z - j);
@@ -165,7 +170,7 @@ ${shader.fragmentShader.replace("#include <tonemapping_fragment>", `gl_FragColor
     shader.uniforms.uGardenTime = garden.clock;
     shader.vertexShader = "varying vec3 vTile; varying vec3 vTileN;\n" + shader.vertexShader;
     shader.vertexShader = shader.vertexShader.replace("#include <begin_vertex>", "#include <begin_vertex>\nvTile=position; vTileN=normal;");
-    shader.fragmentShader = "varying vec3 vTile; varying vec3 vTileN; uniform float uGarden; uniform float uGardenTime; float gWet;\n" + shader.fragmentShader;
+    shader.fragmentShader = "varying vec3 vTile; varying vec3 vTileN; uniform float uGarden; uniform float uGardenTime; float gWet;\nuint hashU(uint x){ x^=x>>16; x*=0x3f9c86cbu; x^=x>>14; x*=0x1ae9dacfu; x^=x>>15; return x; }\n" + shader.fragmentShader;
     shader.fragmentShader = shader.fragmentShader.replace("#include <color_fragment>", `
       #include <color_fragment>
       float x=vTile.x,z=vTile.z;
@@ -187,7 +192,7 @@ ${shader.fragmentShader.replace("#include <tonemapping_fragment>", `gl_FragColor
       float crystal=.5+.5*sin(x*47.+sin(z*35.))*cos(z*53.);
       diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.60,.77,.83)*(1.+crystal*.2),frost*.62);
       // Matting: tiny crystals scattered over the top, denser inside the frost.
-      float speck=fract(sin(dot(floor(vTile.xz*70.),vec2(12.9898,78.233)))*43758.5453);
+      uvec2 sq=uvec2(ivec2(floor(vTile.xz*70.))); float speck=float(hashU(sq.x+hashU(sq.y+0xb31c96c9u))>>8)*(1./16777216.);
       diffuseColor.rgb*=1.-step(.62,speck)*(.03+frost*.07)*top;
       // Foliage somewhere above, out of frame: soft leaf shadows lie across the bare glass and sway a little.
       float shade=0.;
@@ -420,12 +425,12 @@ ${PILE_GLSL}
       vShell=layer; vGrid=aGrid;`);
     shader.fragmentShader = `uniform float uDensity;
 varying float vShell; varying vec2 vGrid;
-/* Integer hash of a lattice cell and a salt: multiply by the golden ratio and fold the high bits down, twice.
+/* Integer hash of a lattice cell and a salt: the mixer of our Hash Kit (shelf/items/hash-kit).
    Cells reach a few hundred and integers, unlike a sine hash, do not care how far from the origin they are. */
-uint mossMix(uint x){ x^=x>>16; x*=0x9E3779B9u; x^=x>>15; x*=0x9E3779B9u; x^=x>>16; return x; }
+uint mossMix(uint x){ x^=x>>16; x*=0x3f9c86cbu; x^=x>>14; x*=0x1ae9dacfu; x^=x>>15; return x; }
 float cellHash(vec2 cell,uint salt){
   uvec2 q=uvec2(ivec2(cell));
-  return float(mossMix(mossMix(mossMix(salt)^q.x)^q.y))*(1./4294967295.);
+  return float(mossMix(mossMix(mossMix(salt)^q.x)^q.y)>>8)*(1./16777216.);
 }
 /* One lattice of strands: a strand to a cell, some cells empty, centres well scattered. Returns coverage and hands
    back what the colour needs: how far up its strand this layer is, a random for the hue, and whether it is a tall one. */
@@ -708,6 +713,8 @@ function createPost(renderer) {
     vertexShader: "varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position.xy,0.,1.); }",
     fragmentShader: `
       uniform sampler2D tScene; uniform vec2 uPixel; varying vec2 vUv;
+      // Hash Kit (our own hash, see shelf/items/hash-kit)
+      uint hashU(uint x){ x^=x>>16; x*=0x3f9c86cbu; x^=x>>14; x*=0x1ae9dacfu; x^=x>>15; return x; }
       void main(){
         vec4 texel=texture2D(tScene,vUv);
         vec3 c=texel.rgb;
@@ -726,7 +733,7 @@ function createPost(renderer) {
         gl_FragColor=vec4(coverage>.001?c/coverage:vec3(0.),1.);
         #include <tonemapping_fragment>
         #include <colorspace_fragment>
-        float grain=fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5453)-.5;
+        uvec2 gq=uvec2(gl_FragCoord.xy); float grain=float(hashU(gq.x+hashU(gq.y+0xb31c96c9u))>>8)*(1./16777216.)-.5;
         gl_FragColor.rgb+=grain*.003;
         gl_FragColor=vec4(gl_FragColor.rgb*coverage,coverage);
       }`,

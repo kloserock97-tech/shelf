@@ -21,7 +21,10 @@ uniform float uStatic;       // interference, 0…1
 in vec2 vUv;
 out vec4 outColor;
 
-float hash21(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+// Hash Kit (our own hash, see shelf/items/hash-kit): cells in, 0…1 out
+uint hashU(uint x) { x ^= x >> 16; x *= 0x3f9c86cbu; x ^= x >> 14; x *= 0x1ae9dacfu; x ^= x >> 15; return x; }
+float hash21(vec2 p) { uvec2 q = uvec2(ivec2(floor(p))); return float(hashU(q.x + hashU(q.y + 0xb31c96c9u)) >> 8) * (1.0 / 16777216.0); }
+float hash31(vec3 p) { uvec3 q = uvec3(ivec3(floor(p))); return float(hashU(q.x + hashU(q.y + hashU(q.z + 0xb31c96c9u))) >> 8) * (1.0 / 16777216.0); }
 
 void main() {
   vec2 c = vUv - 0.5;
@@ -48,7 +51,7 @@ void main() {
   vec2 spread = c * (0.0016 + r2 * uChroma * 2.0);
   vec3 col = vec3(texture(uImage, s + spread).r, texture(uImage, s).g, texture(uImage, s - spread).b);
   if (uStatic > 0.001) {
-    float snow = hash21(floor(w * vec2(300.0, 280.0)) + floor(uTime * 30.0) * 1.7);
+    float snow = hash31(vec3(floor(w * vec2(300.0, 280.0)), floor(uTime * 30.0)));
     col = mix(col, vec3(snow * 0.9), uStatic * 0.6);
   }
 

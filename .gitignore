@@ -6,6 +6,7 @@ dist/
 public/demos/
 public/media/
 public/r/
+public/THIRD_PARTY_NOTICES.txt
 
 # Private items: only on this machine, never published
 private/

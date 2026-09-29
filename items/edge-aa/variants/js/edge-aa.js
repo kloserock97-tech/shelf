@@ -1,4 +1,4 @@
-/* Edge smoothing pass for WebGL2 (FXAA-like, written from scratch): for quality steps that render without
+/* Edge smoothing pass for WebGL2, our own "along the edge" method: for quality steps that render without
    MSAA. On the site: full strength without MSAA, half with MSAA 2×, off with MSAA 4×.
 
      const aa = createEdgeAA(gl);           // a WebGL2 context
@@ -17,10 +17,14 @@
 precision highp float;
 // Edge smoothing after the render, for quality steps without MSAA. Without it a one-pixel grass blade on a
 // DPR 1 screen is drawn as a staircase and shimmers in the wind.
-// The FXAA idea, written from scratch: four diagonal samples give the direction of the edge by brightness,
-// and the pixel is averaged along it. Brightness goes through a square root: the buffer is linear HDR, and
-// the edge must be found the way the eye sees it. Flat areas cost four extra samples, edges eight.
-uniform sampler2D tScene;   // linear HDR, LINEAR filtering (the diagonal samples fall between pixels)
+// Our own method, "along the edge":
+//   1. read the pixel's 3×3 neighbourhood exactly (texelFetch); flat places leave after the cross;
+//   2. find the way the edge runs: across a step the brightness gradient is large, across a thin line the
+//      gradient in the middle vanishes but the curvature (second derivatives) is large — the stronger decides;
+//   3. average four taps along the edge; nearly horizontal or vertical edges reach further, their steps are longer;
+//   4. keep the result inside the neighbourhood's colour range, so nothing new appears and there are no halos.
+// Brightness goes through a square root: the buffer is linear HDR, and the edge must be found the way the eye sees it.
+uniform sampler2D tScene;   // linear HDR, LINEAR filtering (the taps along the edge fall between pixels)
 uniform vec2 uTexel;        // 1 / buffer size
 uniform float uEdgeAA;      // 0 — off, 0.5 — with MSAA 2×, 1 — without MSAA
 // demo only: comparison, edge map, loupe
@@ -33,28 +37,42 @@ out vec4 fragColor;
 
 const vec3 LUMA = vec3(0.2126, 0.7152, 0.0722);
 
-float edgeLuma(vec3 c) { return sqrt(dot(min(c, vec3(1.0)), LUMA)); }
+float aaLuma(vec3 c) { return sqrt(dot(min(c, vec3(1.0)), LUMA)); }
+vec3 tap(ivec2 q) { return texelFetch(tScene, clamp(q, ivec2(0), textureSize(tScene, 0) - 1), 0).rgb; }
 
-vec3 edgeAA(vec2 uv, vec3 m, out float touched) {
+vec3 alongEdge(vec2 uv, vec3 c, out float touched) {
   touched = 0.0;
-  vec3 nw = textureLod(tScene, uv + vec2(-0.5, -0.5) * uTexel, 0.0).rgb;
-  vec3 ne = textureLod(tScene, uv + vec2(0.5, -0.5) * uTexel, 0.0).rgb;
-  vec3 sw = textureLod(tScene, uv + vec2(-0.5, 0.5) * uTexel, 0.0).rgb;
-  vec3 se = textureLod(tScene, uv + vec2(0.5, 0.5) * uTexel, 0.0).rgb;
-  float lM = edgeLuma(m), lNW = edgeLuma(nw), lNE = edgeLuma(ne), lSW = edgeLuma(sw), lSE = edgeLuma(se);
-  float lMin = min(lM, min(min(lNW, lNE), min(lSW, lSE)));
-  float lMax = max(lM, max(max(lNW, lNE), max(lSW, lSE)));
-  // not an edge: the contrast is low, in absolute terms or next to the brightest neighbour
-  if (lMax - lMin < max(0.03, lMax * 0.1)) return m;
+  ivec2 p = ivec2(uv / uTexel);
+  vec3 n = tap(p + ivec2(0, 1)), s = tap(p - ivec2(0, 1)), e = tap(p + ivec2(1, 0)), w = tap(p - ivec2(1, 0));
+  float lc = aaLuma(c), ln = aaLuma(n), ls = aaLuma(s), le = aaLuma(e), lw = aaLuma(w);
+  float lo = min(lc, min(min(ln, ls), min(le, lw)));
+  float hi = max(lc, max(max(ln, ls), max(le, lw)));
+  // a softer gate in bright places: the eye needs more contrast there to see a step
+  float gate = 0.025 + 0.12 * hi;
+  if (hi - lo < gate) return c;
+  vec3 ne = tap(p + ivec2(1, 1)), nw = tap(p + ivec2(-1, 1)), se = tap(p + ivec2(1, -1)), sw = tap(p + ivec2(-1, -1));
+  float lne = aaLuma(ne), lnw = aaLuma(nw), lse = aaLuma(se), lsw = aaLuma(sw);
+  // brightness gradient with 1-2-1 weights: points across a step between two areas
+  vec2 grad = 0.25 * vec2(lne + 2.0 * le + lse - lnw - 2.0 * lw - lsw, lnw + 2.0 * ln + lne - lsw - 2.0 * ls - lse);
+  // curvature: the second derivatives form a 2×2 matrix; its stronger eigenvector points across a thin line
+  float hxx = le + lw - 2.0 * lc, hyy = ln + ls - 2.0 * lc, hxy = 0.25 * (lne + lsw - lnw - lse);
+  float mid = 0.5 * (hxx + hyy), spread = sqrt(0.25 * (hxx - hyy) * (hxx - hyy) + hxy * hxy);
+  float bend = abs(mid + spread) > abs(mid - spread) ? mid + spread : mid - spread;
+  vec2 acrossLine = abs(hxy) > 1e-4 ? vec2(bend - hyy, hxy) : (abs(hxx) > abs(hyy) ? vec2(1.0, 0.0) : vec2(0.0, 1.0));
+  vec2 across = length(grad) >= 0.5 * abs(bend) ? grad : acrossLine;
+  float len = length(across);
+  if (len < 1e-4) return c;
+  vec2 along = vec2(-across.y, across.x) / len;
+  // a nearly horizontal or vertical edge breaks into long steps: reach further along it
+  float axial = max(abs(along.x), abs(along.y));
+  vec2 t = along * uTexel * mix(1.0, 2.25, smoothstep(0.92, 0.995, axial));
+  vec3 sum = 0.2 * c
+    + 0.25 * (textureLod(tScene, uv + 0.6 * t, 0.0).rgb + textureLod(tScene, uv - 0.6 * t, 0.0).rgb)
+    + 0.15 * (textureLod(tScene, uv + 1.5 * t, 0.0).rgb + textureLod(tScene, uv - 1.5 * t, 0.0).rgb);
+  vec3 cmin = min(min(min(c, n), min(s, e)), min(min(w, ne), min(nw, min(se, sw))));
+  vec3 cmax = max(max(max(c, n), max(s, e)), max(max(w, ne), max(nw, max(se, sw))));
   touched = 1.0;
-  vec2 dir = vec2((lSW + lSE) - (lNW + lNE), (lNW + lSW) - (lNE + lSE));
-  float damp = max((lNW + lNE + lSW + lSE) * 0.03, 0.008);
-  dir = clamp(dir / (min(abs(dir.x), abs(dir.y)) + damp), vec2(-6.0), vec2(6.0)) * uTexel;
-  vec3 near = 0.5 * (textureLod(tScene, uv - dir * 0.1667, 0.0).rgb + textureLod(tScene, uv + dir * 0.1667, 0.0).rgb);
-  vec3 far = 0.5 * near + 0.25 * (textureLod(tScene, uv - dir * 0.5, 0.0).rgb + textureLod(tScene, uv + dir * 0.5, 0.0).rgb);
-  // the long average left the local range: it ran into another edge, so keep the short one
-  float lF = edgeLuma(far);
-  return mix(m, (lF < lMin || lF > lMax) ? near : far, uEdgeAA);
+  return mix(c, clamp(sum, cmin, cmax), uEdgeAA * smoothstep(gate, 2.0 * gate, hi - lo));
 }
 
 vec3 toneCurve(vec3 c) {
@@ -76,7 +94,7 @@ void main() {
   vec2 uv = px * uTexel;
   vec3 m = textureLod(tScene, uv, 0.0).rgb;
   float touched = 0.0;
-  vec3 c = uv.x >= uSplit && uEdgeAA > 0.001 ? edgeAA(uv, m, touched) : m;
+  vec3 c = uv.x >= uSplit && uEdgeAA > 0.001 ? alongEdge(uv, m, touched) : m;
   c = toSrgb(toneCurve(c));
   if (uView == 1) c = mix(c * 0.25, vec3(1.0, 0.36, 0.2), touched);
   // the loupe's rim
@@ -128,7 +146,7 @@ void main() {
         const tex = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, tex);
         gl.texStorage2D(gl.TEXTURE_2D, 1, hdr ? gl.RGBA16F : gl.RGBA8, w, h);
-        // LINEAR on purpose: the four diagonal samples sit on pixel corners and average four pixels each
+        // LINEAR on purpose: the taps along the edge fall between pixels
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);

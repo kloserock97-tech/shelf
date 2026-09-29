@@ -1,5 +1,5 @@
 // UI cue player for the Sound Button, loaded only after sound is first turned on.
-// Ready-made CC0 MP3 files, not runtime synthesis: on the site synthesis cost 9–55 ms of JS per cue,
+// Our own pre-rendered MP3 files (made by the synth variant, sfx-synth.mjs), not runtime synthesis: on the site synthesis cost 9–55 ms of JS per cue,
 // a frame hitch on a weak phone. The files weigh 1–5 KB and decodeAudioData runs off the main thread.
 // They load one per idle slot (all at once gave a scroll hitch); frequent cues are throttled,
 // and no more than four voices play at once.

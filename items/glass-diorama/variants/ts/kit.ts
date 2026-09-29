@@ -4,6 +4,8 @@
  * Entrance: things fly from the middle of the composition (hub) and from the depth, stepped by delay; lines draw
  * themselves, light brightens (ease-out, ~1.4 s). Presence (0…1, e.g. from the page scroll) dims everything together. */
 import * as THREE from "three";
+/* Hash Kit (our own hash, see shelf/items/hash-kit) */
+const hashU = (x: number) => { x ^= x >>> 16; x = Math.imul(x, 0x3f9c86cb); x ^= x >>> 14; x = Math.imul(x, 0x1ae9dacf); x ^= x >>> 15; return x >>> 0; };
 import type { Line2 } from "three/addons/lines/Line2.js";
 import type { LineMaterial } from "three/addons/lines/LineMaterial.js";
 import { at, card, canvasTexture, createStage, glow, line, ribbon, rock, sparks, type CardOpts, type Fit, type Stage } from "./engine";
@@ -65,7 +67,7 @@ function makeKit(stage: Stage, hub: THREE.Vector3) {
   const sparkU: Record<string, THREE.IUniform>[] = [];
   const floaters: { m: THREE.Object3D; base: THREE.Vector3; ph: number; amp: number; enter: number; main: boolean }[] = [];
   let seed = 7;
-  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const rnd = () => { seed = (seed + 0xb31c96c9) >>> 0; return hashU(seed) / 4294967296; };
 
   const kit = {
     renderer,

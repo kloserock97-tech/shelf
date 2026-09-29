@@ -6,6 +6,7 @@ summary: "Полароид на одной CanvasTexture: кремовая ра�
 tech: [three.js, JavaScript, Canvas 2D]
 tags: [polaroid, canvas-texture, photo, tape, tilt, handwriting, annotation, полароид, фото, скотч, наклон, подпись]
 added: 2026-09-28
+updated: 2026-09-29
 origin: own
 source: "Portfolio 3D TS2: src/scene/polaroid.ts, src/scene/HillScene.ts (kellyClientPoint), src/ui/hill-ui.css (.kelly-note), src/intro/NatureScene.ts (setPointer)"
 repo: https://github.com/kloserock97-tech/gorbachev-nikita-product-designer

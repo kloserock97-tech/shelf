@@ -6,6 +6,7 @@ summary: "Загрузчик-сад: на толстой плите матово
 tech: [TypeScript, three.js, GLSL, CSS]
 tags: [loader, preloader, moss, ice, glass, shell texturing, alpha to coverage, a11y, reduced motion, загрузчик, прелоадер, мох, лёд, стекло, сад]
 added: 2026-09-28
+updated: 2026-09-29
 origin: own
 source: "Portfolio 3D TS2: src/intro/natureLoader.ts, natureLoader.css, NatureScene.ts, garden/*.ts"
 repo: https://github.com/kloserock97-tech/gorbachev-nikita-product-designer

@@ -1,7 +1,7 @@
-// ../../../../../../../../../../../Claude/Portfolio v2/Projects/shelf/items/weather-particles/variants/ts/main.ts
+// items/weather-particles/variants/ts/main.ts
 import * as THREE3 from "three";
 
-// ../../../../../../../../../../../Claude/Portfolio v2/Projects/shelf/items/weather-particles/variants/ts/weather.ts
+// items/weather-particles/variants/ts/weather.ts
 import * as THREE from "three";
 var WEATHER_ORDER = ["clear", "cloudy", "rain", "dusk"];
 var OVERCAST = {
@@ -387,7 +387,7 @@ function buildRain(time, windDir) {
   return lines;
 }
 
-// ../../../../../../../../../../../Claude/Portfolio v2/Projects/shelf/items/weather-particles/variants/ts/meadow.ts
+// items/weather-particles/variants/ts/meadow.ts
 import * as THREE2 from "three";
 var heightAt = (x, z) => 2.3 * Math.exp(-(x * x / 46.24 + z * z / 19.36));
 function createUniforms() {
@@ -501,7 +501,10 @@ function buildGround(u2, drifts2) {
         float low = (1.0 - exp(-dist * 0.035)) * exp(-max(w.y - 0.2, 0.0) * 1.15) * 0.55;
         return clamp(distant + low * uHaze, 0.0, 0.8);
       }
-      float h21(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+      // Hash Kit (our own hash, see shelf/items/hash-kit): cells in, 0\u20261 out
+      uint hashU(uint x){ x^=x>>16; x*=0x3f9c86cbu; x^=x>>14; x*=0x1ae9dacfu; x^=x>>15; return x; }
+      float h21(vec2 p){ uvec2 q = uvec2(ivec2(floor(p))); return float(hashU(q.x + hashU(q.y + 0xb31c96c9u)) >> 8) * (1.0 / 16777216.0); }
+      float h31(vec3 p){ uvec3 q = uvec3(ivec3(floor(p))); return float(hashU(q.x + hashU(q.y + hashU(q.z + 0xb31c96c9u))) >> 8) * (1.0 / 16777216.0); }
       float n2(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);
         return mix(mix(h21(i), h21(i + vec2(1, 0)), u.x), mix(h21(i + vec2(0, 1)), h21(i + vec2(1, 1)), u.x), u.y); }
       void main(){
@@ -518,8 +521,8 @@ function buildGround(u2, drifts2) {
           /* a drift thins out towards a ragged edge instead of ending in a circle */
           float inside = (1.0 - smoothstep(d.z * 0.35, d.z, distance(vW.xz, d.xy))) * smoothstep(0.3, 0.55, n2(vW.xz * 3.0 + float(i) * 5.3));
           vec2 cell = floor(vW.xz * 26.0 + float(i) * 7.0);
-          vec2 at = fract(vW.xz * 26.0 + float(i) * 7.0) - 0.5 - (vec2(h21(cell), h21(cell + 3.1)) - 0.5) * 0.5;
-          float bloom = (1.0 - smoothstep(0.14, 0.2, length(at))) * step(0.55, h21(cell + 9.7)) * inside;
+          vec2 at = fract(vW.xz * 26.0 + float(i) * 7.0) - 0.5 - (vec2(h21(cell), h31(vec3(cell, 1.0))) - 0.5) * 0.5;
+          float bloom = (1.0 - smoothstep(0.14, 0.2, length(at))) * step(0.55, h31(vec3(cell, 2.0))) * inside;
           grass = mix(grass, uDriftCol[i], bloom);
         }
         float cloud = cloudShade(vW);
@@ -559,7 +562,7 @@ function buildSignpost() {
   return group;
 }
 
-// ../../../../../../../../../../../Claude/Portfolio v2/Projects/shelf/items/weather-particles/variants/ts/main.ts
+// items/weather-particles/variants/ts/main.ts
 var reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 var canvas = document.querySelector("#scene");
 var renderer = new THREE3.WebGLRenderer({ canvas, antialias: true });

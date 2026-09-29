@@ -11,13 +11,13 @@ out vec4 fragColor;
 
 const int SAMPLES = 36;
 
-// Interleaved gradient noise (Jorge Jimenez, 2014): almost blue noise, no texture needed.
-float ign(vec2 p) { return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }
+// our screen dither (Hash Kit): a lattice without low frequencies, so neighbouring pixels differ a lot
+float dither(vec2 p) { return fract(dot(floor(p), vec2(0.3455768, 0.4279792))); }
 
 void main() {
   vec2 delta = (uSun - vUv) * uStep / float(SAMPLES);
   // A jittered start turns the visible steps between samples into fine noise.
-  vec2 uv = vUv + delta * ign(gl_FragCoord.xy);
+  vec2 uv = vUv + delta * dither(gl_FragCoord.xy);
   vec3 sum = vec3(0.0);
   float w = 1.0, total = 0.0;
   for (int i = 0; i < SAMPLES; i++) {

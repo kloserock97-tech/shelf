@@ -37,8 +37,9 @@ in vec2 vUv;
 out vec4 fragColor;
 
 // Integer hash: xorshift and a multiply by 2^32/phi, twice.
-uint hashU(uint x) { x ^= x >> 16; x *= 0x9E3779B9u; x ^= x >> 15; x *= 0x9E3779B9u; x ^= x >> 16; return x; }
-float rnd(int a, int b) { return float(hashU(uint(a) ^ hashU(uint(b) + 0x6A09E667u)) >> 8) / 16777216.0; }
+// Hash Kit (our own hash, see shelf/items/hash-kit)
+uint hashU(uint x) { x ^= x >> 16; x *= 0x3f9c86cbu; x ^= x >> 14; x *= 0x1ae9dacfu; x ^= x >> 15; return x; }
+float rnd(int a, int b) { return float(hashU(uint(a) + hashU(uint(b) + 0xb31c96c9u)) >> 8) / 16777216.0; }
 
 vec3 pick(sampler2D t, vec2 uv, float split) {
   vec3 c = texture(t, uv).rgb;

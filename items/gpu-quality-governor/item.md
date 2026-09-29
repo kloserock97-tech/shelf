@@ -6,6 +6,7 @@ summary: "Выбирает ступень качества WebGL-сцены по
 tech: [TypeScript, WebGL2, GLSL]
 tags: [performance, quality, gpu, timer query, adaptive, dpr, webgl, производительность, качество, ступени, видеокарта, регулятор]
 added: 2026-09-28
+updated: 2026-09-29
 origin: own
 source: "Portfolio 3D TS2: src/scene/quality.ts, лестница ступеней из src/scene/HillScene.ts"
 repo: https://github.com/kloserock97-tech/gorbachev-nikita-product-designer

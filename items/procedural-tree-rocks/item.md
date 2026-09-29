@@ -6,6 +6,7 @@ summary: "Дерево и валуны без единого ассета: ск�
 tech: [three.js, TypeScript, GLSL]
 tags: [procedural, tree, foliage, rocks, alpha-to-coverage, wind, noise, дерево, листва, валуны, процедурное, ветер]
 added: 2026-09-28
+updated: 2026-09-29
 origin: own
 source: "Portfolio 3D TS2: src/scene/tree.ts, src/scene/rocks.ts, src/scene/shaders.ts (bark, leaf, rock, gustAt)"
 repo: https://github.com/kloserock97-tech/gorbachev-nikita-product-designer

@@ -51,12 +51,12 @@ ${PILE_GLSL}
       vShell=layer; vGrid=aGrid;`);
     shader.fragmentShader = `uniform float uDensity;
 varying float vShell; varying vec2 vGrid;
-/* Integer hash of a lattice cell and a salt: multiply by the golden ratio and fold the high bits down, twice.
+/* Integer hash of a lattice cell and a salt: the mixer of our Hash Kit (shelf/items/hash-kit).
    Cells reach a few hundred and integers, unlike a sine hash, do not care how far from the origin they are. */
-uint mossMix(uint x){ x^=x>>16; x*=0x9E3779B9u; x^=x>>15; x*=0x9E3779B9u; x^=x>>16; return x; }
+uint mossMix(uint x){ x^=x>>16; x*=0x3f9c86cbu; x^=x>>14; x*=0x1ae9dacfu; x^=x>>15; return x; }
 float cellHash(vec2 cell,uint salt){
   uvec2 q=uvec2(ivec2(cell));
-  return float(mossMix(mossMix(mossMix(salt)^q.x)^q.y))*(1./4294967295.);
+  return float(mossMix(mossMix(mossMix(salt)^q.x)^q.y)>>8)*(1./16777216.);
 }
 /* One lattice of strands: a strand to a cell, some cells empty, centres well scattered. Returns coverage and hands
    back what the colour needs: how far up its strand this layer is, a random for the hue, and whether it is a tall one. */

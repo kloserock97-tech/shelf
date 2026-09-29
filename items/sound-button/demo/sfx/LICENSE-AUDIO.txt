@@ -1,8 +1,6 @@
-The audio files under `sounds/` are dedicated to the public domain under the
-Creative Commons CC0 1.0 Universal Public Domain Dedication.
+The sounds in this folder are our own: they were synthesised from scratch by
+variants/synth/sfx-synth.mjs (no samples, no third-party audio).
 
-You may copy, modify, distribute, and use these files, including commercially,
-without asking permission. Attribution is appreciated but not required.
-
-Legal code: https://creativecommons.org/publicdomain/zero/1.0/legalcode
-SPDX identifier: CC0-1.0
+Copyright (c) 2026 Nikita Gorbachev. Same licence as the rest of this item
+(PolyForm Noncommercial 1.0.0); rebuild them with
+  node sfx-synth.mjs --only close,expand,press,toggle-on --out ../../demo/sfx

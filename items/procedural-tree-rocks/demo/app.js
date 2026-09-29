@@ -7,13 +7,16 @@ import * as THREE from "three";
 
 // items/procedural-tree-rocks/variants/ts/rng.ts
 function makeRng(seed = 1067064443) {
-  let a = seed;
+  let s = seed >>> 0;
   return () => {
-    a |= 0;
-    a = a + 1831565813 | 0;
-    let t = Math.imul(a ^ a >>> 15, 1 | a);
-    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    s = s + 3004995273 >>> 0;
+    let x = s;
+    x ^= x >>> 16;
+    x = Math.imul(x, 1067222731);
+    x ^= x >>> 14;
+    x = Math.imul(x, 451533519);
+    x ^= x >>> 15;
+    return (x >>> 0) / 4294967296;
   };
 }
 
@@ -47,12 +50,11 @@ uniform float uTime;
 uniform float uWind;
 uniform vec2 uWindDir;
 
-/* integer hash, the same as hash3 in rocks.ts: unlike a sine hash it keeps its precision far from the origin */
+/* Hash Kit (our own hash, see shelf/items/hash-kit): unlike a sine hash it keeps its precision far from the origin */
+uint hashU(uint x) { x ^= x >> 16; x *= 0x3f9c86cbu; x ^= x >> 14; x *= 0x1ae9dacfu; x ^= x >> 15; return x; }
 float hash12(vec2 p){
   uvec2 q = uvec2(ivec2(floor(p)));
-  uint n = q.x * 374761393u + q.y * 668265263u;
-  n = (n ^ (n >> 13u)) * 1274126177u;
-  return float(n ^ (n >> 16u)) * (1.0 / 4294967296.0);
+  return float(hashU(q.x + hashU(q.y + 0xb31c96c9u)) >> 8) * (1.0 / 16777216.0);
 }
 float vnoise(vec2 p){
   vec2 i = floor(p), f = fract(p);
@@ -235,12 +237,11 @@ varying vec3 vW;
 varying vec3 vN;
 varying vec3 vL;
 varying float vDist;
-/* integer hash on the lattice corner (the argument is already floored) */
+/* Hash Kit grid hash on the lattice corner (the argument is already floored) */
+uint hashU(uint x) { x ^= x >> 16; x *= 0x3f9c86cbu; x ^= x >> 14; x *= 0x1ae9dacfu; x ^= x >> 15; return x; }
 float h31(vec3 p){
   uvec3 q = uvec3(ivec3(p));
-  uint n = (q.x * 374761393u) ^ (q.y * 668265263u) ^ (q.z * 2147483647u);
-  n = (n ^ (n >> 13u)) * 1274126177u;
-  return float(n ^ (n >> 16u)) * (1.0 / 4294967296.0);
+  return float(hashU(q.x + hashU(q.y + hashU(q.z + 0xb31c96c9u))) >> 8) * (1.0 / 16777216.0);
 }
 float n3(vec3 p){
   vec3 i = floor(p), f = fract(p);
@@ -569,10 +570,16 @@ function createTree(uniforms2, o) {
 import * as THREE2 from "three";
 import { mergeVertices } from "three/addons/utils/BufferGeometryUtils.js";
 var rockFootprints = (rocks) => rocks.map((r) => ({ x: r.x, z: r.z, rx: r.size * 0.46, rz: r.size * 0.42 }));
+var hashU = (x) => {
+  x ^= x >>> 16;
+  x = Math.imul(x, 1067222731);
+  x ^= x >>> 14;
+  x = Math.imul(x, 451533519);
+  x ^= x >>> 15;
+  return x >>> 0;
+};
 function hash3(x, y, z, s) {
-  let n = Math.imul(x | 0, 374761393) ^ Math.imul(y | 0, 668265263) ^ Math.imul(z | 0, 2147483647) ^ Math.imul(s | 0, 1274126177);
-  n = Math.imul(n ^ n >>> 13, 1274126177);
-  return ((n ^ n >>> 16) >>> 0) / 4294967296;
+  return (hashU(x + hashU(y + hashU(z + hashU(s + 3004995273 >>> 0) >>> 0) >>> 0) >>> 0) >>> 8) / 16777216;
 }
 function noise3(x, y, z, s) {
   const ix = Math.floor(x), iy = Math.floor(y), iz = Math.floor(z);
@@ -587,7 +594,7 @@ function noise3(x, y, z, s) {
   );
 }
 function rockGeometry(seed) {
-  const rng = makeRng(2654435769 ^ seed);
+  const rng = makeRng(195911405 ^ seed);
   const ico = new THREE2.IcosahedronGeometry(1, 4);
   ico.deleteAttribute("normal");
   ico.deleteAttribute("uv");

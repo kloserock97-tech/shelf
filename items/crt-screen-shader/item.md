@@ -6,6 +6,7 @@ summary: "Кинескоп поверх любой картинки: экран-
 tech: [GLSL, JavaScript, WebGL2]
 tags: [crt, retro, scanlines, chromatic aberration, barrel distortion, squircle, glitch, кинескоп, ретро, развёртка, помехи, шейдер]
 added: 2026-09-28
+updated: 2026-09-29
 origin: own
 source: "Portfolio 3D TS2: src/scene/portfolioScreen.ts (кинескоп экрана ретро-компьютера)"
 repo: https://github.com/kloserock97-tech/gorbachev-nikita-product-designer

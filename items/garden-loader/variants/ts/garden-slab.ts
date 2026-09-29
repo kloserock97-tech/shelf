@@ -37,7 +37,7 @@ ${shader.fragmentShader.replace("#include <tonemapping_fragment>", `gl_FragColor
     shader.uniforms.uGardenTime = garden.clock;
     shader.vertexShader = "varying vec3 vTile; varying vec3 vTileN;\n" + shader.vertexShader;
     shader.vertexShader = shader.vertexShader.replace("#include <begin_vertex>", "#include <begin_vertex>\nvTile=position; vTileN=normal;");
-    shader.fragmentShader = "varying vec3 vTile; varying vec3 vTileN; uniform float uGarden; uniform float uGardenTime; float gWet;\n" + shader.fragmentShader;
+    shader.fragmentShader = "varying vec3 vTile; varying vec3 vTileN; uniform float uGarden; uniform float uGardenTime; float gWet;\nuint hashU(uint x){ x^=x>>16; x*=0x3f9c86cbu; x^=x>>14; x*=0x1ae9dacfu; x^=x>>15; return x; }\n" + shader.fragmentShader;
     shader.fragmentShader = shader.fragmentShader.replace("#include <color_fragment>", `
       #include <color_fragment>
       float x=vTile.x,z=vTile.z;
@@ -59,7 +59,7 @@ ${shader.fragmentShader.replace("#include <tonemapping_fragment>", `gl_FragColor
       float crystal=.5+.5*sin(x*47.+sin(z*35.))*cos(z*53.);
       diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.60,.77,.83)*(1.+crystal*.2),frost*.62);
       // Matting: tiny crystals scattered over the top, denser inside the frost.
-      float speck=fract(sin(dot(floor(vTile.xz*70.),vec2(12.9898,78.233)))*43758.5453);
+      uvec2 sq=uvec2(ivec2(floor(vTile.xz*70.))); float speck=float(hashU(sq.x+hashU(sq.y+0xb31c96c9u))>>8)*(1./16777216.);
       diffuseColor.rgb*=1.-step(.62,speck)*(.03+frost*.07)*top;
       // Foliage somewhere above, out of frame: soft leaf shadows lie across the bare glass and sway a little.
       float shade=0.;

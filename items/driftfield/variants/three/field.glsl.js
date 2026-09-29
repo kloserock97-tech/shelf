@@ -27,13 +27,30 @@ const float FOCAL = 0.35;
 /* Smallest visible dot, in world units at the focus distance. Everything else is measured against it. */
 const float GRAIN = 0.0021;
 
+// Hash Kit (our own hash, see shelf/items/hash-kit)
+const uint HASH_SALT = 0xb31c96c9u;
+
+uint hashU(uint x)
+{
+    x ^= x >> 16; x *= 0x3f9c86cbu;
+    x ^= x >> 14; x *= 0x1ae9dacfu;
+    x ^= x >> 15;
+    return x;
+}
+
+uint hashU(uvec3 v) { return hashU(v.x + hashU(v.y + hashU(v.z + HASH_SALT))); }
+
+float hashUnit(uint h) { return float(h >> 8) * (1.0 / 16777216.0); }
+
+/* The gradient of a lattice cell, each component in -1 to 1: one hash of the cell, mixed again for
+   the second component and once more for the third. */
 vec3 hash33(vec3 p)
 {
-    p = vec3(dot(p, vec3(127.1, 311.7, 74.7)),
-             dot(p, vec3(269.5, 183.3, 246.1)),
-             dot(p, vec3(113.5, 271.9, 124.6)));
+    uint h0 = hashU(uvec3(ivec3(floor(p))));
+    uint h1 = hashU(h0);
+    uint h2 = hashU(h1);
 
-    return fract(sin(p) * 43758.5453123) * 2.0 - 1.0;
+    return vec3(hashUnit(h0), hashUnit(h1), hashUnit(h2)) * 2.0 - 1.0;
 }
 
 /* Gradient noise with a quintic fade. Values land in roughly -1 to 1. */

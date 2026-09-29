@@ -6,6 +6,7 @@ summary: "Мох послойным ворсом: поверхность рис�
 tech: [TypeScript, three.js, GLSL]
 tags: [shell texturing, fur, moss, instancing, alpha to coverage, msaa, colorMask, мох, ворс, мех, шейдер]
 added: 2026-09-28
+updated: 2026-09-29
 origin: own
 source: "Portfolio 3D TS2: src/intro/garden/moss.ts, sheet.ts, surface.ts"
 repo: https://github.com/kloserock97-tech/gorbachev-nikita-product-designer

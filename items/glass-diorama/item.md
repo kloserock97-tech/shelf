@@ -6,6 +6,7 @@ summary: "Обложка проекта как живая диорама на th
 tech: [TypeScript, three.js, GLSL, Canvas 2D]
 tags: [diorama, glass, cards, orbit, sparks, entrance, three.js, диорама, стекло, карточки, орбиты, вход]
 added: 2026-09-28
+updated: 2026-09-29
 origin: own
 source: "Portfolio 3D TS2: src/caseScene/engine.ts, kit.ts, draw.ts, paint.ts, community.ts, lead.ts"
 repo: https://github.com/kloserock97-tech/gorbachev-nikita-product-designer

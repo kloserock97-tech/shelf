@@ -6,6 +6,7 @@ summary: "Вечернее небо и три лесистые гряды, та�
 tech: [WebGL2, GLSL, JavaScript]
 tags: [sky, ridges, landscape, aerial perspective, haze, procedural, background, небо, горы, дымка, фон, пейзаж]
 added: 2026-09-28
+updated: 2026-09-29
 origin: own
 source: "Portfolio 3D TS2: src/scene/shaders.ts (SKY_PARS, skyFragment, vistaFragment), src/scene/vista.ts, src/scene/weather.ts (палитры)"
 repo: https://github.com/kloserock97-tech/gorbachev-nikita-product-designer

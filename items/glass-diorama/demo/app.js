@@ -6,6 +6,14 @@ import * as THREE from "three";
 import { Line2 } from "three/addons/lines/Line2.js";
 import { LineGeometry } from "three/addons/lines/LineGeometry.js";
 import { LineMaterial } from "three/addons/lines/LineMaterial.js";
+var hashU = (x) => {
+  x ^= x >>> 16;
+  x = Math.imul(x, 1067222731);
+  x ^= x >>> 14;
+  x = Math.imul(x, 451533519);
+  x ^= x >>> 15;
+  return x >>> 0;
+};
 var FRAME = { w: 1672, h: 941 };
 var FOV = 30;
 var addLight = (m) => {
@@ -312,10 +320,7 @@ function glow(w, h, color, opacity) {
 function rock(size, seed) {
   const g = new THREE.IcosahedronGeometry(size, 1);
   const p = g.attributes.position;
-  const rnd = (k) => {
-    const x = Math.sin(seed * 91.7 + k * 12.9898) * 43758.5453;
-    return x - Math.floor(x);
-  };
+  const rnd = (k) => (hashU(k + hashU(seed + 3004995273 >>> 0) >>> 0) >>> 8) / 16777216;
   const v = new THREE.Vector3();
   const cache = /* @__PURE__ */ new Map();
   for (let i = 0; i < p.count; i++) {
@@ -366,6 +371,14 @@ function createStage(canvas2, fit = containFit) {
 }
 
 // items/glass-diorama/variants/ts/kit.ts
+var hashU2 = (x) => {
+  x ^= x >>> 16;
+  x = Math.imul(x, 1067222731);
+  x ^= x >>> 14;
+  x = Math.imul(x, 451533519);
+  x ^= x >>> 15;
+  return x >>> 0;
+};
 var deg = THREE2.MathUtils.degToRad;
 var clamp01 = (v) => Math.min(1, Math.max(0, v));
 var easeOut = (t) => 1 - Math.pow(1 - clamp01(t), 3);
@@ -396,7 +409,10 @@ function makeKit(stage, hub) {
   const sparkU = [];
   const floaters = [];
   let seed = 7;
-  const rnd = () => (seed = seed * 16807 % 2147483647) / 2147483647;
+  const rnd = () => {
+    seed = seed + 3004995273 >>> 0;
+    return hashU2(seed) / 4294967296;
+  };
   const kit = {
     renderer,
     root,

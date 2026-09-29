@@ -6,6 +6,7 @@ summary: "Стеклянная дверь со светящейся кромко
 tech: [WebGL2, GLSL, JavaScript]
 tags: [portal, door, sdf, rounded rectangle, refraction, glow, transition, портал, дверь, переход, стекло]
 added: 2026-09-28
+updated: 2026-09-29
 origin: own
 source: "Portfolio 3D TS2: src/scene/shaders.ts (finalFragment, uPortal), src/scene/postfx.ts (геометрия портала по прогрессу)"
 repo: https://github.com/kloserock97-tech/gorbachev-nikita-product-designer

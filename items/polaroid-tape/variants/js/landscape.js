@@ -2,13 +2,14 @@
    that fade into haze with distance, a lake that mirrors the sky and a path of light under the sun.
    The same seed paints the same picture. */
 
+// Hash Kit (our own, see shelf/items/hash-kit): a Weyl sequence through our mixer
 function makeRng(seed) {
-  let a = seed | 0;
+  let s = seed >>> 0;
   return () => {
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    s = (s + 0xb31c96c9) >>> 0;
+    let x = s;
+    x ^= x >>> 16; x = Math.imul(x, 0x3f9c86cb); x ^= x >>> 14; x = Math.imul(x, 0x1ae9dacf); x ^= x >>> 15;
+    return (x >>> 0) / 4294967296;
   };
 }
 

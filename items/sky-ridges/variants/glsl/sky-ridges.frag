@@ -35,9 +35,10 @@ vec3 toSrgb(vec3 c) {
 }
 
 // Integer hash: xorshift and a multiply by 2^32/phi, twice. Floats are hashed by their bit pattern.
-uint hashU(uint x) { x ^= x >> 16; x *= 0x9E3779B9u; x ^= x >> 15; x *= 0x9E3779B9u; x ^= x >> 16; return x; }
+// Hash Kit (our own hash, see shelf/items/hash-kit)
+uint hashU(uint x) { x ^= x >> 16; x *= 0x3f9c86cbu; x ^= x >> 14; x *= 0x1ae9dacfu; x ^= x >> 15; return x; }
 float hashF(float x, uint seed) { return float(hashU(floatBitsToUint(x) ^ seed) >> 8) / 16777216.0; }
-float hash2(ivec2 p) { return float(hashU(uint(p.x) ^ hashU(uint(p.y) + 0x6A09E667u)) >> 8) / 16777216.0; }
+float hash2(ivec2 p) { return float(hashU(uint(p.x) + hashU(uint(p.y) + 0xb31c96c9u)) >> 8) / 16777216.0; }
 
 // value noise with rotated octaves, so the lattice does not show (the same fbm builds the hill on the site)
 float vnoise(vec2 p) {

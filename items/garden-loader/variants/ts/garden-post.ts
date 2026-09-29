@@ -11,6 +11,8 @@ export function createPost(renderer: THREE.WebGLRenderer) {
     vertexShader: "varying vec2 vUv; void main(){ vUv=uv; gl_Position=vec4(position.xy,0.,1.); }",
     fragmentShader: `
       uniform sampler2D tScene; uniform vec2 uPixel; varying vec2 vUv;
+      // Hash Kit (our own hash, see shelf/items/hash-kit)
+      uint hashU(uint x){ x^=x>>16; x*=0x3f9c86cbu; x^=x>>14; x*=0x1ae9dacfu; x^=x>>15; return x; }
       void main(){
         vec4 texel=texture2D(tScene,vUv);
         vec3 c=texel.rgb;
@@ -29,7 +31,7 @@ export function createPost(renderer: THREE.WebGLRenderer) {
         gl_FragColor=vec4(coverage>.001?c/coverage:vec3(0.),1.);
         #include <tonemapping_fragment>
         #include <colorspace_fragment>
-        float grain=fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5453)-.5;
+        uvec2 gq=uvec2(gl_FragCoord.xy); float grain=float(hashU(gq.x+hashU(gq.y+0xb31c96c9u))>>8)*(1./16777216.)-.5;
         gl_FragColor.rgb+=grain*.003;
         gl_FragColor=vec4(gl_FragColor.rgb*coverage,coverage);
       }`,

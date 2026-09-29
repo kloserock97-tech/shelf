@@ -30,12 +30,11 @@ uniform float uTime;
 uniform float uWind;
 uniform vec2 uWindDir;
 
-/* integer hash, the same as hash3 in rocks.ts: unlike a sine hash it keeps its precision far from the origin */
+/* Hash Kit (our own hash, see shelf/items/hash-kit): unlike a sine hash it keeps its precision far from the origin */
+uint hashU(uint x) { x ^= x >> 16; x *= 0x3f9c86cbu; x ^= x >> 14; x *= 0x1ae9dacfu; x ^= x >> 15; return x; }
 float hash12(vec2 p){
   uvec2 q = uvec2(ivec2(floor(p)));
-  uint n = q.x * 374761393u + q.y * 668265263u;
-  n = (n ^ (n >> 13u)) * 1274126177u;
-  return float(n ^ (n >> 16u)) * (1.0 / 4294967296.0);
+  return float(hashU(q.x + hashU(q.y + 0xb31c96c9u)) >> 8) * (1.0 / 16777216.0);
 }
 float vnoise(vec2 p){
   vec2 i = floor(p), f = fract(p);
@@ -210,12 +209,11 @@ varying vec3 vW;
 varying vec3 vN;
 varying vec3 vL;
 varying float vDist;
-/* integer hash on the lattice corner (the argument is already floored) */
+/* Hash Kit grid hash on the lattice corner (the argument is already floored) */
+uint hashU(uint x) { x ^= x >> 16; x *= 0x3f9c86cbu; x ^= x >> 14; x *= 0x1ae9dacfu; x ^= x >> 15; return x; }
 float h31(vec3 p){
   uvec3 q = uvec3(ivec3(p));
-  uint n = (q.x * 374761393u) ^ (q.y * 668265263u) ^ (q.z * 2147483647u);
-  n = (n ^ (n >> 13u)) * 1274126177u;
-  return float(n ^ (n >> 16u)) * (1.0 / 4294967296.0);
+  return float(hashU(q.x + hashU(q.y + hashU(q.z + 0xb31c96c9u))) >> 8) * (1.0 / 16777216.0);
 }
 float n3(vec3 p){
   vec3 i = floor(p), f = fract(p);

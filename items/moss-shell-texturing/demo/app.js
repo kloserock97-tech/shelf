@@ -8,10 +8,15 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 // items/moss-shell-texturing/variants/ts/moss-stone.ts
 var STONE = { width: 2.2, depth: 2, modelHeight: 1.6, thickness: 0.9, radius: 0.5 };
 var DRAPE = 0.55;
-var rand = (n) => {
-  const v = Math.sin(n * 127.1 + 311.7) * 43758.5453;
-  return v - Math.floor(v);
+var hashU = (x) => {
+  x ^= x >>> 16;
+  x = Math.imul(x, 1067222731);
+  x ^= x >>> 14;
+  x = Math.imul(x, 451533519);
+  x ^= x >>> 15;
+  return x >>> 0;
 };
+var rand = (n) => (hashU(Math.floor(n) + 3004995273 >>> 0) >>> 8) / 16777216;
 var smooth = (a, b, x) => {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
   return t * t * (3 - 2 * t);
@@ -38,7 +43,7 @@ function anchorAt(x, z) {
   const yTop = -sy * STONE.radius, yBottom = -(STONE.thickness - sy * STONE.radius);
   return { p: [bx, yTop + (yBottom - yTop) * Math.min(1, wall), bz], n: [dx, 0, dz], wall, bx, bz };
 }
-var hash = (i, j) => rand(i * 157.31 + j * 311.7 + 0.5);
+var hash = (i, j) => (hashU(i + hashU(j + 3004995273 >>> 0) >>> 0) >>> 8) / 16777216;
 var ease = (t) => t * t * (3 - 2 * t);
 function noise(x, z) {
   const i = Math.floor(x), j = Math.floor(z), u = ease(x - i), v = ease(z - j);
@@ -194,12 +199,12 @@ ${PILE_GLSL}
       vShell=layer; vGrid=aGrid;`);
     shader.fragmentShader = `uniform float uDensity;
 varying float vShell; varying vec2 vGrid;
-/* Integer hash of a lattice cell and a salt: multiply by the golden ratio and fold the high bits down, twice.
+/* Integer hash of a lattice cell and a salt: the mixer of our Hash Kit (shelf/items/hash-kit).
    Cells reach a few hundred and integers, unlike a sine hash, do not care how far from the origin they are. */
-uint mossMix(uint x){ x^=x>>16; x*=0x9E3779B9u; x^=x>>15; x*=0x9E3779B9u; x^=x>>16; return x; }
+uint mossMix(uint x){ x^=x>>16; x*=0x3f9c86cbu; x^=x>>14; x*=0x1ae9dacfu; x^=x>>15; return x; }
 float cellHash(vec2 cell,uint salt){
   uvec2 q=uvec2(ivec2(cell));
-  return float(mossMix(mossMix(mossMix(salt)^q.x)^q.y))*(1./4294967295.);
+  return float(mossMix(mossMix(mossMix(salt)^q.x)^q.y)>>8)*(1./16777216.);
 }
 /* One lattice of strands: a strand to a cell, some cells empty, centres well scattered. Returns coverage and hands
    back what the colour needs: how far up its strand this layer is, a random for the hue, and whether it is a tall one. */

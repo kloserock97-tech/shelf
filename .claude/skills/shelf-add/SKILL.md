@@ -13,6 +13,11 @@ description: Кладёт UI-решение на полку Shelf (Projects/shel
 - Найди источник: файлы, откуда элемент берётся, и что ему нужно (зависимости, ассеты, данные).
 - Определи происхождение. Своё — `origin: own`. Переписано по мотивам известного приёма — `adapted` с `priorArt`.
   Чужой код, константы, ассеты — не публиковать как есть: переписать или положить в `private/` с `origin: third-party`.
+  `npm run check` сам ловит отпечатки известного чужого кода (хэши Хоскинса и Килеса, MurmurHash, lowbias32,
+  mulberry32, `fract(sin(…))`, IGN, FXAA, CAS, AgX, Khronos Neutral, Shadertoy-классику, GSAP, LYGIA —
+  `scripts/lib/provenance.mjs`). Замены бери свои: хэш, случайные числа и дизер — из `items/hash-kit`, сглаживание
+  краёв — из `items/edge-aa`, звуки — синтезатор `items/sound-button/variants/synth`. Ассеты — только свои: рендер
+  Blender, процедурная геометрия, свой синтез.
   Опись с пометками происхождения — `docs/research/inventory.md`.
 - Выбери тип и короткий kebab-case slug. Типы по группам сайдбара:
   Interface — component, button, card, navigation, gallery, icon, cursor;

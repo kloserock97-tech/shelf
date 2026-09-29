@@ -3,6 +3,8 @@
  * checked against the reference by overlaying it. The frame is fitted into the window by a Fit function.
  * The canvas is transparent and premultiplied: it lies over whatever the page draws behind it. */
 import * as THREE from "three";
+/* Hash Kit (our own hash, see shelf/items/hash-kit) */
+const hashU = (x: number) => { x ^= x >>> 16; x = Math.imul(x, 0x3f9c86cb); x ^= x >>> 14; x = Math.imul(x, 0x1ae9dacf); x ^= x >>> 15; return x >>> 0; };
 import { Line2 } from "three/addons/lines/Line2.js";
 import { LineGeometry } from "three/addons/lines/LineGeometry.js";
 import { LineMaterial } from "three/addons/lines/LineMaterial.js";
@@ -318,7 +320,7 @@ export function glow(w: number, h: number, color: string, opacity: number) {
 export function rock(size: number, seed: number) {
   const g = new THREE.IcosahedronGeometry(size, 1);
   const p = g.attributes.position as THREE.BufferAttribute;
-  const rnd = (k: number) => { const x = Math.sin(seed * 91.7 + k * 12.9898) * 43758.5453; return x - Math.floor(x); };
+  const rnd = (k: number) => (hashU((k + hashU((seed + 0xb31c96c9) >>> 0)) >>> 0) >>> 8) / 16777216;
   const v = new THREE.Vector3();
   const cache = new Map<string, number>();
   for (let i = 0; i < p.count; i++) {

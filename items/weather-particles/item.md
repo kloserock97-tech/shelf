@@ -6,6 +6,7 @@ summary: "Погода из трёх коэффициентов: ясно, об�
 tech: [TypeScript, three.js, GLSL]
 tags: [weather, rain, fireflies, petals, particles, cloud shadows, atmosphere, погода, дождь, светлячки, лепестки, частицы, облака]
 added: 2026-09-28
+updated: 2026-09-29
 origin: own
 source: "Portfolio 3D TS2: src/scene/weather.ts; cloudShade из src/scene/shaders.ts"
 repo: https://github.com/kloserock97-tech/gorbachev-nikita-product-designer

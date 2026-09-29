@@ -172,15 +172,15 @@ uniform int uOctaves;
 uniform int uSamples;
 out vec4 outColor;
 
-// integer hash: odd multipliers (golden ratio, sqrt 2) and xor-shifts; sin() hashes lose precision far out
+// integer hash \u2014 the mixer of our Hash Kit (shelf/items/hash-kit); sin() hashes lose precision far out
 uint mixBits(uint h) {
-  h ^= h >> 16; h *= 0x9E3779B1u;
-  h ^= h >> 15; h *= 0x6A09E667u;
-  h ^= h >> 16;
+  h ^= h >> 16; h *= 0x3f9c86cbu;
+  h ^= h >> 14; h *= 0x1ae9dacfu;
+  h ^= h >> 15;
   return h;
 }
 float hash(ivec2 p) {
-  return float(mixBits(uint(p.x) * 0x9E3779B1u ^ (uint(p.y) + 0x3C6EF372u) * 0x6A09E667u) >> 8) * (1.0 / 16777216.0);
+  return float(mixBits(uint(p.x) + mixBits(uint(p.y) + 0xb31c96c9u)) >> 8) * (1.0 / 16777216.0);
 }
 float noise(vec2 p) {
   ivec2 i = ivec2(floor(p));
@@ -193,7 +193,7 @@ float fbm(vec2 p) {
   float s = 0.0, a = 0.5;
   for (int i = 0; i < uOctaves; i++) {
     s += a * noise(p);
-    p = mat2(0.8, 0.6, -0.6, 0.8) * p * 2.02 + vec2(17.1, 9.2);
+    p = mat2(0.868, 0.497, -0.497, 0.868) * p * 2.02 + vec2(17.1, 9.2); // each octave turned ~30\xB0 so the lattices never line up
     a *= 0.5;
   }
   return s;

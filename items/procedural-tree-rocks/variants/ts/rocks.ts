@@ -11,10 +11,10 @@ export type Rock = { x: number; z: number; size: number; h: number; yaw: number;
 /** patches where grass hardly grows (under a boulder): an ellipse on the ground */
 export const rockFootprints = (rocks: Rock[]) => rocks.map((r) => ({ x: r.x, z: r.z, rx: r.size * 0.46, rz: r.size * 0.42 }));
 
+/* Hash Kit (our own hash, see shelf/items/hash-kit): lattice corner + salt in, 0…1 out */
+const hashU = (x: number) => { x ^= x >>> 16; x = Math.imul(x, 0x3f9c86cb); x ^= x >>> 14; x = Math.imul(x, 0x1ae9dacf); x ^= x >>> 15; return x >>> 0; };
 function hash3(x: number, y: number, z: number, s: number) {
-  let n = Math.imul(x | 0, 374761393) ^ Math.imul(y | 0, 668265263) ^ Math.imul(z | 0, 2147483647) ^ Math.imul(s | 0, 1274126177);
-  n = Math.imul(n ^ (n >>> 13), 1274126177);
-  return ((n ^ (n >>> 16)) >>> 0) / 4294967296;
+  return (hashU((x + hashU((y + hashU((z + hashU((s + 0xb31c96c9) >>> 0)) >>> 0)) >>> 0)) >>> 0) >>> 8) / 16777216;
 }
 function noise3(x: number, y: number, z: number, s: number) {
   const ix = Math.floor(x), iy = Math.floor(y), iz = Math.floor(z);
@@ -30,7 +30,7 @@ function noise3(x: number, y: number, z: number, s: number) {
 }
 
 export function rockGeometry(seed: number) {
-  const rng = makeRng(0x9e3779b9 ^ seed);
+  const rng = makeRng(0x0bad5eed ^ seed);
   /* three's icosahedron comes without shared vertices: normals would be per face and the stone faceted */
   const ico = new THREE.IcosahedronGeometry(1, 4);
   ico.deleteAttribute("normal");

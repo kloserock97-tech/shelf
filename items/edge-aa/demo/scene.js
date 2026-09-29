@@ -10,8 +10,9 @@ uniform float uWind;
 in vec2 vUv;
 out vec4 fragColor;
 
-uint hashU(uint x) { x ^= x >> 16; x *= 0x9E3779B9u; x ^= x >> 15; x *= 0x9E3779B9u; x ^= x >> 16; return x; }
-float hash1(int i) { return float(hashU(uint(i)) >> 8) / 16777216.0; }
+// Hash Kit (our own hash, see shelf/items/hash-kit)
+uint hashU(uint x) { x ^= x >> 16; x *= 0x3f9c86cbu; x ^= x >> 14; x *= 0x1ae9dacfu; x ^= x >> 15; return x; }
+float hash1(int i) { return float(hashU(uint(i) + 0xb31c96c9u) >> 8) / 16777216.0; }
 float vnoise1(float x) { float i = floor(x), f = fract(x); return mix(hash1(int(i)), hash1(int(i) + 1), f * f * (3.0 - 2.0 * f)); }
 
 void main() {

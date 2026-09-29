@@ -14,11 +14,11 @@ uniform float uSplit;       // left of this x: two rings; -1 — the spiral ever
 in vec2 vUv;
 out vec4 fragColor;
 
-// Interleaved gradient noise (Jorge Jimenez, 2014)
-float ign(vec2 p) { return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }
+// our screen dither (Hash Kit): a lattice without low frequencies, so neighbouring pixels differ a lot
+float dither(vec2 p) { return fract(dot(floor(p), vec2(0.3455768, 0.4279792))); }
 
 void main() {
-  float rot = ign(gl_FragCoord.xy) * 6.2831 * uRotate;
+  float rot = dither(gl_FragCoord.xy) * 6.2831 * uRotate;
   float n = float(uCount);
   bool rings = vUv.x < uSplit;
   vec3 acc = vec3(0.0);

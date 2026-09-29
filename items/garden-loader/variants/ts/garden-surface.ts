@@ -2,7 +2,9 @@
    A thick slab (thickness ≈ 14 % of the width) with a small vertical bevel: the box is rounded at `modelHeight` and
    then compressed, so the corner radius in plan stays large while the edge bevel stays tight. */
 export const TILE = { width: 3.05, depth: 3.25, modelHeight: 1.5, thickness: .42, radius: .36 } as const;
-export const rand = (n: number) => { const v = Math.sin(n * 127.1 + 311.7) * 43758.5453; return v - Math.floor(v); };
+/* Hash Kit (our own hash, see shelf/items/hash-kit): integers in, 0…1 out — the same bits the shaders get */
+const hashU = (x: number) => { x ^= x >>> 16; x = Math.imul(x, 0x3f9c86cb); x ^= x >>> 14; x = Math.imul(x, 0x1ae9dacf); x ^= x >>> 15; return x >>> 0; };
+export const rand = (n: number) => (hashU((Math.floor(n) + 0xb31c96c9) >>> 0) >>> 8) / 16777216;
 /** smoothstep with the range first: 0 below a, 1 above b */
 export const smooth = (a: number, b: number, x: number) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
@@ -51,7 +53,7 @@ export function anchorAt(x: number, z: number): Anchor {
   return { p: [bx, yTop + (yBottom - yTop) * Math.min(1, wall) - Math.max(0, wall - 1) * .12, bz], n: [dx, 0, dz], wall, bx, bz };
 }
 
-const hash = (i: number, j: number) => rand(i * 157.31 + j * 311.7 + .5);
+const hash = (i: number, j: number) => (hashU((i + hashU((j + 0xb31c96c9) >>> 0)) >>> 0) >>> 8) / 16777216;
 const ease = (t: number) => t * t * (3 - 2 * t);
 function noise(x: number, z: number) {
   const i = Math.floor(x), j = Math.floor(z), u = ease(x - i), v = ease(z - j);

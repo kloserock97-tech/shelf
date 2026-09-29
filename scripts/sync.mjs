@@ -6,6 +6,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT, TYPES, readItems, isFile, walk } from './lib/items.mjs';
+import { CODE, borrowedIn } from './lib/provenance.mjs';
 
 const checkOnly = process.argv.includes('--check');
 const SITE = 'https://kloserock97-tech.github.io/shelf/';
@@ -48,6 +49,8 @@ for (const it of items) {
     for (const file of walk(it.dir).filter((f) => TEXT.test(f))) {
       const text = fs.readFileSync(file, 'utf8');
       for (const [re, what] of LEAKS) if (re.test(text)) errors.push(`${where}: ${path.relative(it.dir, file)} contains ${what}`);
+      // someone else's code, recognised by its constants and names: rewrite it with our own (items/hash-kit, items/edge-aa)
+      if (CODE.test(file)) for (const hit of borrowedIn(text)) errors.push(`${where}: ${path.relative(it.dir, file)}:${hit.line} looks like ${hit.what} — rewrite it as our own`);
     }
   }
 }
@@ -65,6 +68,17 @@ if (checkOnly) {
 
 const out = (...p) => path.join(ROOT, 'public', ...p);
 for (const dir of ['demos', 'media', 'r']) fs.rmSync(out(dir), { recursive: true, force: true });
+
+// Licences of what ships to the browser (the search, the icons, the fonts, Astro's runtime). The bundler drops
+// licence comments, so the texts travel as a file; the profile menu links to it as Credits.
+const SHIPPED = ['minisearch', 'lucide-static', '@fontsource-variable/onest', '@fontsource-variable/jetbrains-mono', 'astro'];
+const notices = SHIPPED.map((name) => {
+  const dir = path.join(ROOT, 'node_modules', name);
+  const pkg = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8'));
+  const file = fs.readdirSync(dir).find((f) => /^licen[cs]e(\.|$)/i.test(f));
+  return `${name}@${pkg.version} — ${typeof pkg.license === 'string' ? pkg.license : 'see text'}\n\n${file ? fs.readFileSync(path.join(dir, file), 'utf8').trim() : '(no licence file in the package)'}`;
+});
+fs.writeFileSync(out('THIRD_PARTY_NOTICES.txt'), `Shelf — open-source pieces that ship with the site. Everything else on it is our own.\n\n${notices.join(`\n\n${'-'.repeat(72)}\n\n`)}\n`);
 
 const NOINDEX = '<meta name="robots" content="noindex, nofollow">';
 // A demo that declares both schemes stays transparent in the stage whatever the page theme is.
