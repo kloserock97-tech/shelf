@@ -236,13 +236,17 @@ html.sb-noanim .sh-app, html.sb-noanim .sh-sb__list, html.sb-noanim .sh-sb__labe
   backdrop-filter: blur(var(--material-blur)) saturate(var(--material-saturate));
   view-transition-name: sh-sidebar;
 }
-.sh-sb__head { flex: none; display: flex; align-items: center; gap: 4px; height: 52px; padding: 0 8px; }
+/* One axis for every icon (32px from the panel's edge: the mark, the rows, the avatar) and one line for every label
+   (53px: the wordmark, the rows, the name), in the panel and in the rail alike. */
+.sh-sb__head { flex: none; display: flex; align-items: center; height: 52px; padding: 0 8px; }
+/* No padding on the brand: in the rail it has to narrow to nothing, and padding would not let it */
 .sh-sb__brand {
-  flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px;
-  height: 36px; padding: 0 6px 0 10px; border-radius: var(--radius-sm);
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 7px; overflow: hidden;
+  height: 36px; border-radius: var(--radius-sm);
   color: var(--label); text-decoration: none; white-space: nowrap;
+  transition: opacity 200ms var(--ease-standard) 80ms, visibility 0s;
 }
-.sh-sb__mark { flex: none; display: grid; place-items: center; width: 28px; height: 28px; margin-left: -4px; border-radius: 8px; background: var(--accent); color: var(--on-accent); box-shadow: inset 0 0 0 0.5px var(--glass-edge); }
+.sh-sb__mark { flex: none; display: grid; place-items: center; width: 28px; height: 28px; margin-left: 10px; border-radius: 8px; background: var(--accent); color: var(--on-accent); box-shadow: inset 0 0 0 0.5px var(--glass-edge); }
 .sh-sb__mark svg { width: 18px; height: 18px; overflow: visible; }
 .sh-logo { transition: transform var(--duration-instant) var(--ease-out); }
 .sh-logo rect { transform-box: fill-box; }
@@ -264,8 +268,12 @@ html.sb-intro .sh-logo__c { animation: sh-logo-rise 480ms var(--ease-spring) 250
 @keyframes sh-logo-hop { 35% { transform: translateY(-1.6px) scaleY(1.04); } }
 @keyframes sh-logo-nudge { 35% { transform: translateX(0.9px); } }
 .sh-sb__wordmark { font: 700 17px/22px var(--font-sans); letter-spacing: -0.02em; }
-.sh-sb__toggle { flex: none; color: var(--label-secondary); }
+.sh-sb__toggle {
+  flex: none; margin-left: 4px; color: var(--label-secondary);
+  transition: width var(--duration-slow) var(--ease-drawer), background-color var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard);
+}
 .sh-sb__toggle:hover { color: var(--label); }
+.sh-sb__toggle-open { display: none; }
 .sh-sb__body {
   flex: 1; min-height: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;
   display: flex; flex-direction: column; gap: var(--space-4); padding: 4px 8px var(--space-3);
@@ -319,7 +327,7 @@ html.sec-closed-graphics [data-section="graphics"] .sh-sb__list, html.sec-closed
 .sh-sb__foot { flex: none; padding: 6px 8px 8px; border-top: 0.5px solid var(--separator); transition: border-color var(--duration-fast) var(--ease-standard); }
 .sh-sb__profile {
   appearance: none; margin: 0; border: 0; width: 100%;
-  display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 8px 0 10px;
+  display: flex; align-items: center; gap: 7px; height: 44px; padding: 0 8px 0 10px;
   border-radius: var(--radius-md); background: transparent; color: var(--label); text-align: left; white-space: nowrap; cursor: pointer;
   transition: background-color var(--duration-fast) var(--ease-standard);
 }
@@ -341,12 +349,19 @@ html.sec-closed-graphics [data-section="graphics"] .sh-sb__list, html.sec-closed
   html.sidebar-rail .sh-app { --sb-w: var(--rail-width); }
   html.sidebar-rail .sh-sb__label, html.sidebar-rail .sh-sb__count, html.sidebar-rail .sh-sb__kbd,
   html.sidebar-rail .sh-sb__chev { opacity: 0; pointer-events: none; transition-delay: 0ms; transition-duration: 100ms; }
-  html.sidebar-rail .sh-sb__toggle { display: none; }
+  /* the head keeps only the toggle, a row-sized button on the icon axis; the mark fades out first */
+  html.sidebar-rail .sh-sb__brand { opacity: 0; visibility: hidden; transition: opacity 100ms var(--ease-standard), visibility 0s linear 100ms; }
+  html.sidebar-rail .sh-sb__toggle { width: 48px; height: 36px; margin-left: 0; border-radius: var(--radius-sm); color: var(--label); }
+  html.sidebar-rail .sh-sb__toggle:hover { background: var(--fill-subtle); }
+  html.sidebar-rail .sh-sb__toggle .sh-i { width: 18px; height: 18px; }
+  html.sidebar-rail .sh-sb__toggle-close { display: none; }
+  html.sidebar-rail .sh-sb__toggle-open { display: inline-flex; }
+  /* a rail has no width to drag: no resize edge, no resize cursor */
+  html.sidebar-rail .sh-sb__edge { display: none; }
   html.sidebar-rail .sh-sb__heading { height: 13px; margin-bottom: 0; pointer-events: none; }
   html.sidebar-rail .sh-sb__heading::after { opacity: 1; }
   html.sidebar-rail .sh-sb__heading[aria-expanded="false"] + .sh-sb__list { grid-template-rows: 1fr; }
   html.sidebar-rail .sh-sb__foot { border-top-color: transparent; }
-  html.sidebar-rail .sh-sb__brand { cursor: e-resize; }
   html.sidebar-rail .sh-sb__body { scrollbar-width: none; }
 
   /* Attached, the macOS 27 look chosen in the profile menu: edge to edge, square corners, a hairline on the right.
@@ -893,7 +908,7 @@ button.sh-menu__item { appearance: none; margin: 0; border: 0; width: 100%; back
 
 /* ---------- Reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .sh-btn, .sh-chip, .sh-card__thumb, .sh-card__hint, .sh-seg::before, .sh-stage__viewport, .sh-app, .sh-app > .sh-sidebar, .sh-sb__label, .sh-sb__list { transition-duration: 1ms !important; }
+  .sh-btn, .sh-chip, .sh-card__thumb, .sh-card__hint, .sh-seg::before, .sh-stage__viewport, .sh-app, .sh-app > .sh-sidebar, .sh-sb__label, .sh-sb__list, .sh-sb__brand { transition-duration: 1ms !important; }
   .sh-card:hover .sh-card__thumb, .sh-btn:active, .sh-chip:active { transform: none; }
   .sh-overlay.is-in > *, .sh-empty .sh-art-empty__thing, .sh-logo rect { animation: none !important; }
   .sh-toast, .sh-tip { transition-property: opacity; }

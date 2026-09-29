@@ -20,12 +20,16 @@ const current = (key: string) => (nav === key ? 'page' : undefined);
 const n = items.length;
 ---
 <aside class="sh-sidebar" id="sidebar" aria-label="Shelf">
+  {/* One button folds and unfolds the sidebar and never moves: at the right of the head, and in the rail it is the
+      top icon, its arrow pointing the way the panel will go. */}
   <div class="sh-sb__head">
-    <a class="sh-sb__brand" href={lurl(lang, '')} data-tip={t(lang, 'expandSidebar')} data-tip-kbd="mod+B" data-rail-action="expand">
+    <a class="sh-sb__brand" href={lurl(lang, '')}>
       <Logo />
       <span class="sh-sb__label sh-sb__wordmark">Shelf</span>
     </a>
-    <button class="sh-sb__toggle sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-action="sidebar-toggle" aria-controls="sidebar" aria-label={t(lang, 'collapseSidebar')} data-tip={t(lang, 'collapseSidebar')} data-tip-kbd="mod+B"><Icon name="PanelLeft" /></button>
+    <button class="sh-sb__toggle sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-action="sidebar-toggle" aria-controls="sidebar" aria-label={t(lang, 'collapseSidebar')} data-tip={t(lang, 'collapseSidebar')} data-tip-kbd="mod+B">
+      <Icon name="PanelLeftClose" class="sh-sb__toggle-close" /><Icon name="PanelLeftOpen" class="sh-sb__toggle-open" />
+    </button>
   </div>
 
   <nav class="sh-sb__body" aria-label={t(lang, 'library')}>

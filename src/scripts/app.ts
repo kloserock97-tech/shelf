@@ -123,18 +123,24 @@ const SB_MAX = 320;
 const isRail = () => html.classList.contains('sidebar-rail') && !narrow.matches;
 const fmtKbd = (spec: string) => spec.replace('mod+', isMac ? '⌘' : 'Ctrl ');
 
+// The toggle says what it will do next, in its name and in its tooltip.
+function nameToggle(label: string) {
+  const b = $('.sh-sb__toggle');
+  b?.setAttribute('aria-label', label);
+  b?.setAttribute('data-tip', label);
+}
 function setRail(on: boolean) {
   html.classList.toggle('sidebar-rail', on);
   store.set('shelf:sidebar', on ? 'rail' : null);
   const label = tr(on ? 'expandSidebar' : 'collapseSidebar');
-  $('.sh-sb__toggle')?.setAttribute('aria-label', label);
+  nameToggle(label);
   $$('[data-sidebar-label]').forEach((el) => (el.textContent = label));
   hideTip();
 }
 let sheetReturn: HTMLElement | null = null;
 function setSheet(open: boolean) {
   html.classList.toggle('sidebar-open', open);
-  $('.sh-sb__toggle')?.setAttribute('aria-label', tr(open ? 'closeSidebar' : 'collapseSidebar'));
+  nameToggle(tr(open ? 'closeSidebar' : 'collapseSidebar'));
   lockScroll(open);
   if (open) {
     sheetReturn = document.activeElement as HTMLElement | null;
@@ -871,10 +877,6 @@ document.addEventListener('click', (e) => {
 });
 shortcuts?.addEventListener('click', (e) => { if (e.target === shortcuts) closeShortcuts(); });
 
-// In the rail the brand mark unfolds the sidebar instead of going home.
-$('.sh-sb__brand')?.addEventListener('click', (e) => {
-  if (isRail()) { e.preventDefault(); setRail(false); }
-});
 if (sidebar) {
   sidebar.addEventListener('pointerover', (e) => {
     const el = (e.target as HTMLElement).closest<HTMLElement>('[data-tip]');
