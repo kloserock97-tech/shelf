@@ -577,7 +577,7 @@ button.sh-menu__item { appearance: none; margin: 0; border: 0; width: 100%; back
   display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--card-min-width), 1fr));
   gap: var(--space-8) var(--space-6); padding: var(--space-6) var(--space-8) var(--space-10);
 }
-/* Sections (All items, or By section on Favorites): a header row over each kind group, spanning the grid. The grid's
+/* Groups (sections by kind group on All items, or tasks from the view menu): a header row over each, spanning the grid. The grid's
    32px row gap above it is the space between sections; the header sits 12px over its own cards. From the second
    section on a hairline divides them. The kinds are quiet links to their own pages. */
 .sh-grid__head {
@@ -590,6 +590,55 @@ button.sh-menu__item { appearance: none; margin: 0; border: 0; width: 100%; back
 .sh-grid__kinds { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 14px; }
 .sh-grid__kind { border-radius: 4px; font: 500 13px/24px var(--font-sans); color: var(--label-secondary); text-decoration: none; transition: color var(--duration-fast) var(--ease-standard); }
 .sh-grid__kind:hover { color: var(--accent-text); }
+/* a task's header says what the task is, in the quiet voice of the kind links */
+.sh-grid__about { margin: 0; font: 400 13px/24px var(--font-sans); color: var(--label-secondary); }
+/* ---------- Collections shelf on All items ----------
+   A row of tiles under the featured piece, like the shelves of Apple Music: three to a screen on a wide window, two
+   on a medium one, the next one peeking on a phone. Arrows step a screenful (hidden on touch, where you swipe) and the
+   row snaps to a tile. Each tile is a mosaic of three covers — one big, two small, 2px of tile between them — so the
+   colour comes from the pieces. At 2:1 every cell is the posters' own 4:3, so nothing is cropped. The title and the count sit under it, like a card's. */
+.sh-rail { display: grid; gap: var(--space-3); margin-top: var(--space-8); }
+.sh-rail__head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: 0 var(--space-8); }
+.sh-rail__nav { display: flex; gap: 2px; margin-right: -6px; }
+.sh-rail__list {
+  display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 2 * var(--space-6)) / 3); gap: var(--space-6);
+  margin: 0; padding: 6px var(--space-8) var(--space-4); list-style: none;
+  overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scroll-padding-inline: var(--space-8);
+  scrollbar-width: none;
+}
+.sh-rail__list::-webkit-scrollbar { display: none; }
+.sh-rail__item { min-width: 0; scroll-snap-align: start; }
+.sh-coltile { display: grid; gap: var(--space-3); color: inherit; text-decoration: none; border-radius: var(--radius-lg); }
+.sh-coltile__art {
+  display: grid; grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; aspect-ratio: 2 / 1; overflow: hidden;
+  border-radius: var(--radius-lg); background: var(--tile); box-shadow: var(--shadow-edge);
+  transition: transform var(--duration-base) var(--ease-out), box-shadow var(--duration-base) var(--ease-out);
+}
+.sh-coltile__art img { display: block; width: 100%; height: 100%; min-height: 0; object-fit: cover; }
+.sh-coltile__art img:first-child { grid-row: 1 / -1; }
+.sh-coltile__art--2 { grid-template-columns: 1fr 1fr; }
+.sh-coltile__art--1 { grid-template-columns: 1fr; }
+.sh-coltile__art .sh-typehead__glyph { grid-row: 1 / -1; grid-column: 1 / -1; place-self: center; }
+.sh-coltile__text { display: grid; gap: 2px; min-width: 0; }
+.sh-coltile__name { font: 600 14px/20px var(--font-sans); }
+.sh-coltile__meta {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+  font: 400 13px/18px var(--font-sans); color: var(--label-secondary);
+}
+.sh-coltile__n { font-variant-numeric: tabular-nums; }
+@media (hover: hover) and (pointer: fine) {
+  .sh-coltile:hover .sh-coltile__art { transform: translateY(-3px); box-shadow: var(--shadow-edge), var(--shadow-lift); }
+}
+.sh-coltile:active .sh-coltile__art { transform: scale(0.985); transition-duration: var(--duration-instant); }
+.sh-coltile:focus-visible { outline: none; }
+.sh-coltile:focus-visible .sh-coltile__art { box-shadow: var(--focus); }
+@media (hover: none) { .sh-rail__nav { display: none; } }
+/* With arrows the row is a window lined up with the grid: the neighbours past the margins don't show as slivers.
+   The cut sits inside the margin, so a lifted tile keeps its shadow. On touch the next tile peeks on purpose. */
+@media (hover: hover) and (pointer: fine) and (min-width: 901px) {
+  .sh-rail__list { mask-image: linear-gradient(90deg, transparent 12px, #000 12px, #000 calc(100% - 12px), transparent calc(100% - 12px)); }
+}
+
 .sh-card { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; color: inherit; container-type: inline-size; }
 /* The poster and the Live demo button over it lift together */
 .sh-card__frame { position: relative; transition: transform var(--duration-base) var(--ease-out); }
@@ -904,6 +953,7 @@ a.sh-meter__name:hover { background: var(--fill); }
 
 /* ---------- Medium widths: the grid-size slider steps aside, the filter may shrink ---------- */
 @media (max-width: 1100px) {
+  .sh-rail__list { grid-auto-columns: calc((100% - var(--space-6)) / 2); }
   .sh-zoom, .sh-zoom + .sh-vsep { display: none; }
 }
 
@@ -934,6 +984,9 @@ a.sh-meter__name:hover { background: var(--fill); }
   .sh-typehead__about { font-size: 15px; line-height: 22px; }
   .sh-item { padding: var(--space-4) var(--space-4) var(--space-10); gap: var(--space-6); }
   .sh-item__cols { grid-template-columns: minmax(0, 1fr); }
+  .sh-rail { margin-top: var(--space-6); }
+  .sh-rail__head { padding: 0 var(--space-4); }
+  .sh-rail__list { grid-auto-columns: 78%; gap: var(--space-4); padding-inline: var(--space-4); scroll-padding-inline: var(--space-4); }
   .sh-cov { padding: var(--space-4) var(--space-4) var(--space-10); gap: var(--space-6); }
   .sh-cov__intro { font-size: 15px; line-height: 22px; }
   .sh-cov__hunt { padding: var(--space-4); }
@@ -965,8 +1018,8 @@ a.sh-meter__name:hover { background: var(--fill); }
 
 /* ---------- Continuous corners where supported ---------- */
 @supports (corner-shape: squircle) {
-  .sh-card__thumb, .sh-stage, .sh-code, .sh-sheet, .sh-palette { corner-shape: squircle; }
-  .sh-card__thumb, .sh-code { border-radius: 22px; }
+  .sh-card__thumb, .sh-stage, .sh-code, .sh-sheet, .sh-palette, .sh-coltile__art { corner-shape: squircle; }
+  .sh-card__thumb, .sh-code, .sh-coltile__art { border-radius: 22px; }
   .sh-stage, .sh-sheet, .sh-palette { border-radius: 32px; }
 }
 
@@ -974,6 +1027,7 @@ a.sh-meter__name:hover { background: var(--fill); }
 @media (prefers-reduced-motion: reduce) {
   .sh-btn, .sh-chip, .sh-card__thumb, .sh-card__frame, .sh-card__live, .sh-seg::before, .sh-stage__viewport, .sh-app, .sh-app > .sh-sidebar, .sh-sb__label, .sh-sb__list, .sh-sb__brand { transition-duration: 1ms !important; }
   .sh-card:hover .sh-card__frame, .sh-btn:active, .sh-chip:active, .sh-card__live:active { transform: none; }
+  .sh-coltile .sh-coltile__art { transform: none !important; transition-duration: 1ms; }
   .sh-overlay.is-in > *, .sh-empty .sh-art-empty__thing, .sh-logo rect { animation: none !important; }
   .sh-toast, .sh-tip { transition-property: opacity; }
   .sh-hero:hover .sh-hero__art img { transform: none; }

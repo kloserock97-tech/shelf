@@ -1,8 +1,8 @@
 // The library's filter and sort, after Mobbin's catalogue: facets (Type, Task, Stack, Tags) as pills with a popover,
 // counts beside every value recomputed against the other filters, several values per facet (OR), facets and the
-// text query together (AND), the applied count inside the pill, a sort menu, a readable URL, filters kept when the
+// text query together (AND), the applied count inside the pill, a view menu (grouping and order), a readable URL, filters kept when the
 // sidebar changes the type, and an empty state that names the filter to drop. On a phone the popover is a sheet.
-import { FACETS, SORTS, STACK_GROUPS, defaultSort, sortsFor, stackGroupOf, tagInLang, type FacetId, type SortId } from '../lib/facets';
+import { FACETS, SORTS, GROUPINGS, STACK_GROUPS, defaultSort, defaultGroup, sortsFor, groupsFor, stackGroupOf, tagInLang, type FacetId, type GroupId, type SortId } from '../lib/facets';
 import { GROUPS, TYPES, typeLabel, typeAbout, typeOf } from '../lib/taxonomy';
 import { JOBS, jobOf, nameOf, aboutOf } from '../lib/curation';
 import { itemsWord, type Key, type Lang } from '../lib/i18n';
@@ -50,20 +50,27 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
   const facetsOn = Boolean($('[data-filters]'));
 
   /* ---------- state and the URL ---------- */
-  type State = { q: string; type: Set<string>; job: Set<string>; stack: Set<string>; tag: Set<string>; sort: SortId };
+  type State = { q: string; type: Set<string>; job: Set<string>; stack: Set<string>; tag: Set<string>; sort: SortId; group: GroupId };
   const params = new URLSearchParams(location.search);
   const list = (k: string) => new Set((params.get(k) ?? '').split(',').map((s) => s.trim()).filter(Boolean));
   const baseSort = defaultSort(mode);
   const offered = sortsFor(mode);
   const sortFromParam = (v: string | null): SortId | null => offered.find((s) => s.param === v)?.id ?? null;
   const storedSort = d.store.get('shelf:sort');
+  // the grouping is remembered per kind of list: tasks on All items shouldn't turn a kind's page into groups
+  const baseGroup = defaultGroup(mode);
+  const groupings = groupsFor(mode);
+  const groupKey = `shelf:group:${mode}`;
+  const groupFromParam = (v: string | null): GroupId | null => groupings.find((g) => g.param === v)?.id ?? null;
+  const storedGroup = groupings.find((g) => g.id === d.store.get(groupKey))?.id;
   const state: State = {
     q: params.get('q') ?? '',
     type: hasFacet('type') ? list('type') : new Set(),
     job: facetsOn ? list('job') : new Set(),
     stack: facetsOn ? list('stack') : new Set(),
     tag: facetsOn ? list('tag') : new Set(),
-    sort: sortFromParam(params.get('sort')) ?? (storedSort === 'name' ? 'az' : (offered.find((s) => s.id === storedSort)?.id ?? baseSort))
+    sort: sortFromParam(params.get('sort')) ?? (storedSort === 'name' ? 'az' : (offered.find((s) => s.id === storedSort)?.id ?? baseSort)),
+    group: groupFromParam(params.get('group')) ?? storedGroup ?? baseGroup
   };
   // links from before the facets used ?tech=
   if (facetsOn && params.get('tech')) state.stack.add(params.get('tech')!);
@@ -72,9 +79,10 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
   const active = () => state.type.size + state.job.size + state.stack.size + state.tag.size;
   function writeUrl() {
     const p = new URLSearchParams(location.search);
-    ['q', 'type', 'job', 'stack', 'tag', 'sort', 'tech'].forEach((k) => p.delete(k));
+    ['q', 'type', 'job', 'stack', 'tag', 'group', 'sort', 'tech'].forEach((k) => p.delete(k));
     if (state.q.trim()) p.set('q', state.q.trim());
     for (const f of FACETS) if (state[f.id].size) p.set(f.param, [...state[f.id]].join(','));
+    if (state.group !== baseGroup) p.set('group', GROUPINGS.find((g) => g.id === state.group)!.param);
     if (state.sort !== baseSort) p.set('sort', SORTS.find((s) => s.id === state.sort)!.param);
     const qs = p.toString().replace(/%2C/g, ',');
     history.replaceState(history.state, '', `${location.pathname}${qs ? `?${qs}` : ''}${location.hash}`);
@@ -121,11 +129,17 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
   const relevance = () => Boolean(queryHits) && state.sort === baseSort;
   // Sections: the list broken up by kind group under its own headers, unless the words sort by relevance
   const heads = new Map($$('[data-group-head]', grid).map((h) => [h.dataset.groupHead!, h]));
-  const sectioned = () => state.sort === 'type' && !relevance() && heads.size > 0;
+  const grouped = () => state.group !== 'none' && !relevance() && heads.size > 0;
+  // sections by kind group, or tasks by each piece's main job (a piece shows once, under its first job)
+  const groupDefs = (): { key: string; has: (e: LibEntry) => boolean }[] =>
+    state.group === 'section'
+      ? GROUPS.map((g) => ({ key: `section:${g.id}`, has: (e: LibEntry) => typeOf(e.type).group === g.id }))
+      : JOBS.map((j) => ({ key: `job:${j.id}`, has: (e: LibEntry) => e.jobs[0] === j.id }));
 
   /* ---------- rendering the grid ---------- */
   let visible: HTMLElement[] = cards;
   const hero = $('[data-hero]');
+  const rail = $('[data-rail]');
   function apply() {
     refreshQuery();
     const found = matching();
@@ -138,6 +152,7 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
     if (countEl) countEl.textContent = String(found.length);
     const filtered = Boolean(state.q.trim()) || active() > 0;
     hero?.toggleAttribute('hidden', filtered);
+    rail?.toggleAttribute('hidden', filtered);
     if (clearBtn) clearBtn.hidden = !filtered;
     // the words search only this page's items: the placeholder says how many (Favorites changes as you star)
     const own = entries.filter(inMode).length;
@@ -148,20 +163,27 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
     if (pop && !pop.hidden && openFacet) renderPop(openFacet, false);
   }
 
-  // One grid either way: in sections each group's header spans the row above its cards, empty groups hide
+  // One grid either way: each group's header spans the row above its cards, empty groups hide
   function layout(found: LibEntry[]) {
     heads.forEach((h) => (h.hidden = true));
-    if (!sectioned()) { visible.forEach((c) => grid.append(c)); return; }
-    for (const g of GROUPS) {
-      const inGroup = found.filter((e) => typeOf(e.type).group === g.id);
-      const head = heads.get(g.id);
+    if (!grouped()) { visible.forEach((c) => grid.append(c)); return; }
+    // the cards in the order you see them, so arrows and Quick Look walk the groups as laid out
+    const seq: HTMLElement[] = [];
+    for (const g of groupDefs()) {
+      const inGroup = found.filter(g.has);
+      const head = heads.get(g.key);
       if (!inGroup.length || !head) continue;
       head.hidden = false;
       const n = $('[data-group-count]', head);
       if (n) n.textContent = String(inGroup.length);
       grid.append(head);
-      inGroup.forEach((e) => grid.append(cardOf.get(e.slug)!));
+      inGroup.forEach((e) => seq.push(cardOf.get(e.slug)!));
+      grid.append(...seq.slice(seq.length - inGroup.length));
     }
+    // a piece without a job yet still shows, after the groups
+    const rest = found.map((e) => cardOf.get(e.slug)!).filter((c) => !seq.includes(c));
+    grid.append(...rest);
+    visible = [...seq, ...rest];
   }
 
   function renderEmpty(n: number, filtered: boolean) {
@@ -200,11 +222,17 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
       b.setAttribute('aria-label', n ? `${name}, ${n}` : name);
     }
     $$<HTMLButtonElement>('[data-filter="tech"] .sh-chip').forEach((c) => c.setAttribute('aria-pressed', String(state.stack.has(c.dataset.value ?? ''))));
+    // the button names the grouping when there is one, and the order when it isn't the page's own
     const sortLabel = $('[data-sort-label]');
-    const current = relevance() ? tr('sortBest') : tr(SORTS.find((s) => s.id === state.sort)!.key);
+    const orderName = tr(SORTS.find((s) => s.id === state.sort)!.key);
+    const groupName = tr(GROUPINGS.find((g) => g.id === state.group)!.key);
+    const current = relevance() ? tr('sortBest')
+      : state.group === 'none' ? orderName
+      : state.sort === baseSort ? groupName : `${groupName} · ${orderName}`;
     if (sortLabel) sortLabel.textContent = current;
-    $('[data-sort-trigger]')?.setAttribute('aria-label', tr('sortedBy', { sort: current }));
+    $('[data-sort-trigger]')?.setAttribute('aria-label', tr('viewLabel', { view: current }));
     $$('[data-sort-menu] [data-value]').forEach((el) => el.setAttribute('aria-checked', String(el.dataset.value === state.sort)));
+    $$('[data-sort-menu] [data-group]').forEach((el) => el.setAttribute('aria-checked', String(el.dataset.group === state.group)));
   }
 
   /* ---------- value labels and option lists ---------- */
@@ -404,7 +432,7 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
   /* ---------- the sort menu ---------- */
   const sortBtn = $<HTMLButtonElement>('[data-sort-trigger]');
   const sortMenu = $('[data-sort-menu]');
-  const sortItems = sortMenu ? $$<HTMLButtonElement>('[data-value]', sortMenu) : [];
+  const sortItems = sortMenu ? $$<HTMLButtonElement>('[role="menuitemradio"]', sortMenu) : [];
   function openSort() {
     if (!sortMenu || !sortBtn) return;
     closePop(false);
@@ -413,7 +441,7 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
     const r = sortBtn.getBoundingClientRect();
     sortMenu.style.top = `${r.bottom + 6}px`;
     sortMenu.style.right = `${Math.max(12, innerWidth - r.right)}px`;
-    (sortItems.find((b) => b.dataset.value === state.sort) ?? sortItems[0])?.focus();
+    (sortItems.find((b) => b.getAttribute('aria-checked') === 'true') ?? sortItems[0])?.focus();
   }
   function closeSort(returnFocus = true) {
     if (!sortMenu || sortMenu.hidden) return;
@@ -423,8 +451,13 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
   }
   sortBtn?.addEventListener('click', () => (sortMenu?.hidden ? openSort() : closeSort()));
   sortItems.forEach((b) => b.addEventListener('click', () => {
-    state.sort = b.dataset.value as SortId;
-    d.store.set('shelf:sort', state.sort === baseSort ? null : state.sort);
+    if (b.dataset.group) {
+      state.group = b.dataset.group as GroupId;
+      d.store.set(groupKey, state.group === baseGroup ? null : state.group);
+    } else {
+      state.sort = b.dataset.value as SortId;
+      d.store.set('shelf:sort', state.sort === baseSort ? null : state.sort);
+    }
     writeUrl();
     apply();
     closeSort();
@@ -461,6 +494,26 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
     apply();
     (grid.querySelector<HTMLElement>('.sh-card:not([hidden]) .sh-card__thumb') ?? input)?.focus();
   });
+
+  /* ---------- the collections shelf: arrows step a screenful, and grey out at the ends ---------- */
+  const railList = $('[data-rail-list]');
+  if (railList) {
+    const steps = $$<HTMLButtonElement>('[data-rail-step]');
+    const sync = () => {
+      const max = railList.scrollWidth - railList.clientWidth;
+      steps.forEach((b) => {
+        b.disabled = b.dataset.railStep === '-1' ? railList.scrollLeft <= 1 : railList.scrollLeft >= max - 1;
+        b.hidden = max <= 1;
+      });
+    };
+    steps.forEach((b) => b.addEventListener('click', () => {
+      const smooth = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+      railList.scrollBy({ left: Number(b.dataset.railStep) * railList.clientWidth * 0.9, behavior: smooth ? 'smooth' : 'instant' });
+    }));
+    railList.addEventListener('scroll', sync, { passive: true });
+    addEventListener('resize', sync);
+    sync();
+  }
 
   writeUrl();
   apply();

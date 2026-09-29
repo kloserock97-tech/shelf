@@ -2,12 +2,12 @@
 import Icon from './Icon.astro';
 import ItemCard from './ItemCard.astro';
 import ShelfArt from './ShelfArt.astro';
-import { type Item, itemUrl, posterUrl, subtitle } from '../lib/items';
+import { type Item, itemUrl, collectionUrl, posterUrl, subtitle } from '../lib/items';
 import { GROUPS, TYPES, typeOf, typeAbout, typeLabel, groupLabel, type TypeDef } from '../lib/taxonomy';
 import { t, itemsWord, type Lang } from '../lib/i18n';
 import { lurl } from '../lib/url';
-import { FACETS, defaultSort, sortsFor } from '../lib/facets';
-import { aboutOf, type CollectionDef } from '../lib/curation';
+import { FACETS, defaultSort, defaultGroup, sortsFor, groupsFor } from '../lib/facets';
+import { COLLECTIONS, JOBS, nameOf, aboutOf, type CollectionDef } from '../lib/curation';
 
 interface Props {
   title: string;
@@ -23,9 +23,12 @@ for (const it of items) for (const tech of it.data.tech) techCount.set(tech, (te
 const techs = [...techCount.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 8);
 const filterable = mode !== 'favorites';
 // All items opens in sections by kind group, a header over each (its name, how many, links to its kinds); library.ts
-// keeps them in step with filters and the sort. Rendered in that order already, so nothing moves when the script runs.
+// keeps them in step with filters and the view menu. Rendered in that order already, so nothing moves when the script
+// runs. Headers for grouping by task wait at the end of the grid until that grouping is picked.
 const firstSort = defaultSort(mode);
+const firstGroup = defaultGroup(mode);
 const sectioned = mode !== 'type';
+const jobHeads = JOBS.map((j) => ({ j, n: items.filter((i) => i.data.jobs[0] === j.id).length })).filter((x) => x.n);
 const typeIndex = new Map(TYPES.map((ty, i) => [ty.id as string, i]));
 const byKind = (a: Item, b: Item) => (typeIndex.get(a.data.type)! - typeIndex.get(b.data.type)!) || a.data.title.localeCompare(b.data.title, lang);
 const sections = sectioned
@@ -41,6 +44,17 @@ const FEATURED = ['garden-loader', 'glass-diorama', 'quiet-hill-hero', 'windcres
 const hero = mode === 'all'
   ? FEATURED.map((s) => items.find((i) => i.id === s)).find((i) => i && posterUrl(i)) ?? items.find((i) => posterUrl(i))
   : undefined;
+// Collections on All items: a shelf of tiles under the featured piece, each a mosaic of three covers. The collection's
+// own `cover` picks come first; if one is missing, members of other kinds fill in, then any member.
+const rail = mode === 'all'
+  ? COLLECTIONS.map((c) => {
+      const members = items.filter((i) => i.data.collections.includes(c.id) && posterUrl(i));
+      const art: Item[] = c.cover.map((s) => members.find((i) => i.id === s)).filter((i): i is Item => Boolean(i));
+      for (const i of members) if (art.length < 3 && !art.some((a) => a.data.type === i.data.type)) art.push(i);
+      for (const i of members) if (art.length < 3 && !art.includes(i)) art.push(i);
+      return { c, n: items.filter((i) => i.data.collections.includes(c.id)).length, art: art.map((i) => posterUrl(i)!) };
+    }).filter((x) => x.n)
+  : [];
 // A kind or a collection opens with a fan of its own covers: the colour comes from the content, not from the chrome.
 const covers = mode === 'type' || mode === 'collection' ? items.map((i) => posterUrl(i)).filter((u): u is string => Boolean(u)).slice(0, 3) : [];
 // Summaries and notes are written in Russian; say so to screen readers on English pages.
@@ -58,14 +72,27 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
   <span class="sh-vsep"></span>
   <div class="sh-sortwrap">
     <button class="sh-btn sh-btn--ghost sh-btn--sm sh-sort" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="sort-menu" data-sort-trigger>
-      <Icon name="ArrowUpDown" /><span data-sort-label>{t(lang, firstSort === 'type' ? 'sortType' : 'newest')}</span><Icon name="ChevronDown" class="sh-i--xs sh-facet__chev" />
+      <Icon name="ArrowUpDown" /><span data-sort-label>{firstGroup === 'section' ? t(lang, 'groupSection') : t(lang, 'newest')}</span><Icon name="ChevronDown" class="sh-i--xs sh-facet__chev" />
     </button>
-    <div class="sh-menu sh-sortmenu" id="sort-menu" role="menu" aria-label={t(lang, 'sort')} hidden data-sort-menu>
-      {sortsFor(mode).map((s) => (
-        <button class="sh-menu__item" type="button" role="menuitemradio" aria-checked={s.id === firstSort ? 'true' : 'false'} tabindex="-1" data-value={s.id}>
-          <span class="sh-menu__check"><Icon name="Check" /></span>{t(lang, s.key)}
-        </button>
-      ))}
+    {/* One menu, two settings: how the cards are grouped, and their order inside each group. */}
+    <div class="sh-menu sh-sortmenu" id="sort-menu" role="menu" aria-label={t(lang, 'view')} hidden data-sort-menu>
+      <div role="group" aria-labelledby="view-group">
+        <div class="sh-menu__label" id="view-group">{t(lang, 'groupBy')}</div>
+        {groupsFor(mode).map((g) => (
+          <button class="sh-menu__item" type="button" role="menuitemradio" aria-checked={g.id === firstGroup ? 'true' : 'false'} tabindex="-1" data-group={g.id}>
+            <span class="sh-menu__check"><Icon name="Check" /></span>{t(lang, g.key)}{g.id === 'job' && <span class="sh-menu__key">{t(lang, 'byMainTask')}</span>}
+          </button>
+        ))}
+      </div>
+      <div class="sh-menu__sep"></div>
+      <div role="group" aria-labelledby="view-order">
+        <div class="sh-menu__label" id="view-order">{t(lang, 'orderBy')}</div>
+        {sortsFor(mode).map((s) => (
+          <button class="sh-menu__item" type="button" role="menuitemradio" aria-checked={s.id === firstSort ? 'true' : 'false'} tabindex="-1" data-value={s.id}>
+            <span class="sh-menu__check"><Icon name="Check" /></span>{t(lang, s.key)}
+          </button>
+        ))}
+      </div>
     </div>
   </div>
   {/* The second row says what to show: words to look for in this list, then Type, Stack and Tags. The words search
@@ -132,6 +159,35 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
   </section>
 )}
 
+{rail.length > 0 && (
+  <section class="sh-rail" data-rail aria-labelledby="rail-title">
+    <div class="sh-rail__head">
+      <h2 class="sh-grid__title" id="rail-title">{t(lang, 'collections')} <span class="sh-grid__count">{rail.length}</span></h2>
+      <div class="sh-rail__nav">
+        <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-rail-step="-1" aria-label={t(lang, 'railPrev')} aria-controls="rail-list" disabled><Icon name="ChevronLeft" /></button>
+        <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-rail-step="1" aria-label={t(lang, 'railNext')} aria-controls="rail-list"><Icon name="ChevronRight" /></button>
+      </div>
+    </div>
+    <ul class="sh-rail__list" id="rail-list" data-rail-list>
+      {rail.map(({ c, n, art }) => (
+        <li class="sh-rail__item">
+          <a class="sh-coltile" href={collectionUrl(c.id, lang)}>
+            <span class:list={['sh-coltile__art', `sh-coltile__art--${Math.max(1, art.length)}`]} aria-hidden="true">
+              {art.length
+                ? art.map((src) => <img src={src} alt="" loading="lazy" decoding="async">)
+                : <span class="sh-typehead__glyph"><Icon name={c.icon} stroke={1.5} /></span>}
+            </span>
+            <span class="sh-coltile__text">
+              <span class="sh-coltile__name">{nameOf(c, lang)}</span>
+              <span class="sh-coltile__meta"><span class="sh-coltile__n">{n} {itemsWord(lang, n)}</span> · {aboutOf(c, lang)}</span>
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+)}
+
 {((mode === 'type' && type) || (mode === 'collection' && collection)) && (
   <section class="sh-typehead" aria-label={title}>
     <div class="sh-typehead__stack" aria-hidden="true" style={`--n:${Math.max(1, covers.length)}`}>
@@ -149,7 +205,7 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
 <div class="sh-grid" id="grid" data-mode={mode}>
   {sectioned ? sections.map((s) => (
     <>
-      <div class="sh-grid__head" data-group-head={s.group.id} hidden={firstSort !== 'type'}>
+      <div class="sh-grid__head" data-group-head={`section:${s.group.id}`} hidden={firstGroup !== 'section'}>
         <h2 class="sh-grid__title">{groupLabel(s.group, lang)} <span class="sh-grid__count" data-group-count>{s.items.length}</span></h2>
         <nav class="sh-grid__kinds" aria-label={t(lang, 'groupKinds', { group: groupLabel(s.group, lang) })}>
           {s.kinds.map((ty) => <a class="sh-grid__kind" href={lurl(lang, `type/${ty.id}/`)} data-kind={ty.id}>{typeLabel(ty, lang)}</a>)}
@@ -158,6 +214,12 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
       {s.items.map((item) => <ItemCard item={item} lang={lang} />)}
     </>
   )) : items.map((item) => <ItemCard item={item} lang={lang} />)}
+  {jobHeads.map(({ j, n }) => (
+    <div class="sh-grid__head" data-group-head={`job:${j.id}`} hidden>
+      <h2 class="sh-grid__title">{nameOf(j, lang)} <span class="sh-grid__count" data-group-count>{n}</span></h2>
+      <p class="sh-grid__about">{aboutOf(j, lang)}</p>
+    </div>
+  ))}
 </div>
 <div class="sh-empty" data-empty="favorites" hidden>
   <ShelfArt kind="favorites" />

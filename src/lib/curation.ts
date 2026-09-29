@@ -22,13 +22,15 @@ export const JOBS = [
   { id: 'quality', label: 'Speed and polish', ru: 'Скорость и чистота', icon: 'Gauge', about: 'Fast, smooth and clean: quality steps, antialiasing, typography.', aboutRu: 'Быстро, плавно и чисто: ступени качества, сглаживание, типографика.' }
 ] as const;
 
+// `cover` is the collection's art on All items, big one first, as an editor picks a playlist's cover: pieces whose
+// posters read at a glance, and no two alike side by side. Members without a cover fill in when a pick is missing.
 export const COLLECTIONS = [
-  { id: 'feels-expensive', label: 'Feels expensive', ru: 'Выглядит дорого', icon: 'Gem', about: 'Material, light, glass and restraint.', aboutRu: 'Материал, свет, стекло и сдержанность.' },
-  { id: 'calm', label: 'Calm', ru: 'Спокойное', icon: 'Leaf', about: 'Slow motion and a quiet mood.', aboutRu: 'Неспешное движение и тихое настроение.' },
-  { id: 'depth', label: 'Depth', ru: 'Глубина', icon: 'Layers', about: 'Layers, tilt and 3D on a flat screen.', aboutRu: 'Слои, наклон и объём на плоском экране.' },
-  { id: 'no-assets', label: 'Code only', ru: 'Только код', icon: 'Code', about: 'No images, models or sound files: everything is drawn by code.', aboutRu: 'Без картинок, моделей и звуковых файлов: всё рисует код.' },
-  { id: 'retro', label: 'Retro', ru: 'Ретро', icon: 'Tv', about: 'Tubes, old desktops, film and polaroids.', aboutRu: 'Кинескопы, старые рабочие столы, плёнка и полароиды.' },
-  { id: 'playful', label: 'Playful', ru: 'С игрой', icon: 'Smile', about: 'Small joys: springs, looks, a wink.', aboutRu: 'Маленькие радости: пружины, взгляды, подмигивание.' }
+  { id: 'feels-expensive', label: 'Feels expensive', ru: 'Выглядит дорого', icon: 'Gem', about: 'Material, light, glass and restraint.', aboutRu: 'Материал, свет, стекло и сдержанность.', cover: ['glass-diorama', 'garden-loader', 'nightsail'] },
+  { id: 'calm', label: 'Calm', ru: 'Спокойное', icon: 'Leaf', about: 'Slow motion and a quiet mood.', aboutRu: 'Неспешное движение и тихое настроение.', cover: ['god-rays', 'windcrest', 'driftfield'] },
+  { id: 'depth', label: 'Depth', ru: 'Глубина', icon: 'Layers', about: 'Layers, tilt and 3D on a flat screen.', aboutRu: 'Слои, наклон и объём на плоском экране.', cover: ['depth-tilt-object', 'portal-door', 'phone-fan-stack'] },
+  { id: 'no-assets', label: 'Code only', ru: 'Только код', icon: 'Code', about: 'No images, models or sound files: everything is drawn by code.', aboutRu: 'Без картинок, моделей и звуковых файлов: всё рисует код.', cover: ['procedural-tree-rocks', 'moss-shell-texturing', 'css-photo-studio'] },
+  { id: 'retro', label: 'Retro', ru: 'Ретро', icon: 'Tv', about: 'Tubes, old desktops, film and polaroids.', aboutRu: 'Кинескопы, старые рабочие столы, плёнка и полароиды.', cover: ['retro-desktop-screen', 'glitch-bands', 'polaroid-tape'] },
+  { id: 'playful', label: 'Playful', ru: 'С игрой', icon: 'Smile', about: 'Small joys: springs, looks, a wink.', aboutRu: 'Маленькие радости: пружины, взгляды, подмигивание.', cover: ['look-at-cursor-rig', 'umbrella-hat', 'spring-toggle'] }
 ] as const;
 
 // Where pieces run. The URL is the live site, so a piece can be seen at work in its real context.

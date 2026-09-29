@@ -11,9 +11,11 @@ export const FACETS: { id: FacetId; key: Key; param: string }[] = [
   { id: 'tag', key: 'facetTag', param: 'tag' }
 ];
 
-// 'type' shows the list in sections by kind group (Interface, Animation, Graphics, Pages & tools), the way a store's
-// browse page does; the others are one flat grid. All items opens in sections, every other list opens newest first.
-// The address names the sort only when it differs from the page's own default.
+// The list has two settings, as in Finder or Linear: how cards are grouped and in what order.
+// Groups: sections by kind group (Interface, Animation, Graphics, Pages & tools), the way a store's browse page does;
+// tasks, by each piece's main job; or one flat grid. Order holds inside every group.
+// All items opens in sections ordered by kind; every other list opens flat, newest first.
+// The address names a setting only when it differs from the page's own default.
 export type SortId = 'new' | 'updated' | 'az' | 'type';
 export const SORTS: { id: SortId; key: Key; param: string }[] = [
   { id: 'type', key: 'sortType', param: 'type' },
@@ -21,10 +23,18 @@ export const SORTS: { id: SortId; key: Key; param: string }[] = [
   { id: 'updated', key: 'sortUpdated', param: 'updated' },
   { id: 'az', key: 'az', param: 'az' }
 ];
+export type GroupId = 'section' | 'job' | 'none';
+export const GROUPINGS: { id: GroupId; key: Key; param: string }[] = [
+  { id: 'section', key: 'groupSection', param: 'section' },
+  { id: 'job', key: 'groupJob', param: 'task' },
+  { id: 'none', key: 'groupNone', param: 'none' }
+];
 export type ListMode = 'all' | 'type' | 'favorites' | 'collection';
 export const defaultSort = (mode: string): SortId => (mode === 'all' ? 'type' : 'new');
-// Sections make no sense on a kind's own page
+export const defaultGroup = (mode: string): GroupId => (mode === 'all' ? 'section' : 'none');
+// On a kind's own page neither sections nor the order by kind mean anything
 export const sortsFor = (mode: string) => SORTS.filter((s) => s.id !== 'type' || mode !== 'type');
+export const groupsFor = (mode: string) => GROUPINGS.filter((g) => g.id !== 'section' || mode !== 'type');
 
 // Technologies, grouped the way people look for them. Anything unknown falls into Tools.
 export const STACK_GROUPS: { key: Key; members: string[] }[] = [
