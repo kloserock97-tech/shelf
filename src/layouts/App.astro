@@ -18,10 +18,14 @@ interface Props {
   item?: string;
   /** the item's collections, so the sidebar can keep the one it was opened from selected */
   collections?: string[];
+  /** load the search index from the shared file (item pages) instead of carrying it inline (lists: their filters
+      need it before the first paint) */
+  sharedIndex?: boolean;
 }
-const { title, nav = '', lang = 'en', page, item, collections } = Astro.props;
+const { title, nav = '', lang = 'en', page, item, collections, sharedIndex = false } = Astro.props;
 const items = await allItems();
-const index = JSON.stringify(items.map((e) => indexEntry(e, lang))).replace(/</g, '\\u003c');
+const indexUrl = sharedIndex ? url(lang === 'ru' ? 'ru/search-index.json' : 'search-index.json') : undefined;
+const index = sharedIndex ? '' : JSON.stringify(items.map((e) => indexEntry(e, lang))).replace(/</g, '\\u003c');
 
 // The same page in the other language: /shelf/<path> and /shelf/ru/<path>. The not-found page has no twin
 // at the same address (GitHub Pages serves one 404.html), so English points at /ru/404/ and Russian at the library.
@@ -31,12 +35,13 @@ const rel = here.replace(/^ru\//, '');
 const alt = page === 'not-found' ? (lang === 'en' ? url('ru/404/') : url('')) : lang === 'en' ? url(`ru/${rel}`) : url(rel);
 ---
 <!doctype html>
-<html lang={lang} data-alt={alt} data-page={page} data-nav={nav || undefined} data-item-page={item} data-collections={collections?.length ? collections.join(' ') : undefined}>
+<html lang={lang} data-alt={alt} data-page={page} data-nav={nav || undefined} data-item-page={item} data-collections={collections?.length ? collections.join(' ') : undefined} data-index={indexUrl}>
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="robots" content="noindex, nofollow">
     <meta name="color-scheme" content="light dark">
+    {indexUrl && <link rel="preload" href={indexUrl} as="fetch" crossorigin="anonymous">}
     <title>{title ? `${title} · Shelf` : 'Shelf'}</title>
     {/* The mark everywhere a browser shows a site: the tab (SVG, ICO for older ones), tiles and Safari (touch icon),
         the manifest's icons. Built by npm run icons. */}
@@ -80,7 +85,7 @@ const alt = page === 'not-found' ? (lang === 'en' ? url('ru/404/') : url('')) : 
     </div>
     <div class="sh-sidebar-scrim" data-action="sidebar-close"></div>
     <Overlays lang={lang} />
-    <script type="application/json" id="shelf-index" set:html={index}></script>
+    {index && <script type="application/json" id="shelf-index" set:html={index}></script>}
     <script>
       import '../scripts/app';
     </script>

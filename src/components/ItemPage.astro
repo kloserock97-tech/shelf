@@ -47,7 +47,7 @@ const license = d.license === 'PolyForm-Noncommercial-1.0.0' ? 'PolyForm Noncomm
 // Summaries and notes are written in Russian: on English pages screen readers should read them as Russian.
 const contentLang = lang === 'ru' ? undefined : 'ru';
 ---
-<App title={d.title} nav={`type:${d.type}`} lang={lang} item={item.id} collections={d.collections}>
+<App title={d.title} nav={`type:${d.type}`} lang={lang} item={item.id} collections={d.collections} sharedIndex>
   <header class="sh-toolbar">
     <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm sh-sidebar-toggle" type="button" data-action="sidebar-toggle" aria-label={t(lang, 'showSidebar')}><Icon name="PanelLeft" /></button>
     {/* Where the item lives: All items › its kind › the item. Opened from Favorites, the trail starts there instead

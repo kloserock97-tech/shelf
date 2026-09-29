@@ -23,8 +23,18 @@ const store = {
   set: (k: string, v: string | null) => { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch { /* storage may be blocked */ } }
 };
 const readList = (k: string): string[] => { try { const v = JSON.parse(store.get(k) ?? '[]'); return Array.isArray(v) ? v : []; } catch { return []; } };
+// Lists carry the index inline: their filters need it before the first paint. Item pages load it from one shared
+// file instead (inline it was up to a third of each page), cached from page to page; what needs it waits for it.
 const INDEX: Entry[] = JSON.parse($('#shelf-index')?.textContent || '[]');
 const BY_SLUG = new Map(INDEX.map((e) => [e.slug, e]));
+const indexReady: Promise<void> = INDEX.length || !html.dataset.index ? Promise.resolve() : fetch(html.dataset.index)
+  .then((r) => (r.ok ? r.json() : []))
+  .then((list: Entry[]) => {
+    INDEX.push(...list);
+    for (const e of list) BY_SLUG.set(e.slug, e);
+    search = null;
+  })
+  .catch(() => {});
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const narrow = matchMedia('(max-width: 900px)');
 const isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
@@ -308,6 +318,7 @@ function setSidebarStyle(style: string, animate = true) {
 const shortcuts = $('#shortcuts');
 // Surprise me: any piece on the shelf but the one on screen, each as likely as the next.
 function openRandom() {
+  if (!INDEX.length) { void indexReady.then(() => { if (INDEX.length) openRandom(); }); return; }
   const pool = INDEX.filter((e) => e.slug !== html.dataset.itemPage);
   const pick = pool[Math.floor(Math.random() * pool.length)];
   if (pick) location.href = pick.url;
@@ -512,7 +523,8 @@ let qlSlug = '';
 let qlReturn: HTMLElement | null = null;
 function lockScroll(on: boolean) { document.documentElement.style.overflow = on ? 'hidden' : ''; }
 function openQuickLook(slug: string, fromKeyboard = false) {
-  if (!ql || !BY_SLUG.has(slug)) return;
+  if (!ql) return;
+  if (!BY_SLUG.has(slug)) { if (!INDEX.length) void indexReady.then(() => { if (BY_SLUG.has(slug)) openQuickLook(slug, fromKeyboard); }); return; }
   qlReturn = document.activeElement as HTMLElement | null;
   showQuickLook(slug);
   ql.hidden = false;
@@ -638,7 +650,11 @@ function initFinderOnce() {
     lock: lockScroll
   });
 }
-function openPalette(initial = '') { initFinderOnce(); finder?.open(initial); }
+function openPalette(initial = '') {
+  if (!INDEX.length) { void indexReady.then(() => { if (INDEX.length) openPalette(initial); }); return; }
+  initFinderOnce();
+  finder?.open(initial);
+}
 function closePalette() { finder?.close(); }
 ql?.addEventListener('click', (e) => { if (e.target === ql) closeQuickLook(); });
 
