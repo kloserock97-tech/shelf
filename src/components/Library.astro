@@ -6,7 +6,7 @@ import { type Item, itemUrl, collectionUrl, posterUrl, subtitle } from '../lib/i
 import { GROUPS, TYPES, typeOf, typeAbout, typeLabel, groupLabel, type TypeDef } from '../lib/taxonomy';
 import { t, itemsWord, type Lang } from '../lib/i18n';
 import { lurl } from '../lib/url';
-import { FACETS, defaultSort, defaultGroup, sortsFor, groupsFor } from '../lib/facets';
+import { FACETS, VIEWS, defaultSort, defaultGroup, defaultView, sortsFor, groupsFor } from '../lib/facets';
 import { COLLECTIONS, JOBS, nameOf, aboutOf, type CollectionDef } from '../lib/curation';
 
 interface Props {
@@ -27,6 +27,7 @@ const filterable = mode !== 'favorites';
 // runs. Headers for grouping by task wait at the end of the grid until that grouping is picked.
 const firstSort = defaultSort(mode);
 const firstGroup = defaultGroup(mode);
+const firstView = defaultView(mode);
 const sectioned = mode !== 'type';
 const jobHeads = JOBS.map((j) => ({ j, n: items.filter((i) => i.data.jobs[0] === j.id).length })).filter((x) => x.n);
 const typeIndex = new Map(TYPES.map((ty, i) => [ty.id as string, i]));
@@ -72,10 +73,19 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
   <span class="sh-vsep"></span>
   <div class="sh-sortwrap">
     <button class="sh-btn sh-btn--ghost sh-btn--sm sh-sort" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="sort-menu" data-sort-trigger>
-      <Icon name="ArrowUpDown" /><span data-sort-label>{firstGroup === 'section' ? t(lang, 'groupSection') : t(lang, 'newest')}</span><Icon name="ChevronDown" class="sh-i--xs sh-facet__chev" />
+      <Icon name="ArrowUpDown" /><span data-sort-label>{firstView === 'shelves' ? t(lang, 'viewShelves') : firstGroup === 'section' ? t(lang, 'groupSection') : t(lang, 'newest')}</span><Icon name="ChevronDown" class="sh-i--xs sh-facet__chev" />
     </button>
     {/* One menu, two settings: how the cards are grouped, and their order inside each group. */}
     <div class="sh-menu sh-sortmenu" id="sort-menu" role="menu" aria-label={t(lang, 'view')} hidden data-sort-menu>
+      <div role="group" aria-labelledby="view-as">
+        <div class="sh-menu__label" id="view-as">{t(lang, 'showAs')}</div>
+        {VIEWS.map((v) => (
+          <button class="sh-menu__item" type="button" role="menuitemradio" aria-checked={v.id === firstView ? 'true' : 'false'} tabindex="-1" data-view={v.id}>
+            <span class="sh-menu__check"><Icon name="Check" /></span>{t(lang, v.key)}
+          </button>
+        ))}
+      </div>
+      <div class="sh-menu__sep"></div>
       <div role="group" aria-labelledby="view-group">
         <div class="sh-menu__label" id="view-group">{t(lang, 'groupBy')}</div>
         {groupsFor(mode).map((g) => (
@@ -221,6 +231,9 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
     </div>
   ))}
 </div>
+{/* icons for the arrows of shelves, which library.ts builds */}
+<template data-arrow="-1"><Icon name="ChevronLeft" /></template>
+<template data-arrow="1"><Icon name="ChevronRight" /></template>
 <div class="sh-empty" data-empty="favorites" hidden>
   <ShelfArt kind="favorites" />
   <p class="sh-empty__title">{t(lang, 'noFavTitle')}</p>

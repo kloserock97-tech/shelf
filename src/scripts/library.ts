@@ -2,7 +2,7 @@
 // counts beside every value recomputed against the other filters, several values per facet (OR), facets and the
 // text query together (AND), the applied count inside the pill, a view menu (grouping and order), a readable URL, filters kept when the
 // sidebar changes the type, and an empty state that names the filter to drop. On a phone the popover is a sheet.
-import { FACETS, SORTS, GROUPINGS, STACK_GROUPS, defaultSort, defaultGroup, sortsFor, groupsFor, stackGroupOf, tagInLang, type FacetId, type GroupId, type SortId } from '../lib/facets';
+import { FACETS, SORTS, GROUPINGS, VIEWS, STACK_GROUPS, defaultSort, defaultGroup, defaultView, sortsFor, groupsFor, stackGroupOf, tagInLang, type FacetId, type GroupId, type SortId, type ViewId } from '../lib/facets';
 import { GROUPS, TYPES, typeLabel, typeAbout, typeOf } from '../lib/taxonomy';
 import { JOBS, jobOf, nameOf, aboutOf } from '../lib/curation';
 import { itemsWord, type Key, type Lang } from '../lib/i18n';
@@ -50,7 +50,7 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
   const facetsOn = Boolean($('[data-filters]'));
 
   /* ---------- state and the URL ---------- */
-  type State = { q: string; type: Set<string>; job: Set<string>; stack: Set<string>; tag: Set<string>; sort: SortId; group: GroupId };
+  type State = { q: string; type: Set<string>; job: Set<string>; stack: Set<string>; tag: Set<string>; sort: SortId; group: GroupId; view: ViewId };
   const params = new URLSearchParams(location.search);
   const list = (k: string) => new Set((params.get(k) ?? '').split(',').map((s) => s.trim()).filter(Boolean));
   const baseSort = defaultSort(mode);
@@ -63,6 +63,10 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
   const groupKey = `shelf:group:${mode}`;
   const groupFromParam = (v: string | null): GroupId | null => groupings.find((g) => g.param === v)?.id ?? null;
   const storedGroup = groupings.find((g) => g.id === d.store.get(groupKey))?.id;
+  const baseView = defaultView(mode);
+  const viewKey = `shelf:view:${mode}`;
+  const viewFromParam = (v: string | null): ViewId | null => VIEWS.find((x) => x.param === v)?.id ?? null;
+  const storedView = VIEWS.find((x) => x.id === d.store.get(viewKey))?.id;
   const state: State = {
     q: params.get('q') ?? '',
     type: hasFacet('type') ? list('type') : new Set(),
@@ -70,7 +74,8 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
     stack: facetsOn ? list('stack') : new Set(),
     tag: facetsOn ? list('tag') : new Set(),
     sort: sortFromParam(params.get('sort')) ?? (storedSort === 'name' ? 'az' : (offered.find((s) => s.id === storedSort)?.id ?? baseSort)),
-    group: groupFromParam(params.get('group')) ?? storedGroup ?? baseGroup
+    group: groupFromParam(params.get('group')) ?? storedGroup ?? baseGroup,
+    view: viewFromParam(params.get('view')) ?? storedView ?? baseView
   };
   // links from before the facets used ?tech=
   if (facetsOn && params.get('tech')) state.stack.add(params.get('tech')!);
@@ -79,9 +84,10 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
   const active = () => state.type.size + state.job.size + state.stack.size + state.tag.size;
   function writeUrl() {
     const p = new URLSearchParams(location.search);
-    ['q', 'type', 'job', 'stack', 'tag', 'group', 'sort', 'tech'].forEach((k) => p.delete(k));
+    ['q', 'type', 'job', 'stack', 'tag', 'view', 'group', 'sort', 'tech'].forEach((k) => p.delete(k));
     if (state.q.trim()) p.set('q', state.q.trim());
     for (const f of FACETS) if (state[f.id].size) p.set(f.param, [...state[f.id]].join(','));
+    if (state.view !== baseView) p.set('view', VIEWS.find((x) => x.id === state.view)!.param);
     if (state.group !== baseGroup) p.set('group', GROUPINGS.find((g) => g.id === state.group)!.param);
     if (state.sort !== baseSort) p.set('sort', SORTS.find((s) => s.id === state.sort)!.param);
     const qs = p.toString().replace(/%2C/g, ',');
@@ -130,11 +136,13 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
   // Sections: the list broken up by kind group under its own headers, unless the words sort by relevance
   const heads = new Map($$('[data-group-head]', grid).map((h) => [h.dataset.groupHead!, h]));
   const grouped = () => state.group !== 'none' && !relevance() && heads.size > 0;
-  // sections by kind group, or tasks by each piece's main job (a piece shows once, under its first job)
+  // sections by kind group, or tasks by each piece's main job (a piece shows once, under its first job). With tasks in
+  // the filter, a piece stands under the first of those it has: filtered to Showcase, every showcase piece is in one group.
+  const jobOfEntry = (e: LibEntry) => (state.job.size ? e.jobs.find((j) => state.job.has(j)) : undefined) ?? e.jobs[0];
   const groupDefs = (): { key: string; has: (e: LibEntry) => boolean }[] =>
     state.group === 'section'
       ? GROUPS.map((g) => ({ key: `section:${g.id}`, has: (e: LibEntry) => typeOf(e.type).group === g.id }))
-      : JOBS.map((j) => ({ key: `job:${j.id}`, has: (e: LibEntry) => e.jobs[0] === j.id }));
+      : JOBS.map((j) => ({ key: `job:${j.id}`, has: (e: LibEntry) => jobOfEntry(e) === j.id }));
 
   /* ---------- rendering the grid ---------- */
   let visible: HTMLElement[] = cards;
@@ -163,28 +171,125 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
     if (pop && !pop.hidden && openFacet) renderPop(openFacet, false);
   }
 
-  // One grid either way: each group's header spans the row above its cards, empty groups hide
+  // In the grid each group's header spans the row above its cards; on shelves each group is a row of its own that
+  // scrolls sideways. Empty groups hide either way.
   function layout(found: LibEntry[]) {
     heads.forEach((h) => (h.hidden = true));
+    shelves.forEach((s) => (s.el.hidden = true));
+    grid.dataset.layout = 'grid';
     if (!grouped()) { visible.forEach((c) => grid.append(c)); return; }
+    const groups = groupDefs()
+      .map((g) => ({ key: g.key, head: heads.get(g.key), items: found.filter(g.has) }))
+      .filter((g): g is { key: string; head: HTMLElement; items: LibEntry[] } => Boolean(g.head) && g.items.length > 0);
+    const onShelves = state.view === 'shelves' && groups.length > 1;
+    grid.dataset.layout = onShelves ? 'shelves' : 'grid';
     // the cards in the order you see them, so arrows and Quick Look walk the groups as laid out
     const seq: HTMLElement[] = [];
-    for (const g of groupDefs()) {
-      const inGroup = found.filter(g.has);
-      const head = heads.get(g.key);
-      if (!inGroup.length || !head) continue;
-      head.hidden = false;
-      const n = $('[data-group-count]', head);
-      if (n) n.textContent = String(inGroup.length);
-      grid.append(head);
-      inGroup.forEach((e) => seq.push(cardOf.get(e.slug)!));
-      grid.append(...seq.slice(seq.length - inGroup.length));
+    for (const g of groups) {
+      g.head.hidden = false;
+      const n = $('[data-group-count]', g.head);
+      if (n) n.textContent = String(g.items.length);
+      const groupCards = g.items.map((e) => cardOf.get(e.slug)!);
+      seq.push(...groupCards);
+      if (onShelves) {
+        const s = shelfFor(g.key);
+        s.bar.prepend(g.head);
+        s.all.hidden = !facetsOn;
+        s.all.textContent = tr('seeAll');
+        s.all.setAttribute('aria-label', tr('seeAllOf', { group: $('.sh-grid__title', g.head)?.firstChild?.textContent?.trim() ?? '' }));
+        s.row.replaceChildren(...groupCards);
+        s.row.scrollLeft = 0;
+        s.el.hidden = false;
+        grid.append(s.el);
+      } else {
+        grid.append(g.head, ...groupCards);
+      }
     }
     // a piece without a job yet still shows, after the groups
     const rest = found.map((e) => cardOf.get(e.slug)!).filter((c) => !seq.includes(c));
-    grid.append(...rest);
+    if (onShelves && rest.length) shelves.get(groups[groups.length - 1].key)!.row.append(...rest); else grid.append(...rest);
     visible = [...seq, ...rest];
+    if (onShelves) { fitShelves(); shelves.forEach((s) => s.sync()); }
   }
+
+  /* ---------- shelves: a row per group, arrows in its bar, See all narrows the list to it ---------- */
+  type Shelf = { el: HTMLElement; bar: HTMLElement; row: HTMLElement; all: HTMLButtonElement; sync: () => void };
+  const shelves = new Map<string, Shelf>();
+  function shelfFor(key: string): Shelf {
+    const have = shelves.get(key);
+    if (have) return have;
+    const el = document.createElement('section');
+    el.className = 'sh-shelf';
+    el.dataset.shelf = key;
+    const bar = document.createElement('div');
+    bar.className = 'sh-shelf__bar';
+    const tools = document.createElement('div');
+    tools.className = 'sh-shelf__tools';
+    const all = document.createElement('button');
+    all.type = 'button';
+    all.className = 'sh-btn sh-btn--plain sh-btn--sm sh-shelf__all';
+    all.addEventListener('click', () => seeAll(key));
+    const nav = document.createElement('div');
+    nav.className = 'sh-rail__nav';
+    const arrow = (dir: -1 | 1) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm';
+      b.setAttribute('aria-label', tr(dir < 0 ? 'railPrev' : 'railNext'));
+      b.innerHTML = $<HTMLTemplateElement>('template[data-arrow="' + dir + '"]')?.innerHTML ?? '';
+      return b;
+    };
+    const prev = arrow(-1), next = arrow(1);
+    nav.append(prev, next);
+    tools.append(all, nav);
+    bar.append(tools);
+    const row = document.createElement('div');
+    row.className = 'sh-shelf__row';
+    el.append(bar, row);
+    const s: Shelf = { el, bar, row, all, sync: wireRow(row, prev, next) };
+    shelves.set(key, s);
+    return s;
+  }
+  // how many cards a row shows: as many as the grid would put in a line at this card size
+  function fitShelves() {
+    const row = $('.sh-shelf:not([hidden]) .sh-shelf__row', grid);
+    if (!row) return;
+    const cs = getComputedStyle(row);
+    const inner = row.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    const gap = parseFloat(cs.columnGap) || 24;
+    const min = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--card-min-width')) || 232;
+    const n = Math.max(1, Math.floor((inner + gap) / (min + gap)));
+    // on touch the next card peeks past the edge, so the row reads as one you can swipe
+    grid.style.setProperty('--shelf-n', String(matchMedia('(hover: none)').matches ? n + 0.3 : n));
+  }
+  function seeAll(key: string) {
+    const [kind, id] = key.split(':');
+    if (kind === 'section') state.type = new Set(TYPES.filter((t) => t.group === id).map((t) => t.id));
+    else state.job = new Set([id]);
+    writeUrl();
+    apply();
+    grid.scrollIntoView({ block: 'start', behavior: 'instant' });
+    (grid.querySelector<HTMLElement>('.sh-card:not([hidden]) .sh-card__thumb') ?? input)?.focus({ preventScroll: true });
+  }
+  // a row that scrolls sideways: arrows step a screenful and grey out at the ends, hide when there is nowhere to go
+  function wireRow(list: HTMLElement, prev: HTMLButtonElement, next: HTMLButtonElement) {
+    const sync = () => {
+      const max = list.scrollWidth - list.clientWidth;
+      prev.disabled = list.scrollLeft <= 1;
+      next.disabled = list.scrollLeft >= max - 1;
+      prev.hidden = next.hidden = max <= 1;
+    };
+    const step = (dir: number) => () => {
+      const smooth = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+      list.scrollBy({ left: dir * list.clientWidth * 0.9, behavior: smooth ? 'smooth' : 'instant' });
+    };
+    prev.addEventListener('click', step(-1));
+    next.addEventListener('click', step(1));
+    list.addEventListener('scroll', sync, { passive: true });
+    return sync;
+  }
+  addEventListener('resize', () => { if (grid.dataset.layout === 'shelves') { fitShelves(); shelves.forEach((s) => s.sync()); } });
+  $('[data-zoom]')?.addEventListener('input', () => { if (grid.dataset.layout === 'shelves') { fitShelves(); shelves.forEach((s) => s.sync()); } });
 
   function renderEmpty(n: number, filtered: boolean) {
     const empty = n ? '' : filtered ? 'search' : mode === 'favorites' ? 'favorites' : 'none';
@@ -222,17 +327,22 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
       b.setAttribute('aria-label', n ? `${name}, ${n}` : name);
     }
     $$<HTMLButtonElement>('[data-filter="tech"] .sh-chip').forEach((c) => c.setAttribute('aria-pressed', String(state.stack.has(c.dataset.value ?? ''))));
-    // the button names the grouping when there is one, and the order when it isn't the page's own
+    // the button names what differs from a plain grid: shelves, the grouping, an order that isn't the page's own
     const sortLabel = $('[data-sort-label]');
     const orderName = tr(SORTS.find((s) => s.id === state.sort)!.key);
     const groupName = tr(GROUPINGS.find((g) => g.id === state.group)!.key);
-    const current = relevance() ? tr('sortBest')
-      : state.group === 'none' ? orderName
-      : state.sort === baseSort ? groupName : `${groupName} · ${orderName}`;
+    const shelved = grid.dataset.layout === 'shelves';
+    const parts = [
+      shelved ? tr('viewShelves') : '',
+      state.group !== 'none' && (!shelved || state.group !== baseGroup) ? groupName : '',
+      state.sort !== baseSort || (state.group === 'none' && !shelved) ? orderName : ''
+    ].filter(Boolean);
+    const current = relevance() ? tr('sortBest') : parts.join(' · ') || orderName;
     if (sortLabel) sortLabel.textContent = current;
     $('[data-sort-trigger]')?.setAttribute('aria-label', tr('viewLabel', { view: current }));
     $$('[data-sort-menu] [data-value]').forEach((el) => el.setAttribute('aria-checked', String(el.dataset.value === state.sort)));
     $$('[data-sort-menu] [data-group]').forEach((el) => el.setAttribute('aria-checked', String(el.dataset.group === state.group)));
+    $$('[data-sort-menu] [data-view]').forEach((el) => el.setAttribute('aria-checked', String(el.dataset.view === state.view)));
   }
 
   /* ---------- value labels and option lists ---------- */
@@ -451,9 +561,18 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
   }
   sortBtn?.addEventListener('click', () => (sortMenu?.hidden ? openSort() : closeSort()));
   sortItems.forEach((b) => b.addEventListener('click', () => {
-    if (b.dataset.group) {
-      state.group = b.dataset.group as GroupId;
+    if (b.dataset.view) {
+      state.view = b.dataset.view as ViewId;
+      // shelves are rows of groups: with no groups, bring back the page's own grouping (sections, or tasks)
+      if (state.view === 'shelves' && state.group === 'none') state.group = baseGroup !== 'none' ? baseGroup : groupings[0].id;
+      d.store.set(viewKey, state.view === baseView ? null : state.view);
       d.store.set(groupKey, state.group === baseGroup ? null : state.group);
+    } else if (b.dataset.group) {
+      state.group = b.dataset.group as GroupId;
+      // no groups means nothing to put on shelves
+      if (state.group === 'none') state.view = 'grid';
+      d.store.set(groupKey, state.group === baseGroup ? null : state.group);
+      d.store.set(viewKey, state.view === baseView ? null : state.view);
     } else {
       state.sort = b.dataset.value as SortId;
       d.store.set('shelf:sort', state.sort === baseSort ? null : state.sort);
@@ -495,22 +614,12 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
     (grid.querySelector<HTMLElement>('.sh-card:not([hidden]) .sh-card__thumb') ?? input)?.focus();
   });
 
-  /* ---------- the collections shelf: arrows step a screenful, and grey out at the ends ---------- */
+  /* ---------- the collections shelf: the same kind of row as a shelf of cards ---------- */
   const railList = $('[data-rail-list]');
-  if (railList) {
-    const steps = $$<HTMLButtonElement>('[data-rail-step]');
-    const sync = () => {
-      const max = railList.scrollWidth - railList.clientWidth;
-      steps.forEach((b) => {
-        b.disabled = b.dataset.railStep === '-1' ? railList.scrollLeft <= 1 : railList.scrollLeft >= max - 1;
-        b.hidden = max <= 1;
-      });
-    };
-    steps.forEach((b) => b.addEventListener('click', () => {
-      const smooth = !matchMedia('(prefers-reduced-motion: reduce)').matches;
-      railList.scrollBy({ left: Number(b.dataset.railStep) * railList.clientWidth * 0.9, behavior: smooth ? 'smooth' : 'instant' });
-    }));
-    railList.addEventListener('scroll', sync, { passive: true });
+  const railPrev = $<HTMLButtonElement>('[data-rail-step="-1"]');
+  const railNext = $<HTMLButtonElement>('[data-rail-step="1"]');
+  if (railList && railPrev && railNext) {
+    const sync = wireRow(railList, railPrev, railNext);
     addEventListener('resize', sync);
     sync();
   }

@@ -480,18 +480,21 @@ function selectCard(i: number) {
   list.forEach((c, j) => c.toggleAttribute('data-selected', j === selected));
   $('.sh-card__thumb', list[selected])?.focus({ preventScroll: false });
 }
-// The card straight above or below: sections can leave a row half full, so go by position, not by index.
+// The card straight above or below: sections can leave a row half full, and a shelf scrolls sideways, so go by
+// where the cards are on screen, not by index.
 function rowStep(list: HTMLElement[], i: number, dir: 1 | -1) {
   const from = list[i];
   if (!from) return 0;
-  const cx = from.offsetLeft + from.offsetWidth / 2;
+  const f = from.getBoundingClientRect();
+  const cx = f.left + f.width / 2;
   let best = i;
   let bestDy = Infinity;
   let bestDx = Infinity;
   list.forEach((c, j) => {
-    const dy = (c.offsetTop - from.offsetTop) * dir;
+    const r = c.getBoundingClientRect();
+    const dy = (r.top - f.top) * dir;
     if (dy <= 4) return;
-    const dx = Math.abs(c.offsetLeft + c.offsetWidth / 2 - cx);
+    const dx = Math.abs(r.left + r.width / 2 - cx);
     if (dy < bestDy - 4 || (Math.abs(dy - bestDy) <= 4 && dx < bestDx)) { best = j; bestDy = dy; bestDx = dx; }
   });
   return best;

@@ -592,6 +592,33 @@ button.sh-menu__item { appearance: none; margin: 0; border: 0; width: 100%; back
 .sh-grid__kind:hover { color: var(--accent-text); }
 /* a task's header says what the task is, in the quiet voice of the kind links */
 .sh-grid__about { margin: 0; font: 400 13px/24px var(--font-sans); color: var(--label-secondary); }
+/* ---------- Shelves: each group a row that scrolls sideways (View → Show as Shelves) ----------
+   Like the App Store's browse page: every group in sight at once, a row per group with its header, arrows and See all.
+   A row holds as many cards as the grid would put in a line at this card size (--shelf-n, set by library.ts); on touch
+   the next one peeks. Rows snap to a card, are cut inside the margin on a computer like the collections shelf, and a
+   hairline parts the shelves as it parts sections. */
+.sh-grid[data-layout="shelves"] { display: block; padding-inline: 0; }
+.sh-shelf { display: grid; gap: var(--space-3); }
+/* from the second shelf in sight: the shelves of the other grouping stay in the grid, hidden, so count only shown ones */
+.sh-shelf:not([hidden]) ~ .sh-shelf { margin-top: var(--space-6); }
+.sh-shelf__bar { display: flex; align-items: center; gap: var(--space-4); min-width: 0; margin: 0 var(--space-8); }
+.sh-shelf:not([hidden]) ~ .sh-shelf .sh-shelf__bar { padding-top: var(--space-6); border-top: 0.5px solid var(--separator); }
+.sh-shelf__bar .sh-grid__head { flex: 1; min-width: 0; margin: 0; padding: 0; border: 0; }
+.sh-shelf__tools { display: flex; align-items: center; gap: var(--space-2); flex: none; }
+.sh-shelf__all { font-variant-numeric: tabular-nums; }
+.sh-shelf__row {
+  display: grid; grid-auto-flow: column; gap: var(--space-6);
+  grid-auto-columns: calc((100% - (var(--shelf-n, 4) - 1) * var(--space-6)) / var(--shelf-n, 4));
+  padding: 6px var(--space-8) var(--space-2);
+  overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scroll-padding-inline: var(--space-8);
+  scrollbar-width: none;
+}
+.sh-shelf__row::-webkit-scrollbar { display: none; }
+.sh-shelf__row > .sh-card { scroll-snap-align: start; }
+@media (hover: hover) and (pointer: fine) and (min-width: 901px) {
+  .sh-shelf__row { mask-image: linear-gradient(90deg, transparent 12px, #000 12px, #000 calc(100% - 12px), transparent calc(100% - 12px)); }
+}
+
 /* ---------- Collections shelf on All items ----------
    A row of tiles under the featured piece, like the shelves of Apple Music: three to a screen on a wide window, two
    on a medium one, the next one peeking on a phone. Arrows step a screenful (hidden on touch, where you swipe) and the
@@ -967,6 +994,9 @@ a.sh-meter__name:hover { background: var(--fill); }
   .sh-rail { margin-top: var(--space-6); }
   .sh-rail__head { padding: 0 var(--space-4); }
   .sh-rail__list { grid-auto-columns: 78%; gap: var(--space-4); padding-inline: var(--space-4); scroll-padding-inline: var(--space-4); }
+  .sh-grid[data-layout="shelves"] { padding-inline: 0; }
+  .sh-shelf__bar { margin: 0 var(--space-4); }
+  .sh-shelf__row { gap: var(--space-4); grid-auto-columns: calc((100% - (var(--shelf-n, 2) - 1) * var(--space-4)) / var(--shelf-n, 2)); padding-inline: var(--space-4); scroll-padding-inline: var(--space-4); }
   .sh-cov { padding: var(--space-4) var(--space-4) var(--space-10); gap: var(--space-6); }
   .sh-cov__intro { font-size: 15px; line-height: 22px; }
   .sh-cov__hunt { padding: var(--space-4); }

@@ -29,6 +29,15 @@ export const GROUPINGS: { id: GroupId; key: Key; param: string }[] = [
   { id: 'job', key: 'groupJob', param: 'task' },
   { id: 'none', key: 'groupNone', param: 'none' }
 ];
+// How the groups are shown: one grid with a header over each group, or shelves — each group a row that scrolls
+// sideways, like the App Store's browse page, so every group is in sight at once. Shelves need two groups or more;
+// with one, or with no groups, or while words are sorted by relevance, it is the grid.
+export type ViewId = 'grid' | 'shelves';
+export const VIEWS: { id: ViewId; key: Key; param: string }[] = [
+  { id: 'shelves', key: 'viewShelves', param: 'shelves' },
+  { id: 'grid', key: 'viewGrid', param: 'grid' }
+];
+export const defaultView = (mode: string): ViewId => (mode === 'all' ? 'shelves' : 'grid');
 export type ListMode = 'all' | 'type' | 'favorites' | 'collection';
 export const defaultSort = (mode: string): SortId => (mode === 'all' ? 'type' : 'new');
 export const defaultGroup = (mode: string): GroupId => (mode === 'all' ? 'section' : 'none');
