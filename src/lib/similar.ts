@@ -3,7 +3,7 @@
 import type { Item } from './items';
 
 const shared = (a: readonly string[], b: readonly string[]) => a.filter((x) => b.includes(x)).length;
-const WEIGHT = { type: 3, job: 2, collection: 1.5, tag: 1, tech: 0.5 };
+const WEIGHT = { type: 2, job: 2, collection: 2, tag: 1, tech: 0.5 };
 const MIN_SCORE = 3; // below this two pieces only share a word or two
 
 export function pairsOf(item: Item, items: Item[]) {
