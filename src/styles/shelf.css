@@ -588,20 +588,22 @@ button.sh-menu__item { appearance: none; margin: 0; border: 0; width: 100%; back
 .sh-grid__kinds { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; }
 .sh-grid__kind { border-radius: 4px; font: 500 13px/18px var(--font-sans); color: var(--label-secondary); text-decoration: none; transition: color var(--duration-fast) var(--ease-standard); }
 .sh-grid__kind:hover { color: var(--accent-text); }
-.sh-card { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; color: inherit; }
+.sh-card { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; color: inherit; container-type: inline-size; }
+/* The poster and the Live demo button over it lift together */
+.sh-card__frame { position: relative; transition: transform var(--duration-base) var(--ease-out); }
 .sh-card__thumb {
   display: block; position: relative; aspect-ratio: 4 / 3; max-width: 100%; overflow: hidden;
   border-radius: var(--radius-lg); background: var(--tile); box-shadow: var(--shadow-edge);
   transition: transform var(--duration-base) var(--ease-out), box-shadow var(--duration-base) var(--ease-out);
 }
 @media (hover: hover) and (pointer: fine) {
-  .sh-card:hover .sh-card__thumb { transform: translateY(-3px); box-shadow: var(--shadow-edge), var(--shadow-lift); }
-  .sh-card:hover .sh-card__hint { opacity: 1; transform: none; }
+  .sh-card:hover .sh-card__frame { transform: translateY(-3px); }
+  .sh-card:hover .sh-card__thumb { box-shadow: var(--shadow-edge), var(--shadow-lift); }
+  .sh-card:hover .sh-card__live { opacity: 1; transform: none; }
   .sh-card:hover .sh-card__fav { opacity: 1; }
 }
 @media (hover: none) {
   .sh-card__fav { opacity: 1; }
-  .sh-card__hint { display: none; }
 }
 .sh-card__thumb:active { transform: scale(0.985); transition-duration: var(--duration-instant); }
 .sh-card__thumb:focus-visible, .sh-card[data-selected] .sh-card__thumb { box-shadow: var(--focus); }
@@ -611,12 +613,25 @@ button.sh-menu__item { appearance: none; margin: 0; border: 0; width: 100%; back
 .sh-card__fallback { position: absolute; inset: 0; display: grid; place-items: center; color: var(--label-tertiary); }
 .sh-card__fallback .sh-i { width: 40px; height: 40px; }
 .sh-card__badges { position: absolute; top: 10px; left: 10px; display: flex; gap: 6px; }
-.sh-card__hint {
-  position: absolute; right: 10px; bottom: 10px; opacity: 0; transform: translateY(4px);
-  transition: opacity var(--duration-fast) var(--ease-standard), transform var(--duration-base) var(--ease-out);
+/* Live demo: a real button over the poster's corner that opens the running demo in Quick Look, over the list.
+   With a mouse it shows on hover, with the keyboard on focus or the selected card; on touch it stays. */
+.sh-card__live {
+  appearance: none; margin: 0; border: 0; cursor: pointer;
+  position: absolute; right: 10px; bottom: 10px; z-index: 1;
+  height: var(--control-sm); padding: 0 8px 0 9px; gap: 6px; border-radius: var(--radius-pill); font-weight: 600;
+  opacity: 0; transform: translateY(4px);
+  transition: opacity var(--duration-fast) var(--ease-standard), transform var(--duration-base) var(--ease-out), background-color var(--duration-fast) var(--ease-standard);
 }
-.sh-card[data-selected] .sh-card__hint, .sh-card__thumb:focus-visible .sh-card__hint { opacity: 1; transform: none; }
-.sh-card__hint .sh-kbd { height: 16px; min-width: 16px; padding: 0 4px; font-size: 11px; line-height: 14px; }
+.sh-card__live:hover { background: var(--surface-raised); }
+.sh-card__live:active { transform: scale(0.96); }
+.sh-card__live .sh-i svg { fill: currentColor; }
+.sh-card__live:focus-visible, .sh-card[data-selected] .sh-card__live, .sh-card__thumb:focus-visible + .sh-card__live { opacity: 1; transform: none; }
+.sh-card__live .sh-kbd { height: 16px; min-width: 16px; padding: 0 4px; font-size: 11px; line-height: 14px; }
+@container (max-width: 260px) { .sh-card__live .sh-kbd { display: none; } }
+@media (hover: none) {
+  .sh-card__live { opacity: 1; transform: none; }
+  .sh-card__live .sh-kbd { display: none; }
+}
 .sh-card__meta { display: flex; align-items: flex-start; gap: var(--space-2); padding: 0 2px; }
 .sh-card__text { flex: 1; min-width: 0; }
 .sh-card__title { display: block; font: 600 14px/20px var(--font-sans); letter-spacing: -0.005em; color: var(--label); text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -921,8 +936,8 @@ button.sh-menu__item { appearance: none; margin: 0; border: 0; width: 100%; back
 
 /* ---------- Reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .sh-btn, .sh-chip, .sh-card__thumb, .sh-card__hint, .sh-seg::before, .sh-stage__viewport, .sh-app, .sh-app > .sh-sidebar, .sh-sb__label, .sh-sb__list, .sh-sb__brand { transition-duration: 1ms !important; }
-  .sh-card:hover .sh-card__thumb, .sh-btn:active, .sh-chip:active { transform: none; }
+  .sh-btn, .sh-chip, .sh-card__thumb, .sh-card__frame, .sh-card__live, .sh-seg::before, .sh-stage__viewport, .sh-app, .sh-app > .sh-sidebar, .sh-sb__label, .sh-sb__list, .sh-sb__brand { transition-duration: 1ms !important; }
+  .sh-card:hover .sh-card__frame, .sh-btn:active, .sh-chip:active, .sh-card__live:active { transform: none; }
   .sh-overlay.is-in > *, .sh-empty .sh-art-empty__thing, .sh-logo rect { animation: none !important; }
   .sh-toast, .sh-tip { transition-property: opacity; }
   .sh-hero:hover .sh-hero__art img { transform: none; }

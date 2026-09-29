@@ -124,7 +124,7 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
       <p class="sh-hero__summary" lang={contentLang}>{hero.data.summary}</p>
       <div class="sh-hero__actions">
         <a class="sh-btn sh-btn--primary" href={itemUrl(hero, lang)}>{t(lang, 'open')}<Icon name="ChevronRight" /></a>
-        <button class="sh-btn sh-hero__ql" type="button" data-quicklook={hero.id}><Icon name="Eye" />{t(lang, 'quickLook')}</button>
+        <button class="sh-btn sh-hero__ql" type="button" data-quicklook={hero.id}><Icon name="Play" />{t(lang, 'quickLook')}</button>
       </div>
     </div>
   </section>

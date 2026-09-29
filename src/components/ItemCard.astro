@@ -1,7 +1,7 @@
 ---
 import Icon from './Icon.astro';
 import { typeOf } from '../lib/taxonomy';
-import { type Item, itemUrl, posterUrl, loopUrl, subtitle, isPrivate } from '../lib/items';
+import { type Item, itemUrl, posterUrl, loopUrl, demoUrl, subtitle, isPrivate } from '../lib/items';
 import { t, type Lang } from '../lib/i18n';
 
 interface Props {
@@ -14,22 +14,31 @@ const href = itemUrl(item, lang);
 const poster = posterUrl(item);
 const loop = loopUrl(item);
 const priv = isPrivate(item);
+const live = Boolean(demoUrl(item));
 ---
 <article class="sh-card" data-slug={item.id} data-tech={d.tech.join('|')} data-status={d.status} data-added={d.added.toISOString().slice(0, 10)} data-title={d.title}>
-  <a class="sh-card__thumb" href={href} aria-label={d.title} data-loop={loop}>
-    {poster ? (
-      <img class="sh-card__media" src={poster} alt="" loading="lazy" decoding="async">
-    ) : (
-      <span class="sh-card__fallback"><Icon name={typeOf(d.type).icon} stroke={1.25} /></span>
+  {/* The poster (and a recorded loop on hover) opens the item's page; Live demo runs the real thing over the list,
+      in Quick Look, without leaving it. */}
+  <div class="sh-card__frame">
+    <a class="sh-card__thumb" href={href} aria-label={d.title} data-loop={loop}>
+      {poster ? (
+        <img class="sh-card__media" src={poster} alt="" loading="lazy" decoding="async">
+      ) : (
+        <span class="sh-card__fallback"><Icon name={typeOf(d.type).icon} stroke={1.25} /></span>
+      )}
+      {(d.status === 'draft' || priv) && (
+        <span class="sh-card__badges">
+          {d.status === 'draft' && <span class="sh-badge sh-badge--glass sh-badge--draft">{t(lang, 'draft')}</span>}
+          {priv && <span class="sh-badge sh-badge--glass"><Icon name="Lock" />{t(lang, 'private')}</span>}
+        </span>
+      )}
+    </a>
+    {live && (
+      <button class="sh-card__live sh-badge sh-badge--glass" type="button" data-quicklook={item.id} aria-label={t(lang, 'liveDemoOf', { title: d.title })}>
+        <Icon name="Play" /><span class="sh-card__live-label">{t(lang, 'quickLook')}</span><kbd class="sh-kbd" aria-hidden="true">{t(lang, 'spaceKey')}</kbd>
+      </button>
     )}
-    {(d.status === 'draft' || priv) && (
-      <span class="sh-card__badges">
-        {d.status === 'draft' && <span class="sh-badge sh-badge--glass sh-badge--draft">{t(lang, 'draft')}</span>}
-        {priv && <span class="sh-badge sh-badge--glass"><Icon name="Lock" />{t(lang, 'private')}</span>}
-      </span>
-    )}
-    <span class="sh-card__hint sh-badge sh-badge--glass" aria-hidden="true">{t(lang, 'quickLook')} <kbd class="sh-kbd">{t(lang, 'spaceKey')}</kbd></span>
-  </a>
+  </div>
   <div class="sh-card__meta">
     <div class="sh-card__text">
       <a class="sh-card__title" href={href} tabindex="-1">{d.title}</a>
