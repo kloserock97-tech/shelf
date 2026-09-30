@@ -36,7 +36,7 @@
 - `variants/<id>/` — код варианта: `html`, `react`, `vue`, `three`, `r3f`, `webgpu`… Порядок файлов задаёт `files`.
 - `poster.webp` — кадр 4:3 (`npm run capture`), `loop.mp4` — необязательный ролик для наведения.
 
-Типы (18, в четырёх группах сайдбара): button, control, card, navigation, gallery · scroll, cursor, text, transition,
+Типы (21, в четырёх группах сайдбара): button, control, card, navigation, gallery, list, overlay, chart · scroll, cursor, text, transition,
 loader · webgl, shader, object, background, icon · section, sound, utility. Старые адреса `/type/component/`,
 `/type/motion/` и `/type/app/` ведут на `control`, `gallery` и `webgl`.
 Статусы: stable, draft.

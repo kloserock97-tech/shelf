@@ -20,7 +20,8 @@ description: Кладёт UI-решение на полку Shelf (Projects/shel
   Blender, процедурная геометрия, свой синтез.
   Опись с пометками происхождения — `docs/research/inventory.md`.
 - Выбери тип и короткий kebab-case slug. Типы по группам сайдбара:
-  Interface — button, control (переключатели, поля, ползунки), card, navigation, gallery;
+  Interface — button, control (переключатели, поля, ползунки), card, navigation, gallery, list (строки: порядок, группировка,
+  раскрытие), overlay (листы, подсказки, островки поверх страницы), chart (числа и графики);
   Animation — scroll, cursor, text, transition, loader;
   Graphics — webgl, shader, object, background, icon;
   Pages & tools — section, sound, utility.
@@ -49,7 +50,8 @@ description: Кладёт UI-решение на полку Shelf (Projects/shel
     storytelling, first-impression, atmosphere, feedback, loading, comparison, contact, input, onboarding, empty-state,
     error, data, quality. Без `jobs` check предупреждает, а страница «Покрытие» считает задачу пустой.
   - `collections` — подборки вкуса, 0–2 и только если точно про него: feels-expensive, calm, depth, no-assets (без
-    картинок, моделей, звуков и шрифтов — проверь по коду), retro, playful.
+    картинок, моделей, звуков и шрифтов — проверь по коду), retro, playful, ai-native (работа с моделью: поток, сомнение,
+    правки, план), from-research (идея из статьи по HCI — укажи её в `priorArt`).
   - `usedIn` — где элемент работает вживую: ts2, windcrest, driftfield, nightsail, meadow-walk. Новый проект — строка в
     `PROJECTS` (curation.ts и scripts/lib/items.mjs) с адресом живого сайта.
   - `pairs` — «хорошо сочетается»: slug'и того, с чем элемент собран на одном экране или что он использует. Достаточно

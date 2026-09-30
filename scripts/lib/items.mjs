@@ -6,11 +6,11 @@ import YAML from 'yaml';
 export const ROOT = path.resolve(import.meta.dirname, '..', '..');
 // Same ids as src/lib/curation.ts: what a piece does (jobs), taste collections, projects where it runs.
 export const JOBS = ['navigation', 'discovery', 'showcase', 'storytelling', 'first-impression', 'atmosphere', 'feedback', 'loading', 'comparison', 'contact', 'input', 'onboarding', 'empty-state', 'error', 'data', 'quality'];
-export const COLLECTIONS = ['feels-expensive', 'calm', 'depth', 'no-assets', 'retro', 'playful'];
+export const COLLECTIONS = ['feels-expensive', 'calm', 'depth', 'no-assets', 'retro', 'playful', 'ai-native', 'from-research'];
 export const PLATFORMS = ['web', 'mobile'];
 export const PROJECTS = ['ts2', 'windcrest', 'driftfield', 'nightsail', 'meadow-walk'];
 // Same ids as src/lib/taxonomy.ts, which also holds labels, icons and sidebar groups.
-export const TYPES = ['button', 'control', 'card', 'navigation', 'gallery', 'scroll', 'cursor', 'text', 'transition', 'loader', 'webgl', 'shader', 'object', 'background', 'icon', 'section', 'sound', 'utility'];
+export const TYPES = ['button', 'control', 'card', 'navigation', 'gallery', 'list', 'overlay', 'chart', 'scroll', 'cursor', 'text', 'transition', 'loader', 'webgl', 'shader', 'object', 'background', 'icon', 'section', 'sound', 'utility'];
 
 export function splitFrontmatter(src) {
   const m = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/.exec(src);

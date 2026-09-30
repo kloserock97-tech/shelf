@@ -30,7 +30,9 @@ export const COLLECTIONS = [
   { id: 'depth', label: 'Depth', ru: 'Глубина', icon: 'Layers', about: 'Layers, tilt and 3D on a flat screen.', aboutRu: 'Слои, наклон и объём на плоском экране.', cover: ['depth-tilt-object', 'portal-door', 'phone-fan-stack'] },
   { id: 'no-assets', label: 'Code only', ru: 'Только код', icon: 'Code', about: 'No images, models or sound files: everything is drawn by code.', aboutRu: 'Без картинок, моделей и звуковых файлов: всё рисует код.', cover: ['procedural-tree-rocks', 'moss-shell-texturing', 'css-photo-studio'] },
   { id: 'retro', label: 'Retro', ru: 'Ретро', icon: 'Tv', about: 'Tubes, old desktops, film and polaroids.', aboutRu: 'Кинескопы, старые рабочие столы, плёнка и полароиды.', cover: ['retro-desktop-screen', 'glitch-bands', 'polaroid-tape'] },
-  { id: 'playful', label: 'Playful', ru: 'С игрой', icon: 'Smile', about: 'Small joys: springs, looks, a wink.', aboutRu: 'Маленькие радости: пружины, взгляды, подмигивание.', cover: ['look-at-cursor-rig', 'umbrella-hat', 'spring-toggle'] }
+  { id: 'playful', label: 'Playful', ru: 'С игрой', icon: 'Smile', about: 'Small joys: springs, looks, a wink.', aboutRu: 'Маленькие радости: пружины, взгляды, подмигивание.', cover: ['look-at-cursor-rig', 'umbrella-hat', 'spring-toggle'] },
+  { id: 'ai-native', label: 'AI-native', ru: 'AI-интерфейсы', icon: 'Sparkles', about: 'Working with a model: streams, doubt, edits you can take back, plans you can steer.', aboutRu: 'Работа с моделью: поток текста, сомнение, правки, которые можно вернуть, план, которым можно управлять.', cover: [] as string[] },
+  { id: 'from-research', label: 'From research', ru: 'Из исследований', icon: 'Microscope', about: 'Ideas from HCI papers, built to use.', aboutRu: 'Идеи из статей по HCI, собранные в рабочие вещи.', cover: [] as string[] }
 ] as const;
 
 // Where pieces run. The URL is the live site, so a piece can be seen at work in its real context.
