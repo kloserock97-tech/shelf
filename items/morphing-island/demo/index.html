@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Morphing Island</title>
+<link rel="stylesheet" href="../variants/html/morphing-island.css">
+<style>
+  :root {
+    --label: #1d1d1f; --label-2: #636366; --label-3: #86868b;
+    --card: #ffffff; --fill: rgb(118 118 128 / .12); --fill-hover: rgb(118 118 128 / .2); --hair: rgb(0 0 0 / .08);
+    --accent: #0073e6;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --label: #f5f5f7; --label-2: #aaaaaf; --label-3: #6e6e73;
+      --card: #1c1c1e; --fill: rgb(118 118 128 / .24); --fill-hover: rgb(118 118 128 / .34); --hair: rgb(255 255 255 / .08);
+      --accent: #0a84ff;
+    }
+  }
+  html, body { height: 100%; margin: 0; background: transparent; }
+  body {
+    display: grid; place-items: center;
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--label);
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { width: min(100% - 32px, 620px); display: grid; gap: 16px; padding: 20px 0; }
+  .screen {
+    position: relative; height: 420px; overflow: hidden; border-radius: 24px;
+    background: var(--card); box-shadow: 0 0 0 .5px var(--hair);
+  }
+  .doc { padding: 72px 36px 28px; }
+  .doc h1 { margin: 0 0 2px; font-size: 22px; line-height: 1.25; letter-spacing: -.01em; }
+  .doc .meta { margin: 0 0 16px; font-size: 13px; color: var(--label-2); }
+  .doc p { margin: 0 0 10px; color: var(--label); }
+  .doc ul { margin: 0; padding-left: 20px; }
+  .doc li { margin: 0 0 6px; }
+  .doc li::marker { color: var(--label-3); }
+
+  .controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  .controls button {
+    height: 32px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--fill); color: var(--label);
+    font: 500 13.5px/32px system-ui, -apple-system, "Segoe UI", sans-serif; cursor: pointer;
+    transition: background-color 160ms cubic-bezier(.25, .1, .25, 1), opacity 160ms, transform 100ms cubic-bezier(.23, 1, .32, 1);
+  }
+  .controls button:hover:not(:disabled) { background: var(--fill-hover); }
+  .controls button:active:not(:disabled) { transform: scale(.97); }
+  .controls button:disabled { opacity: .4; cursor: default; }
+  .controls button[aria-pressed="true"] { background: var(--label); color: var(--card); }
+  .controls button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .hint { margin: 0; text-align: center; font-size: 13px; color: var(--label-2); }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+  /* ---- the views inside the island ---- */
+  .v-idle { width: 44px; height: 24px; display: grid; place-items: center; }
+  .v-idle i { width: 7px; height: 7px; border-radius: 50%; background: var(--mi-fg-2); }
+  .v-compact { height: 36px; display: inline-flex; align-items: center; gap: 8px; padding: 0 15px 0 8px; font-weight: 600; }
+  .v-compact .sub { font-weight: 500; color: var(--mi-fg-2); }
+  .v-compact .val { font-variant-numeric: tabular-nums; margin-left: 10px; }
+  .v-toast { height: 40px; display: inline-flex; align-items: center; gap: 9px; padding: 0 18px 0 12px; font-weight: 500; }
+  .mi-ring { width: 22px; height: 22px; flex: none; transform: rotate(-90deg); }
+  .mi-ring .tr { fill: none; stroke: var(--mi-fill); stroke-width: 3; }
+  .mi-ring .ar { fill: none; stroke: var(--mi-accent); stroke-width: 3; stroke-linecap: round; transition: stroke-dasharray 260ms linear; }
+  .mi-ic { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+  .mi-bic { position: absolute; width: 10px; height: 10px; fill: none; stroke: var(--mi-fg); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .v-x { width: min(340px, calc(100vw - 56px)); padding: 16px 16px 16px 20px; display: grid; gap: 12px; }
+  .v-x .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .v-x .title { font-weight: 600; font-size: 15px; }
+  .v-x .note { font-size: 13px; color: var(--mi-fg-2); font-variant-numeric: tabular-nums; }
+  .v-x .big { font-size: 40px; line-height: 1; font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .v-x .bar { height: 6px; border-radius: 3px; background: var(--mi-fill); overflow: hidden; }
+  .v-x .bar i { display: block; height: 100%; width: 0; border-radius: 3px; background: var(--mi-accent); transition: width 260ms linear; }
+  .v-x .acts { display: flex; gap: 8px; }
+  .v-x button {
+    height: 32px; padding: 0 16px; border: 0; border-radius: 999px; background: var(--mi-fill); color: var(--mi-fg);
+    font: 500 14px/32px system-ui, -apple-system, "Segoe UI", sans-serif; cursor: pointer;
+  }
+  .v-x button.primary { background: var(--mi-accent); color: #fff; }
+  .v-x button:active { transform: scale(.97); }
+  .v-x button:focus-visible { outline: 2px solid var(--mi-accent); outline-offset: 2px; }
+
+  @media (max-width: 440px) {
+    .wrap { width: calc(100% - 24px); gap: 14px; }
+    .screen { height: 470px; }
+    .doc { padding: 68px 22px 24px; }
+    .doc h1 { font-size: 20px; }
+  }
+  @media (min-width: 900px) and (min-height: 760px) { .wrap { zoom: 1.12; } }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <section class="screen" aria-label="Planning notes">
+    <div class="mi" id="island" role="region" aria-label="Activity">
+      <div class="mi__pill">
+        <button type="button" class="mi__hit" aria-expanded="false" aria-label="Nothing running"></button>
+
+        <div class="mi__view v-idle" data-view="idle" data-label="Nothing running"><i></i></div>
+
+        <div class="mi__view v-compact" data-view="timer" data-label="Focus timer. Press to open, hold to open, Delete to dismiss" aria-hidden="true">
+          <svg class="mi-ring" viewBox="0 0 22 22" aria-hidden="true"><circle class="tr" cx="11" cy="11" r="8.5"/><circle class="ar" cx="11" cy="11" r="8.5" pathLength="100" data-ring="timer"/></svg>
+          <span>Focus</span><span class="val" data-text="timer-left">25:00</span>
+        </div>
+
+        <div class="mi__view v-compact" data-view="upload" data-label="Upload. Press to open, Delete to dismiss" aria-hidden="true">
+          <svg class="mi-ring" viewBox="0 0 22 22" aria-hidden="true"><circle class="tr" cx="11" cy="11" r="8.5"/><circle class="ar" cx="11" cy="11" r="8.5" pathLength="100" data-ring="upload"/></svg>
+          <span>Q3 report</span><span class="val" data-text="upload-pct">0%</span>
+        </div>
+
+        <div class="mi__view v-toast" data-view="toast" data-label="Message. Press to dismiss" aria-hidden="true">
+          <svg class="mi-ic" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="7.2"/><path d="m5.8 9.2 2.2 2.2 4.2-4.6"/></svg>
+          <span data-text="toast">Invoice sent</span>
+        </div>
+
+        <div class="mi__view v-x" data-view="timer-x" data-expanded data-radius="30" aria-hidden="true">
+          <div class="top"><span class="title">Focus session</span><span class="note" data-text="timer-until">until 11:25</span></div>
+          <div class="big" data-text="timer-left">25:00</div>
+          <div class="acts"><button type="button" class="primary" data-act="timer-pause">Pause</button><button type="button" data-act="timer-end">End</button></div>
+        </div>
+
+        <div class="mi__view v-x" data-view="upload-x" data-expanded data-radius="30" aria-hidden="true">
+          <div class="top"><span class="title">Uploading Q3 report.pdf</span><span class="note" data-text="upload-pct">0%</span></div>
+          <div class="bar"><i data-bar="upload"></i></div>
+          <span class="note" data-text="upload-detail">0 of 48 MB</span>
+          <div class="acts"><button type="button" class="primary" data-act="upload-pause">Pause</button><button type="button" data-act="upload-cancel">Cancel</button></div>
+        </div>
+      </div>
+      <button type="button" class="mi__bubble" hidden aria-hidden="true" tabindex="-1" data-labeltimer="Focus timer, tap to bring forward" data-labelupload="Upload, tap to bring forward">
+        <span class="mi__bview" data-view="timer"><svg class="mi-ring" viewBox="0 0 22 22" aria-hidden="true"><circle class="tr" cx="11" cy="11" r="8.5"/><circle class="ar" cx="11" cy="11" r="8.5" pathLength="100" data-ring="timer"/></svg></span>
+        <span class="mi__bview" data-view="upload"><svg class="mi-ring" viewBox="0 0 22 22" aria-hidden="true"><circle class="tr" cx="11" cy="11" r="8.5"/><circle class="ar" cx="11" cy="11" r="8.5" pathLength="100" data-ring="upload"/></svg><svg class="mi-bic" viewBox="0 0 10 10" aria-hidden="true"><path d="M5 8V2.2M2.6 4.4 5 2l2.4 2.4"/></svg></span>
+      </button>
+    </div>
+
+    <article class="doc">
+      <h1>Q3 planning notes</h1>
+      <p class="meta">Edited just now · 4 people</p>
+      <p>The import flow ships on 14 October. In the beta group, “where is my data” tickets dropped by 40%.</p>
+      <ul>
+        <li>Pricing: keep the Team plan at €9 per seat and test annual billing with a tenth of new accounts.</li>
+        <li>Hiring: two product designers, one in Lisbon and one remote. First interviews next week.</li>
+        <li>Offsite: Harbour Loft on 14–15 November, forty people, lunch included.</li>
+      </ul>
+    </article>
+  </section>
+
+  <div class="controls" role="group" aria-label="Try the states">
+    <button type="button" id="bTimer" aria-pressed="false">Focus timer</button>
+    <button type="button" id="bUpload">Upload report</button>
+    <button type="button" id="bToast">Send invoice</button>
+    <button type="button" id="bExpand" aria-pressed="false" disabled>Expand</button>
+    <button type="button" id="bClear">Clear</button>
+  </div>
+  <p class="hint">Long-press the island to open it, swipe it sideways to dismiss. Two activities split into a pill and a bubble.</p>
+  <p class="sr" aria-live="polite" id="live"></p>
+</main>
+<script src="../variants/html/morphing-island.js"></script>
+<script>
+  const root = document.getElementById('island');
+  const island = new MorphingIsland(root);
+  const $ = (id) => document.getElementById(id);
+  const TIMER_LEN = 25 * 60, TOTAL = 48;
+  const S = {
+    acts: [],                       // running activities, the first one owns the pill
+    toast: null, toastTimer: 0, expanded: false,
+    timer: { left: TIMER_LEN, paused: false, iv: 0, ends: 0 },
+    upload: { sent: 0, paused: false, iv: 0 }
+  };
+
+  const setText = (key, text) => { for (const n of document.querySelectorAll(`[data-text="${key}"]`)) n.textContent = text; };
+  const setRing = (key, f) => { for (const n of document.querySelectorAll(`[data-ring="${key}"]`)) n.setAttribute('stroke-dasharray', `${(f * 100).toFixed(1)} 100`); };
+  const say = (t) => { $('live').textContent = t; };
+  const mmss = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+
+  function render() {
+    const [first, second] = S.acts;
+    let view = first || 'idle';
+    if (S.toast) view = 'toast';
+    else if (S.expanded && first) view = first + '-x';
+    island.show(view);
+    // a message borrows the pill; the activity it covers steps aside into the bubble
+    island.bubble(S.expanded ? null : S.toast ? (first || null) : (second || null));
+    $('bTimer').setAttribute('aria-pressed', String(S.acts.includes('timer')));
+    $('bTimer').textContent = S.acts.includes('timer') ? 'End timer' : 'Focus timer';
+    $('bUpload').disabled = S.acts.includes('upload');
+    $('bExpand').disabled = !first;
+    $('bExpand').setAttribute('aria-pressed', String(S.expanded));
+    $('bExpand').textContent = S.expanded ? 'Collapse' : 'Expand';
+  }
+
+  function paintTimer() {
+    const t = S.timer;
+    setText('timer-left', mmss(t.left));
+    setRing('timer', t.left / TIMER_LEN);
+    const end = new Date(Date.now() + t.left * 1000);
+    setText('timer-until', t.paused ? 'paused' : `until ${end.getHours()}:${String(end.getMinutes()).padStart(2, '0')}`);
+    for (const b of document.querySelectorAll('[data-act="timer-pause"]')) b.textContent = t.paused ? 'Resume' : 'Pause';
+  }
+  function paintUpload() {
+    const u = S.upload, f = u.sent / TOTAL;
+    setText('upload-pct', `${Math.floor(f * 100)}%`);
+    setRing('upload', f);
+    for (const n of document.querySelectorAll('[data-bar="upload"]')) n.style.width = `${(f * 100).toFixed(1)}%`;
+    const left = Math.max(1, Math.round((TOTAL - u.sent) / 3.2));
+    setText('upload-detail', u.paused ? `${u.sent.toFixed(1)} of ${TOTAL} MB · paused` : `${u.sent.toFixed(1)} of ${TOTAL} MB · ${left} s left`);
+    for (const b of document.querySelectorAll('[data-act="upload-pause"]')) b.textContent = u.paused ? 'Resume' : 'Pause';
+  }
+
+  function start(kind) {
+    if (S.acts.includes(kind)) return;
+    S.acts.push(kind);
+    if (kind === 'timer') {
+      Object.assign(S.timer, { left: TIMER_LEN, paused: false });
+      S.timer.iv = setInterval(() => { if (!S.timer.paused && --S.timer.left <= 0) { stop('timer'); toast('Focus session done'); } paintTimer(); }, 1000);
+      paintTimer();
+      say('Focus timer started, 25 minutes');
+    } else {
+      Object.assign(S.upload, { sent: 0, paused: false });
+      S.upload.iv = setInterval(() => {
+        if (S.upload.paused) return;
+        S.upload.sent = Math.min(TOTAL, S.upload.sent + 0.8 * (0.6 + Math.random() * 0.8));
+        paintUpload();
+        if (S.upload.sent >= TOTAL) { stop('upload'); toast('Q3 report uploaded'); }
+      }, 250);
+      paintUpload();
+      say('Uploading Q3 report');
+    }
+    render();
+  }
+  function stop(kind) {
+    clearInterval(S[kind].iv);
+    S.acts = S.acts.filter((k) => k !== kind);
+    if (!S.acts.length) S.expanded = false;
+    render();
+  }
+  function toast(text) {
+    clearTimeout(S.toastTimer);
+    S.toast = text;
+    setText('toast', text);
+    say(text);
+    render();
+    S.toastTimer = setTimeout(clearToast, 2800);
+  }
+  function clearToast() { clearTimeout(S.toastTimer); S.toast = null; render(); }
+  function setExpanded(on) {
+    S.expanded = on && !!S.acts.length;
+    if (S.expanded) clearToast();
+    render();
+    if (S.expanded) setTimeout(() => { const b = root.querySelector('.mi__view.is-on button'); if (b) b.focus({ preventScroll: true }); }, 60);
+  }
+
+  root.addEventListener('island:press', () => {
+    if (S.toast) clearToast();
+    else if (S.acts.length) setExpanded(!S.expanded);
+  });
+  root.addEventListener('island:hold', () => { if (S.acts.length) setExpanded(true); });
+  root.addEventListener('island:escape', (e) => {
+    setExpanded(false);
+    if (!e.detail || !e.detail.outside) root.querySelector('.mi__hit').focus({ preventScroll: true });
+  });
+  root.addEventListener('island:dismiss', () => {
+    if (S.toast) clearToast();
+    else if (S.expanded) setExpanded(false);
+    else if (S.acts.length) { const k = S.acts[0]; stop(k); say(k === 'timer' ? 'Focus timer dismissed' : 'Upload dismissed'); }
+  });
+  root.addEventListener('island:bubble', () => {
+    if (S.toast) { clearToast(); return; }
+    if (S.acts.length > 1) { S.acts.push(S.acts.shift()); render(); }
+  });
+  root.addEventListener('click', (e) => {
+    const act = e.target.closest('[data-act]');
+    if (!act) return;
+    const a = act.dataset.act;
+    if (a === 'timer-pause') { S.timer.paused = !S.timer.paused; paintTimer(); }
+    if (a === 'timer-end') stop('timer');
+    if (a === 'upload-pause') { S.upload.paused = !S.upload.paused; paintUpload(); }
+    if (a === 'upload-cancel') { stop('upload'); toast('Upload cancelled'); }
+  });
+
+  $('bTimer').addEventListener('click', () => (S.acts.includes('timer') ? stop('timer') : start('timer')));
+  $('bUpload').addEventListener('click', () => start('upload'));
+  $('bToast').addEventListener('click', () => toast('Invoice sent to Northwind'));
+  $('bExpand').addEventListener('click', () => setExpanded(!S.expanded));
+  $('bClear').addEventListener('click', () => { for (const k of [...S.acts]) stop(k); clearToast(); });
+
+  render();
+
+  // ?shot=1 a timer and an upload side by side, ?shot=2 the upload opened, ?shot=3 a message over a timer
+  const shot = new URLSearchParams(location.search).get('shot');
+  if (shot) {
+    S.acts = shot === '2' ? ['upload'] : ['timer', 'upload'];
+    S.timer.left = 24 * 60 + 12; S.upload.sent = 29.8;
+    paintTimer(); paintUpload();
+    if (shot === '2') S.expanded = true;
+    if (shot === '3') { S.acts = ['timer']; S.toast = 'Invoice sent to Northwind'; setText('toast', S.toast); }
+    render();
+    for (const n of document.querySelectorAll('.mi-ring .ar, .bar i, .mi__view, .mi__bview')) n.style.transition = 'none';
+    island.settle();
+  }
+</script>
+</body>
+</html>

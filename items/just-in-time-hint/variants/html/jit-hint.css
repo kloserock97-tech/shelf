@@ -1,0 +1,95 @@
+/* Just-in-Time Hint: the anchored popover, its arrow and the beacon on the real control. */
+/* The tip speaks for the app, so it wears the inverse surface: dark on a light page, light on a dark one. */
+:root {
+  --jit-accent: #0073e6;
+  --jit-pop-bg: #1d1d1f;
+  --jit-pop-fg: #ffffff;
+  --jit-pop-fg-2: rgba(255, 255, 255, 0.7);
+  --jit-pop-fill: rgba(255, 255, 255, 0.14);
+  --jit-pop-fill-hover: rgba(255, 255, 255, 0.24);
+  --jit-pop-green: #30d158;
+  --jit-shadow: 0 12px 32px rgba(0, 0, 0, 0.2), 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --jit-accent: #0a84ff;
+    --jit-pop-bg: #f5f5f7;
+    --jit-pop-fg: #000000;
+    --jit-pop-fg-2: rgba(0, 0, 0, 0.62);
+    --jit-pop-fill: rgba(0, 0, 0, 0.08);
+    --jit-pop-fill-hover: rgba(0, 0, 0, 0.14);
+    --jit-pop-green: #248a3d;
+    --jit-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+  }
+}
+
+.jit-pop {
+  /* popovers sit in the top layer, fixed to the viewport */
+  position: fixed; inset: auto; margin: 0;
+  width: min(292px, calc(100vw - 16px)); padding: 14px 14px 10px; border: 0; border-radius: 14px; overflow: visible;
+  background: var(--jit-pop-bg); color: var(--jit-pop-fg); box-shadow: var(--jit-shadow);
+  font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; text-align: left;
+  opacity: 0; transform: translateY(-4px);
+  transition: opacity 160ms cubic-bezier(.25, .1, .25, 1), transform 240ms cubic-bezier(.23, 1, .32, 1),
+    display 240ms allow-discrete, overlay 240ms allow-discrete;
+}
+.jit-pop.is-open { opacity: 1; transform: none; }
+.jit-pop:popover-open { opacity: 1; transform: none; }
+@starting-style { .jit-pop:popover-open { opacity: 0; transform: translateY(-4px); } }
+.jit-pop[data-side="top"] { transform-origin: bottom; }
+
+/* CSS anchor positioning: below the control, then the fallbacks in order */
+@supports (anchor-name: --a) and (position-area: bottom) {
+  .jit-pop {
+    position-area: bottom;
+    margin: 10px 8px;
+    position-try-fallbacks: bottom span-right, bottom span-left, top, top span-right, top span-left;
+  }
+}
+
+/* the arrow, placed by pointArrow() once the browser has chosen a side */
+.jit-pop::before {
+  content: ""; position: absolute; left: var(--jit-arrow-x, 50%); width: 12px; height: 12px; margin-left: -6px;
+  background: inherit; border-radius: 2px; transform: rotate(45deg); visibility: hidden;
+}
+.jit-pop[data-side="bottom"]::before { top: -5px; visibility: visible; }
+.jit-pop[data-side="top"]::before { bottom: -5px; visibility: visible; }
+
+.jit-pop__row { display: flex; gap: 10px; align-items: flex-start; }
+.jit-pop__key {
+  flex: none; min-width: 26px; height: 26px; padding: 0 7px; border-radius: 7px; display: grid; place-items: center;
+  background: var(--jit-pop-fill); box-shadow: inset 0 -1px 0 var(--jit-pop-fill);
+  font: 600 13px/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace; color: var(--jit-pop-fg);
+}
+.jit-pop__title { display: block; font-weight: 600; font-size: 14px; }
+.jit-pop__body { display: block; margin-top: 2px; color: var(--jit-pop-fg-2); font-size: 13px; }
+.jit-pop__actions { display: flex; justify-content: flex-end; margin-top: 6px; }
+.jit-pop__close {
+  height: 28px; padding: 0 12px; border: 0; border-radius: 999px; background: var(--jit-pop-fill); cursor: pointer;
+  color: var(--jit-pop-fg); font: inherit; font-size: 13px; font-weight: 500;
+  transition: background-color 160ms cubic-bezier(.25, .1, .25, 1);
+}
+@media (hover: hover) and (pointer: fine) { .jit-pop__close:hover { background: var(--jit-pop-fill-hover); } }
+.jit-pop__close:focus-visible { outline: 2px solid var(--jit-accent); outline-offset: 2px; }
+
+/* used: a quiet confirmation, then it goes */
+.jit-pop__done { display: none; align-items: center; gap: 8px; padding: 4px 0 6px; font-weight: 600; }
+.jit-pop__done svg { width: 18px; height: 18px; fill: none; stroke: var(--jit-pop-green); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.jit-pop[data-done="true"] .jit-pop__done { display: flex; }
+.jit-pop[data-done="true"] .jit-pop__row, .jit-pop[data-done="true"] .jit-pop__actions { display: none; }
+
+/* the beacon on the control the hint is about */
+.jit-beacon { position: relative; box-shadow: 0 0 0 2px var(--jit-accent); }
+@media (prefers-reduced-motion: no-preference) {
+  .jit-beacon::after {
+    content: ""; position: absolute; inset: -2px; border-radius: inherit; pointer-events: none;
+    box-shadow: 0 0 0 2px var(--jit-accent); animation: jit-beacon 1400ms cubic-bezier(.23, 1, .32, 1) 2;
+    opacity: 0;
+  }
+}
+@keyframes jit-beacon {
+  0% { opacity: 0.7; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.6); }
+}
+
+.jit-sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

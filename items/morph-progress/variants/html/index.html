@@ -1,0 +1,24 @@
+<!-- The loader draws itself into an empty <svg>. Tell it what you know:
+     indeterminate() while the total is unknown, progress(0…1) once it is, fail() or done() at the end. -->
+<link rel="stylesheet" href="morph-progress.css">
+
+<svg id="upload-loader" width="120" height="120" aria-labelledby="upload-title"></svg>
+<p id="upload-title">Uploading</p>
+<p id="upload-eta"></p>
+
+<script src="morph-progress.js"></script>
+<script>
+  const loader = new MorphProgress.Loader(document.getElementById('upload-loader'), { label: 'Upload' });
+  const eta = new MorphProgress.Eta({ tau: 2.5 });
+
+  loader.indeterminate();                        // size not known yet: shapes morph and turn
+
+  function onProgress(sentBytes, totalBytes) {   // call it from your upload's progress events
+    const e = eta.sample(performance.now() / 1000, sentBytes, totalBytes);
+    const text = MorphProgress.formatEta(e);     // "About 40 s left", later "12 s left"
+    document.getElementById('upload-eta').textContent = text;
+    loader.progress(sentBytes / totalBytes, text); // settles into a ring the first time
+  }
+
+  // loader.fail() folds it into a cross, loader.done() into a tick, loader.reset() back to rest
+</script>

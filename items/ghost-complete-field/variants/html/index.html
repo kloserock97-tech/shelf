@@ -1,0 +1,15 @@
+<label for="subject">Subject</label>
+<input id="subject" type="text">
+
+<link rel="stylesheet" href="ghost-complete.css">
+<script src="ghost-complete.js"></script>
+<script>
+  // local list: suggestions appear at once
+  GhostComplete.attach(document.getElementById('subject'), {
+    phrases: ['Updated checkout flow for review', 'Invoice for September', 'Moving our Thursday sync to Friday'],
+    examples: ['e.g. Updated checkout flow for review', 'e.g. Invoice for September']
+  });
+
+  // async source (a model, a server): return the rest of the phrase, or null; a faint shimmer shows while it waits
+  // GhostComplete.attach(textarea, { source: async (text, { signal }) => (await fetch(url, { signal })).text() });
+</script>

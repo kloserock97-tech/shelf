@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Thumb-Aware Layout</title>
+<link rel="stylesheet" href="../variants/html/thumb-aware.css">
+<style>
+  :root {
+    color-scheme: light dark;
+    --label: light-dark(#1d1d1f, #f5f5f7);
+    --label-2: light-dark(#636366, #aaaaaf);
+    --label-3: light-dark(#86868b, #6e6e73);
+    --grouped: light-dark(#f2f2f7, #000000);
+    --cell: light-dark(#ffffff, #1c1c1e);
+    --fill: light-dark(rgb(118 118 128 / 0.12), rgb(118 118 128 / 0.24));
+    --fill-hover: light-dark(rgb(118 118 128 / 0.2), rgb(118 118 128 / 0.34));
+    --thumb-bg: light-dark(#ffffff, #5a5a5f);
+    --hair: light-dark(rgb(60 60 67 / 0.18), rgb(84 84 88 / 0.6));
+    --bar: light-dark(rgb(249 249 249 / 0.86), rgb(22 22 24 / 0.8));
+    --accent: light-dark(#0073e6, #0a84ff);
+    --accent-text: light-dark(#0066cc, #2997ff);
+    --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  html, body { height: 100%; margin: 0; background: transparent; }
+  body {
+    display: grid; place-items: center;
+    font: 400 17px/1.35 system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: var(--label); -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; color: inherit; -webkit-tap-highlight-color: transparent; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .phone { position: relative; overflow: hidden; width: 100vw; height: 100vh; height: 100dvh; background: var(--grouped); isolation: isolate; }
+  @media (min-width: 560px) {
+    .phone { width: 390px; height: min(844px, calc(100vh - 32px)); border-radius: 44px; box-shadow: 0 0 0 0.5px var(--hair); }
+  }
+
+  .screen { position: absolute; inset: 0; overflow: hidden auto; overscroll-behavior: contain; padding: 54px 0 190px; box-sizing: border-box; background: var(--grouped); }
+
+  /* inspector */
+  .inspector { margin: 6px 12px 0; padding: 12px 14px 14px; border-radius: 18px; background: var(--cell); display: grid; gap: 10px; }
+  .insp-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 32px; }
+  .insp-label { font-size: 13px; font-weight: 600; color: var(--label-2); }
+  .insp-value { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+  .insp-value small { font-weight: 400; color: var(--label-2); font-size: 13px; }
+  .meter { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; font-size: 12px; font-weight: 600; color: var(--label-3); }
+  .meter-track { position: relative; height: 6px; border-radius: 3px; background: var(--fill); }
+  .tick { position: absolute; top: -4px; width: 1px; height: 14px; background: var(--label-3); opacity: 0.55; }
+  .tick--l { left: 15%; } .tick--r { left: 85%; } .tick--m { left: 50%; opacity: 0.3; }
+  .meter-dot {
+    position: absolute; top: 50%; left: var(--p, 50%); width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%;
+    background: var(--thumb-bg); box-shadow: 0 0 0 0.5px var(--hair), 0 1px 3px rgb(0 0 0 / 0.18);
+    transition: left 0.4s var(--ease-drawer), background-color 0.16s;
+  }
+  .meter.is-sure .meter-dot { background: var(--accent); box-shadow: none; }
+  .sim { display: flex; gap: 8px; }
+  .chip {
+    height: 32px; padding: 0 14px; border: 0; border-radius: 16px; background: var(--fill); font-size: 14px; font-weight: 500; cursor: pointer;
+    transition: scale 0.1s var(--ease-out);
+  }
+  .chip:active { scale: 0.97; }
+  @media (hover: hover) and (pointer: fine) { .chip:hover { background: var(--fill-hover); } }
+  .seg { display: inline-grid; grid-auto-flow: column; grid-auto-columns: 1fr; padding: 2px; border-radius: 9px; background: var(--fill); }
+  .seg button { height: 28px; min-width: 58px; padding: 0 10px; border: 0; border-radius: 7px; background: transparent; font-size: 13px; font-weight: 500; cursor: pointer; }
+  .seg button[aria-checked="true"] { background: var(--thumb-bg); box-shadow: 0 0 0 0.5px var(--hair), 0 1px 2px rgb(0 0 0 / 0.08); }
+  code { font: 500 12px/1 ui-monospace, "SF Mono", Menlo, Consolas, monospace; color: var(--label-2); white-space: nowrap; }
+
+  /* app */
+  .head { padding: 4px 20px 10px; user-select: none; -webkit-user-select: none; touch-action: none; cursor: grab; }
+  .head:active { cursor: grabbing; }
+  .reach-handle { display: block; width: 72px; height: 22px; margin: 2px auto 2px; padding: 0; border: 0; border-radius: 11px; background: transparent; cursor: pointer; }
+  .reach-handle::before { content: ""; display: block; width: 36px; height: 5px; margin: auto; border-radius: 3px; background: var(--label-3); opacity: 0.5; }
+  @media (hover: hover) and (pointer: fine) { .reach-handle:hover { background: var(--fill); } }
+  .head h1 { margin: 0; font-size: 34px; line-height: 1.12; font-weight: 700; letter-spacing: -0.02em; }
+  .head p { margin: 2px 0 0; font-size: 15px; color: var(--label-2); }
+  .tasks { list-style: none; margin: 4px 16px 0; padding: 0; border-radius: 14px; background: var(--cell); overflow: hidden; }
+  .task { display: flex; align-items: center; gap: 12px; min-height: 50px; padding: 0 16px 0 12px; cursor: pointer; }
+  .task input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+  .check { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--label-3); transition: background-color 0.16s, box-shadow 0.16s; }
+  .check svg { width: 14px; height: 14px; color: #fff; opacity: 0; }
+  .task input:checked + .check { background: var(--accent); box-shadow: none; }
+  .task input:checked + .check svg { opacity: 1; }
+  .task input:focus-visible + .check { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .task-text { flex: 1; display: flex; align-items: center; gap: 10px; align-self: stretch; min-width: 0; }
+  li + li .task-text { box-shadow: inset 0 0.5px 0 var(--hair); }
+  .task-title { flex: 1; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .task input:checked ~ .task-text .task-title { color: var(--label-3); }
+  .task time { font-size: 14px; color: var(--label-2); font-variant-numeric: tabular-nums; }
+  .hint { margin: 0; font-size: 12.5px; line-height: 1.4; color: var(--label-2); }
+
+  /* bar and button: they follow the thumb (ta-thumb-row, ta-fab come from the variant) */
+  .bar {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; gap: 4px; height: 56px; padding: 0 12px 30px;
+    background: var(--bar); -webkit-backdrop-filter: blur(20px) saturate(1.6); backdrop-filter: blur(20px) saturate(1.6);
+    box-shadow: 0 -0.5px 0 var(--hair);
+  }
+  .bar .status { padding: 0 8px; font-size: 13px; color: var(--label-2); font-variant-numeric: tabular-nums; }
+  .bar .spacer { flex: 1; }
+  .icon-btn { width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 22px; background: transparent; color: var(--accent-text); cursor: pointer; }
+  .icon-btn svg { width: 22px; height: 22px; }
+  @media (hover: hover) and (pointer: fine) { .icon-btn:hover { background: var(--fill); } }
+  .fab {
+    z-index: 3; bottom: 104px; width: 56px; height: 56px; display: grid; place-items: center; border: 0; border-radius: 50%;
+    background: var(--accent); color: #fff; cursor: pointer; box-shadow: 0 6px 18px rgb(0 0 0 / 0.18);
+    transition: scale 0.1s var(--ease-out);
+  }
+  .fab:active { scale: 0.96; }
+  .fab svg { width: 24px; height: 24px; }
+
+  /* the uncovered top while the screen is pulled down */
+  .reach-gap {
+    position: absolute; left: 0; right: 0; top: 0; z-index: 1; height: var(--reach-offset, 40%); border: 0; background: transparent;
+    display: grid; place-items: end center; padding-bottom: 18px; box-sizing: border-box; color: var(--label-2); font-size: 13px; cursor: pointer;
+  }
+  .reach-gap[hidden] { display: none; }
+  .screen.is-reached { box-shadow: 0 -0.5px 0 var(--hair); }
+
+  /* the evidence, drawn over the glass */
+  .heat { position: absolute; inset: 0; z-index: 4; width: 100%; height: 100%; pointer-events: none; }
+  .ghost {
+    position: absolute; left: 0; top: 0; z-index: 5; width: 42px; height: 42px; margin: -21px 0 0 -21px; border-radius: 50%;
+    background: light-dark(rgb(29 29 31 / 0.14), rgb(245 245 247 / 0.2)); box-shadow: 0 0 0 0.5px light-dark(rgb(0 0 0 / 0.25), rgb(255 255 255 / 0.3));
+    pointer-events: none; opacity: 0;
+  }
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+  <div class="screen ta-surface" id="surface">
+    <section class="inspector" aria-label="Hand detection">
+      <div class="insp-row" style="min-height: 22px">
+        <span class="insp-label">Holding hand</span>
+        <output class="insp-value" id="hand-value" aria-live="polite"></output>
+      </div>
+      <div class="meter" id="meter" role="meter" aria-label="Chance the phone is in the right hand" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+        <span aria-hidden="true">L</span>
+        <span class="meter-track"><i class="tick tick--l"></i><i class="tick tick--m"></i><i class="tick tick--r"></i><i class="meter-dot"></i></span>
+        <span aria-hidden="true">R</span>
+      </div>
+      <div class="insp-row">
+        <span class="insp-label">Simulate</span>
+        <span class="sim">
+          <button class="chip" type="button" data-sim="left">Left thumb</button>
+          <button class="chip" type="button" data-sim="right">Right thumb</button>
+        </span>
+      </div>
+      <div class="insp-row">
+        <span class="seg" role="radiogroup" aria-label="Layout side">
+          <button type="button" role="radio" aria-checked="true" data-override="auto">Auto</button>
+          <button type="button" role="radio" aria-checked="false" data-override="left">Left</button>
+          <button type="button" role="radio" aria-checked="false" data-override="right">Right</button>
+        </span>
+        <code id="hand-var">--hand: right</code>
+      </div>
+      <p class="hint">On a phone it reads your own taps and scrolls; here, try Simulate. Pull “Today” down to reach the top.</p>
+    </section>
+
+    <header class="head" id="head">
+      <button class="reach-handle" id="reach-btn" type="button" aria-label="Bring the top within reach"></button>
+      <h1>Today</h1>
+      <p>Wednesday, 30 September</p>
+    </header>
+    <ul class="tasks" id="tasks" role="list"></ul>
+  </div>
+
+  <footer class="bar ta-thumb-row" aria-label="List actions">
+    <span class="status" id="status"></span>
+    <span class="spacer"></span>
+    <button class="icon-btn" type="button" aria-label="Sort tasks">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16M3.5 16.5 7 20l3.5-3.5M17 20V4m-3.5 3.5L17 4l3.5 3.5"/></svg>
+    </button>
+    <button class="icon-btn" type="button" aria-label="Show calendar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4m8-4v4"/></svg>
+    </button>
+  </footer>
+  <button class="fab ta-fab" type="button" aria-label="New task" id="fab">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+  <button class="reach-gap" id="gap" type="button" hidden>Tap to go back</button>
+  <canvas class="heat" id="heat" aria-hidden="true"></canvas>
+  <div class="ghost" id="ghost" aria-hidden="true"></div>
+</div>
+
+<script type="module">
+  import { thumbAware, reach } from '../variants/html/thumb-aware.js';
+
+  const $ = (id) => document.getElementById(id);
+  const phone = $('phone');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+
+  /* ---------- the app ---------- */
+  const TASKS = [
+    ['Review onboarding copy', '10:30', false], ['Send invoice to Northwind', '12:00', true], ['Book dentist for Mia', '', false],
+    ['Call the movers about Friday', '14:15', false], ['Groceries for Saturday dinner', '', false],
+    ['Renew passport photos', '17:00', true]
+  ];
+  const CHECK = '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 7.5 2.6 2.5L11 4.5"/></svg>';
+  const taskHTML = ([t, time, done]) => `<li><label class="task"><input type="checkbox"${done ? ' checked' : ''}><span class="check">${CHECK}</span>
+    <span class="task-text"><span class="task-title">${t}</span>${time ? `<time>${time}</time>` : ''}</span></label></li>`;
+  $('tasks').innerHTML = TASKS.map(taskHTML).join('');
+  const count = () => {
+    const all = $('tasks').querySelectorAll('input');
+    $('status').textContent = `${[...all].filter((i) => i.checked).length} of ${all.length} done`;
+  };
+  $('tasks').addEventListener('change', count);
+  count();
+  let added = 0;
+  $('fab').addEventListener('click', () => {
+    if (added >= 2) return;
+    added++;
+    $('tasks').insertAdjacentHTML('afterbegin', taskHTML([added === 1 ? 'Water the plants' : 'Reply to Jonas', '', false]));
+    count();
+  });
+
+  /* ---------- the guess ---------- */
+  const value = $('hand-value'), meter = $('meter'), code = $('hand-var');
+  const hand = thumbAware(phone, { move: '.ta-thumb-row > *, .ta-fab', onUpdate: show });
+  function show(s) {
+      const pct = Math.round(Math.max(s.pRight, 1 - s.pRight) * 100);
+      const lean = s.pRight >= 0.5 ? 'right' : 'left';
+      const sure = s.gestures >= 3 && (s.pRight >= 0.85 || s.pRight <= 0.15);
+      meter.style.setProperty('--p', `${(s.pRight * 100).toFixed(1)}%`);
+      meter.setAttribute('aria-valuenow', Math.round(s.pRight * 100));
+      meter.classList.toggle('is-sure', sure);
+      value.innerHTML = s.gestures < 3
+        ? `Learning <small>${s.gestures} of 3 gestures</small>`
+        : sure ? `${lean === 'left' ? 'Left' : 'Right'} thumb <small>${pct}%</small>` : `Leaning ${lean} <small>${pct}%</small>`;
+      if (s.override !== 'auto') value.innerHTML += ' <small>· set by hand</small>';
+      code.textContent = `--hand: ${s.hand}`;
+      draw(s);
+  }
+
+  for (const b of document.querySelectorAll('[data-override]')) {
+    b.addEventListener('click', () => {
+      for (const o of document.querySelectorAll('[data-override]')) o.setAttribute('aria-checked', String(o === b));
+      hand.setOverride(b.dataset.override);
+    });
+  }
+  document.querySelector('.seg').addEventListener('keydown', (e) => {
+    const all = [...document.querySelectorAll('[data-override]')];
+    const i = all.indexOf(document.activeElement);
+    const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+    if (!step || i < 0) return;
+    e.preventDefault();
+    const next = all[(i + step + all.length) % all.length];
+    next.focus();
+    next.click();
+  });
+
+  reach($('surface'), { handle: $('head'), button: $('reach-btn'), gap: $('gap') });
+
+  /* ---------- the evidence on the glass ---------- */
+  const canvas = $('heat'), g = canvas.getContext('2d');
+  let last = null;
+  function size() {
+    const dpr = Math.min(2, devicePixelRatio || 1);
+    canvas.width = Math.round(phone.clientWidth * dpr);
+    canvas.height = Math.round(phone.clientHeight * dpr);
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (last) draw(last);
+  }
+  function draw(s) {
+    last = s;
+    const W = phone.clientWidth, H = phone.clientHeight;
+    g.clearRect(0, 0, W, H);
+    const accent = getComputedStyle($('fab')).backgroundColor; // resolved rgb() of the accent in this theme
+    const rgba = (a) => accent.replace('rgb(', 'rgba(').replace(')', `, ${a})`);
+    // the comfortable arc of the thumb the layout is following
+    if (s.confidence > 0.3) {
+      const left = s.hand === 'left';
+      g.save();
+      g.setLineDash([3, 5]);
+      g.lineWidth = 1;
+      g.strokeStyle = rgba(0.28 * s.confidence + 0.1);
+      g.beginPath();
+      g.arc(left ? -8 : W + 8, H - 30, W * 0.78, left ? -Math.PI / 2 : Math.PI, left ? 0 : Math.PI * 1.5);
+      g.stroke();
+      g.restore();
+    }
+    const n = s.recent.length;
+    s.recent.forEach((ev, i) => {
+      const age = (i + 1) / n; // newest is 1
+      if (ev.kind === 'tap') {
+        const r = 24;
+        const grad = g.createRadialGradient(ev.x, ev.y, 0, ev.x, ev.y, r);
+        grad.addColorStop(0, rgba(0.34 * age + 0.08));
+        grad.addColorStop(1, rgba(0));
+        g.fillStyle = grad;
+        g.beginPath(); g.arc(ev.x, ev.y, r, 0, Math.PI * 2); g.fill();
+        g.fillStyle = rgba(0.5 * age + 0.2);
+        g.beginPath(); g.arc(ev.x, ev.y, 2.5, 0, Math.PI * 2); g.fill();
+      } else {
+        g.lineCap = 'round'; g.lineJoin = 'round';
+        g.strokeStyle = rgba(0.34 * age + 0.1);
+        g.lineWidth = 6;
+        g.beginPath();
+        ev.pts.forEach((p, k) => (k ? g.lineTo(p.x, p.y) : g.moveTo(p.x, p.y)));
+        g.stroke();
+        const e = ev.pts[ev.pts.length - 1];
+        g.fillStyle = rgba(0.5 * age + 0.2);
+        g.beginPath(); g.arc(e.x, e.y, 3, 0, Math.PI * 2); g.fill();
+      }
+    });
+  }
+  new ResizeObserver(size).observe(phone);
+  size();
+  show(hand.state);
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => last && draw(last));
+
+  /* ---------- a simulated thumb, for a desktop ---------- */
+  // Seeded numbers: a Weyl sequence through a 32-bit mixer (Shelf's own hash-kit).
+  function makeRandom(seed) {
+    let s = seed >>> 0;
+    const mix = (x) => {
+      x ^= x >>> 16; x = Math.imul(x, 0x3f9c86cb);
+      x ^= x >>> 14; x = Math.imul(x, 0x1ae9dacf);
+      x ^= x >>> 15; return x >>> 0;
+    };
+    return () => { s = (s + 0xb31c96c9) >>> 0; return mix(s) / 4294967296; };
+  }
+  let rnd = makeRandom(7);
+  const ghost = $('ghost');
+  let run = 0;
+
+  // The thumb pivots near the bottom corner of its side; everything is generated for a right hand and mirrored.
+  function thumb(side) {
+    const W = phone.clientWidth, H = phone.clientHeight;
+    const mx = (x) => (side === 'right' ? x : W - x);
+    const pivot = { x: W + 8, y: H - 30 };
+    const at = (R, deg) => ({ x: mx(pivot.x + R * Math.cos(deg * Math.PI / 180)), y: pivot.y + R * Math.sin(deg * Math.PI / 180) });
+    return { W, H, mx, pivot: { x: mx(pivot.x), y: pivot.y }, at };
+  }
+  const client = (p) => { const r = phone.getBoundingClientRect(); return { x: p.x + r.left, y: p.y + r.top }; };
+
+  function planTap(side) {
+    const t = thumb(side);
+    const r = phone.getBoundingClientRect();
+    const small = [...phone.querySelectorAll('.check, .icon-btn, .fab, .chip')].map((el) => {
+      const b = el.getBoundingClientRect();
+      return { el, x: b.left - r.left + b.width / 2, y: b.top - r.top + b.height / 2 };
+    }).filter((c) => { const d = Math.hypot(c.x - t.pivot.x, c.y - t.pivot.y); return d > 120 && d < t.W * 0.82 && c.y > 60; });
+    const sign = side === 'right' ? 1 : -1;
+    if (small.length && rnd() < 0.7) {
+      const c = small[Math.floor(rnd() * small.length)];
+      // the pad lands a few px towards the thumb's side and a little low
+      return { x: c.x + sign * (3 + rnd() * 5), y: c.y + 2 + rnd() * 3, target: c.el };
+    }
+    const p = t.at(160 + rnd() * 130, 205 + rnd() * 50);
+    return { x: p.x, y: p.y, target: null };
+  }
+  function planSwipe(side) {
+    const t = thumb(side);
+    const R = 220 + rnd() * 70, a0 = 194 + rnd() * 8, a1 = 234 + rnd() * 10, wobble = (rnd() - 0.5) * 3;
+    const pts = [];
+    for (let i = 0; i <= 18; i++) {
+      const p = t.at(R + wobble * Math.sin(i / 3), a0 + (a1 - a0) * (i / 18));
+      pts.push({ x: p.x, y: p.y });
+    }
+    return rnd() < 0.6 ? pts : pts.reverse(); // a scroll up or down
+  }
+
+  function playTap(tap) {
+    const k = [
+      { transform: `translate(${tap.x}px, ${tap.y}px) scale(1.3)`, opacity: 0 },
+      { transform: `translate(${tap.x}px, ${tap.y}px) scale(0.92)`, opacity: 1, offset: 0.45 },
+      { transform: `translate(${tap.x}px, ${tap.y}px) scale(1)`, opacity: 0 }
+    ];
+    return ghost.animate(reduced.matches ? k.map((f) => ({ ...f, transform: `translate(${tap.x}px, ${tap.y}px)` })) : k, { duration: 420, easing: 'ease-out' }).finished;
+  }
+  function playSwipe(pts) {
+    const k = pts.map((p, i) => ({ transform: `translate(${p.x}px, ${p.y}px)`, opacity: i === 0 || i === pts.length - 1 ? 0.2 : 1 }));
+    if (reduced.matches) return ghost.animate([{ ...k[k.length - 1], opacity: 0 }, { ...k[k.length - 1], opacity: 1 }, { ...k[k.length - 1], opacity: 0 }], { duration: 360 }).finished;
+    return ghost.animate(k, { duration: 440, easing: 'cubic-bezier(0.45, 0, 0.3, 1)' }).finished;
+  }
+
+  async function simulate(side) {
+    const id = ++run;
+    for (const kind of ['swipe', 'tap', 'swipe', 'tap']) {
+      if (id !== run) return;
+      if (kind === 'tap') {
+        const t = planTap(side);
+        await playTap(t).catch(() => {});
+        if (id !== run) return;
+        const c = client(t);
+        hand.observeTap(c.x, c.y, t.target);
+      } else {
+        const pts = planSwipe(side);
+        await playSwipe(pts).catch(() => {});
+        if (id !== run) return;
+        hand.observeSwipe(pts.map(client));
+      }
+      await new Promise((ok) => setTimeout(ok, 140));
+    }
+  }
+  for (const b of document.querySelectorAll('[data-sim]')) b.addEventListener('click', () => simulate(b.dataset.sim));
+
+  // ?shot=1 — the poster: a left thumb has been at it for a while, the bar and the button have moved to its side.
+  // ?sim=left|right — plays a simulated thumb once on load.
+  const q = new URLSearchParams(location.search);
+  if (q.has('shot')) {
+    rnd = makeRandom(11);
+    size();
+    for (const kind of ['swipe', 'tap', 'swipe', 'tap', 'tap', 'swipe', 'tap']) {
+      if (kind === 'tap') { const t = planTap('left'); const c = client(t); hand.observeTap(c.x, c.y, t.target); }
+      else hand.observeSwipe(planSwipe('left').map(client));
+    }
+    const p = thumb('left').at(262, 230);
+    ghost.style.transform = `translate(${p.x}px, ${p.y}px)`;
+    ghost.style.opacity = '1';
+  } else if (q.get('sim') === 'left' || q.get('sim') === 'right') {
+    setTimeout(() => simulate(q.get('sim')), 400);
+  }
+</script>
+</body>
+</html>

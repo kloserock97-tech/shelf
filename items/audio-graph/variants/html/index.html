@@ -1,0 +1,37 @@
+<figure class="ag" aria-labelledby="ag-title" data-playing="false">
+  <header class="ag__head">
+    <div><h2 class="ag__title" id="ag-title">Heart rate, Sunday 10K</h2></div>
+    <button class="ag__mute" type="button" aria-pressed="true" aria-label="Sound">
+      <svg class="ic-on" viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 7.6h2.6L10 4.4v11.2l-3.9-3.2H3.5z"/><path d="M13 7.4a3.6 3.6 0 0 1 0 5.2M15.2 5.2a6.8 6.8 0 0 1 0 9.6"/></svg>
+      <svg class="ic-off" viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 7.6h2.6L10 4.4v11.2l-3.9-3.2H3.5z"/><path d="m13.2 8 4 4M17.2 8l-4 4"/></svg>
+    </button>
+  </header>
+  <p class="ag__read" aria-hidden="true"><span class="ag__value"></span><span class="ag__where"></span><span class="ag__pitch"></span></p>
+  <div class="ag__plot" tabindex="0" role="slider" aria-label="Heart rate by kilometre" aria-describedby="ag-summary"></div>
+  <div class="ag__controls">
+    <button class="ag__play" type="button" aria-pressed="false"><span class="ag__play-label">Play</span></button>
+    <button class="ag__btn ag__speak" type="button">Speak summary</button>
+  </div>
+  <p class="ag__summary" id="ag-summary"></p>
+</figure>
+
+<link rel="stylesheet" href="audio-graph.css">
+<script type="module">
+  import { audioGraph, describe } from './audio-graph.js';
+
+  // { x, v } in order; v = null is a gap and plays as silence
+  const points = [/* { x: 0, v: 118 }, { x: 0.1, v: 123 }, … */];
+  const root = document.querySelector('.ag');
+
+  root.querySelector('#ag-summary').textContent = describe(points, {
+    name: 'Heart rate over a 10 kilometre run', unit: 'bpm', spokenUnit: 'beats per minute', xUnit: 'kilometre'
+  });
+  const graph = audioGraph(root, {
+    points,
+    labelX: 'km', labelY: 'bpm', spokenY: 'beats per minute',
+    format: { x: (v) => v.toFixed(1) },
+    restWhere: 'average over 10 km', restValue: '155 bpm',
+    gapLabel: 'No signal'
+  });
+  // graph.setMode('bars') — the same data as half-kilometre bars
+</script>

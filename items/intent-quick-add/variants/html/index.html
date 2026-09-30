@@ -1,0 +1,14 @@
+<div id="quick-add" data-label="New task"
+     data-placeholder="Add a task, e.g. Lunch with @ben friday 1pm"></div>
+
+<link rel="stylesheet" href="intent-quick-add.css">
+<script src="intent-parse.js"></script>
+<script src="intent-quick-add.js"></script>
+<script>
+  const qa = IntentQuickAdd.create(document.getElementById('quick-add'), {
+    people: [{ handle: 'anna', name: 'Anna Kovacs' }, { handle: 'ben', name: 'Ben Okafor' }],
+    projects: [{ tag: 'offsite', name: 'Offsite' }, { tag: 'design', name: 'Design' }]
+  });
+  // detail: { kind, title, due, hasTime, end, repeat, people, project, amount, priority, duration, text }
+  document.getElementById('quick-add').addEventListener('submit', (e) => console.log(e.detail));
+</script>

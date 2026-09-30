@@ -1,0 +1,30 @@
+/* Morph Progress. One accent colour; the error colour replaces it on failure. */
+.mp {
+  --mp-color: #0073e6;
+  --mp-error: #ff3b30;
+  --mp-track: rgb(118 118 128 / 0.2);
+  --mp-idle: rgb(118 118 128 / 0.3);
+  --mp-on: #ffffff;
+  display: block;
+  overflow: visible;
+}
+@media (prefers-color-scheme: dark) {
+  .mp {
+    --mp-color: #0a84ff;
+    --mp-error: #ff453a;
+    --mp-track: rgb(118 118 128 / 0.32);
+    --mp-idle: rgb(118 118 128 / 0.42);
+  }
+}
+.mp--error { --mp-color: var(--mp-error); }
+.mp__blob { fill: var(--mp-color); transition: fill 240ms cubic-bezier(.25, .1, .25, 1); }
+.mp--idle .mp__blob { fill: var(--mp-idle); }
+.mp__track { fill: none; stroke: var(--mp-track); }
+.mp__arc { fill: none; stroke: var(--mp-color); transition: stroke 240ms cubic-bezier(.25, .1, .25, 1); }
+.mp__check {
+  fill: none;
+  stroke: var(--mp-on);
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

@@ -1,0 +1,35 @@
+<!-- The frame (.wp-window) stays fixed; .wp-view projects the room behind it from the eye.
+     Walls: .wp-back, .wp-left, .wp-right, .wp-floor, .wp-ceil. Things in the room:
+     .wp-card — upright, facing the glass (--cx centre x, --cy top, --cz depth, --cw × --ch);
+     .wp-box  — a box on the floor (--bx, --bz, --bw × --bh × --bd) with faces .f .t .l .r;
+     .wp-spot — inside .wp-floor, something lying on it (--sx, --sz, --sw × --sd).
+     Lengths can use --wp-w, --wp-h, --wp-d (window width, height, room depth). data-eye-rest — resting eye, "x y" in window fractions. -->
+<div class="wp-window" data-window-parallax data-eye-rest="-0.1 -0.06" tabindex="0" role="group"
+     aria-label="A small room seen through a window. Arrow keys move your viewpoint." style="aspect-ratio: 16 / 10">
+  <div class="wp-view" aria-hidden="true">
+    <div class="wp-room">
+      <div class="wp-back"></div>
+      <div class="wp-left"></div>
+      <div class="wp-right"></div>
+      <div class="wp-ceil"></div>
+      <div class="wp-floor">
+        <span class="wp-spot" style="--sx: calc(var(--wp-w) * .6); --sz: calc(var(--wp-d) * -.5); --sw: 120px; --sd: 120px"></span>
+      </div>
+      <div class="wp-box" style="--bx: calc(var(--wp-w) * .6); --bz: calc(var(--wp-d) * -.5); --bw: 90px; --bh: 140px; --bd: 90px">
+        <i class="f"></i><i class="t"></i><i class="l"></i><i class="r"></i>
+      </div>
+    </div>
+  </div>
+  <div class="wp-glass"></div>
+</div>
+<button class="use-motion" type="button">Use motion</button>
+
+<link rel="stylesheet" href="window-parallax.css">
+<script src="window-parallax.js" defer></script>
+<script>
+  // phones: tilt drives the eye; iOS asks for permission, and only from a tap
+  document.querySelector('.use-motion').addEventListener('click', async () => {
+    const state = await document.querySelector('.wp-window').windowParallax.enableMotion();
+    console.log(state); // 'granted' | 'denied' | 'unsupported'
+  });
+</script>

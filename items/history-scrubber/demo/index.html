@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>History Scrubber</title>
+<link rel="stylesheet" href="../variants/html/history.css">
+<style>
+  html, body { min-height: 100%; margin: 0; background: transparent; }
+  body {
+    display: grid; grid-template-columns: minmax(0, 640px); justify-content: center; align-content: center;
+    min-height: 100vh; box-sizing: border-box; padding: 40px 16px;
+  }
+</style>
+</head>
+<body>
+<div id="board"></div>
+<script src="../variants/html/history.js"></script>
+<script>
+  var board = HistoryBoard.create(document.getElementById('board'), {
+    title: 'Sprint 14',
+    columns: ['To do', 'Doing', 'Done'],
+    cards: [
+      { id: 'inv', text: 'Invoice PDF export' },
+      { id: 'dark', text: 'Dark mode for settings' },
+      { id: 'sso', text: 'Single sign-on' },
+      { id: 'csv', text: 'CSV import' },
+      { id: 'rate', text: 'Rate-limit alerts' },
+      { id: 'onb', text: 'Onboarding checklist' }
+    ],
+    start: [['inv', 'dark', 'sso', 'csv'], ['rate', 'onb'], []],
+    // a week of moves, with a second take branching off after step 4
+    history: [
+      { card: 'rate', col: 2, index: 0 },
+      { card: 'inv', col: 1, index: 0 },
+      { card: 'onb', col: 2, index: 0 },
+      { card: 'dark', col: 1, index: 1 },
+      { card: 'inv', col: 2, index: 0 },
+      { card: 'csv', col: 1, index: 1 },
+      { card: 'sso', col: 1, index: 0 },
+      { card: 'csv', col: 1, index: 0, from: 4 },
+      { card: 'inv', col: 2, index: 0 },
+      { card: 'sso', col: 1, index: 2 }
+    ]
+  });
+
+  // ?shot=1 — the poster: replaying between steps 5 and 6 of the second branch, a card mid-flight
+  // ?shot=2 — comparing step 2 with step 7
+  var q = new URLSearchParams(location.search);
+  if (q.get('shot') === '1') board.scrubTo(5.45);
+  else if (q.get('shot') === '2') { board.scrubTo(2); board.compare(2); board.scrubTo(7); }
+</script>
+</body>
+</html>

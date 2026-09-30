@@ -1,0 +1,125 @@
+/* Predictive Back — how the scrubbed pop looks.
+   The script writes four numbers on the stage and toggles three classes; everything visual is here.
+     --pb-p     progress 0…1 (0 = at rest, 1 = the page has left)
+     --pb-dir   1 when the swipe starts at the left edge, -1 at the right edge
+     --pb-lift  px, the card follows the finger a little vertically
+     --pb-y     px, where the finger is — the arrow sits there
+   .is-moving (a gesture or its spring is running), .is-armed (past the commit point), .is-pushing (a page is coming in),
+   .is-auto (back() from a button: the same motion without the arrow). */
+
+.pb {
+  --pb-p: 0;
+  --pb-dir: 1;
+  --pb-lift: 0;
+  --pb-y: 400;
+  --pb-shrink: 0.1;          /* the card shrinks to 90%… */
+  --pb-shrink-by: 0.4;       /* …within the first 40% of the swipe */
+  --pb-radius: 32px;         /* its corners at full shrink */
+  --pb-travel: 104cqw;       /* where it is at p = 1: fully off screen */
+  --pb-parallax: 28cqw;      /* the previous page starts this far to the side */
+  --pb-scrim: light-dark(rgb(0 0 0 / 0.2), rgb(0 0 0 / 0.55));
+  --pb-edge: light-dark(rgb(0 0 0 / 0.08), rgb(255 255 255 / 0.16));
+  --pb-arrow-bg: light-dark(rgb(242 242 247 / 0.96), rgb(58 58 60 / 0.96));
+  --pb-arrow-fg: light-dark(#1d1d1f, #f5f5f7);
+  --pb-accent: light-dark(#0073e6, #0a84ff);
+
+  position: relative;
+  overflow: hidden;
+  container-type: size;
+  isolation: isolate;
+  touch-action: pan-y;
+}
+
+.pb > [data-pb-page] {
+  position: absolute;
+  inset: 0;
+  overflow: hidden auto;
+  overscroll-behavior: contain;
+  visibility: hidden;
+}
+.pb > .is-top,
+.pb > .is-under { visibility: visible; }
+
+/* the page underneath slides in slower than the finger: parallax */
+.pb > .is-under {
+  z-index: 0;
+  transform: translateX(calc(var(--pb-dir) * (var(--pb-p) - 1) * var(--pb-parallax)));
+}
+
+/* one scrim for the whole stage, so the gaps around the shrunken card read as the same dimmed page */
+.pb::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(--pb-scrim);
+  opacity: 0;
+  pointer-events: none;
+}
+.pb.is-moving::before { opacity: calc(1 - var(--pb-p)); }
+
+.pb > .is-top {
+  --e: clamp(0, var(--pb-p) / var(--pb-shrink-by), 1);
+  z-index: 2;
+  transform:
+    translate(calc(var(--pb-dir) * var(--pb-p) * var(--pb-travel)), calc(var(--pb-lift) * 1px))
+    scale(calc(1 - var(--pb-shrink) * var(--e)));
+  border-radius: calc(var(--e) * var(--pb-radius));
+}
+.pb.is-moving > .is-top {
+  will-change: transform;
+  box-shadow:
+    0 0 0 0.5px var(--pb-edge),
+    0 24px 64px rgb(0 0 0 / calc(var(--e) * 0.22));
+}
+/* a page coming in slides flat, without the card shape */
+.pb.is-pushing > .is-top { --e: 0; }
+
+/* the arrow: comes out of the edge with the finger, fills with the accent once letting go would go back */
+.pb-arrow {
+  --reach: clamp(0, var(--pb-p) / 0.35, 1);
+  position: absolute;
+  z-index: 3;
+  top: clamp(96px, calc(var(--pb-y) * 1px), calc(100% - 96px));
+  left: 0;
+  width: 40px;
+  height: 40px;
+  margin-top: -20px;
+  border-radius: 20px;
+  display: grid;
+  place-items: center;
+  background: var(--pb-arrow-bg);
+  color: var(--pb-arrow-fg);
+  box-shadow: 0 0 0 0.5px var(--pb-edge);
+  transform: translateX(calc(-48px + var(--reach) * 60px));
+  opacity: 0;
+  pointer-events: none;
+  transition: background-color 0.16s, color 0.16s, scale 0.24s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.pb-arrow svg { width: 18px; height: 18px; }
+.pb[data-pb-edge="right"] .pb-arrow {
+  left: auto;
+  right: 0;
+  transform: translateX(calc(48px - var(--reach) * 60px)) scaleX(-1);
+}
+.pb.is-moving:not(.is-pushing, .is-auto) .pb-arrow {
+  opacity: clamp(0, min(var(--pb-p) * 12, (1 - var(--pb-p)) * 4), 1);
+}
+.pb.is-armed .pb-arrow {
+  background: var(--pb-accent);
+  color: #fff;
+  scale: 1.1;
+}
+
+/* calm version: no slides or shrinking, the page fades and the one below shows through */
+@media (prefers-reduced-motion: reduce) {
+  .pb > .is-top { transform: none; border-radius: 0; opacity: calc(1 - var(--pb-p)); }
+  .pb > .is-under { transform: none; }
+  .pb.is-moving > .is-top { box-shadow: none; }
+  .pb-arrow,
+  .pb[data-pb-edge="right"] .pb-arrow { transform: none; left: 8px; }
+  .pb[data-pb-edge="right"] .pb-arrow { left: auto; right: 8px; }
+  .pb[data-pb-edge="right"] .pb-arrow svg { scale: -1 1; }
+  .pb-arrow { transition: none; }
+  .pb.is-armed .pb-arrow { scale: none; }
+}

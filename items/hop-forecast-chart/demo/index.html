@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>HOP Forecast Chart</title>
+<link rel="stylesheet" href="../variants/html/hop-chart.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  body {
+    min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: 20px 12px; box-sizing: border-box;
+    font: clamp(13px, 0.7vw + 7px, 16px)/1.35 system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
+  }
+  main { width: min(60em, 100%); display: grid; gap: 0.8em; }
+  .hint { margin: 0; text-align: center; color: #636366; font-size: 0.85em; }
+  @media (prefers-color-scheme: dark) { .hint { color: #aaaaaf; } }
+</style>
+</head>
+<body>
+<main>
+  <figure class="hop" id="hop" aria-labelledby="hop-title" data-mode="bands">
+    <header class="hop__head">
+      <div>
+        <h1 class="hop__title" id="hop-title">Weekly sign-ups</h1>
+        <p class="hop__sub">16 weeks of actuals, 12 weeks forecast from 400 simulated futures</p>
+      </div>
+      <p class="hop__readout" id="readout"></p>
+    </header>
+    <div class="hop__plot" tabindex="0" role="group" aria-roledescription="forecast chart" aria-labelledby="hop-title" aria-describedby="readout"></div>
+    <div class="hop__controls">
+      <span class="hop__switch">
+        <button class="hop__toggle" type="button" role="switch" aria-checked="false" aria-labelledby="futures-label"></button>
+        <span id="futures-label">Play possible futures</span>
+      </span>
+      <label class="hop__trails">Trails <input type="range" min="0" max="20" value="8"> <output>8</output></label>
+      <button class="hop__play" type="button" disabled>Pause</button>
+    </div>
+    <ul class="hop__legend" aria-hidden="true">
+      <li><i class="l-actual"></i>Actual</li>
+      <li><i class="l-median"></i>Median</li>
+      <li><i class="l-b50"></i>50%</li>
+      <li><i class="l-b80"></i>80%</li>
+      <li><i class="l-b95"></i>95%</li>
+      <li><i class="l-future"></i>One possible future</li>
+    </ul>
+    <p class="hop__live" role="status"></p>
+  </figure>
+  <p class="hint">Turn on possible futures. Hover or tap to hold one, ← → to step, the slider keeps past ones as trails.</p>
+</main>
+
+<script type="module">
+  import { hopForecast } from '../variants/html/hop-chart.js';
+
+  // Seeded numbers: Hash Kit's mixer over a Weyl sequence, our own constants for the model.
+  function hashU(x) {
+    x ^= x >>> 16; x = Math.imul(x, 0x3f9c86cb);
+    x ^= x >>> 14; x = Math.imul(x, 0x1ae9dacf);
+    x ^= x >>> 15;
+    return x >>> 0;
+  }
+  function makeRandom(seed) {
+    let s = seed >>> 0;
+    return () => { s = (s + 0xb31c96c9) >>> 0; return hashU(s) / 4294967296; };
+  }
+  const rnd = makeRandom(2026);
+  const gauss = () => { let u = 0; while (u === 0) u = rnd(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rnd()); };
+
+  // 16 weeks of sign-ups: a log-level random walk with a little growth
+  const H = 16, F = 12, N = 400;
+  const history = [];
+  let level = Math.log(760);
+  for (let i = 0; i < H; i++) {
+    level += 0.013 + 0.035 * gauss();
+    history.push(Math.round(Math.exp(level + 0.03 * gauss())));
+  }
+  // 400 futures. In week 7 the app may be featured in the store (a coin flip): a bump that fades to a lasting lift.
+  const draws = [];
+  for (let k = 0; k < N; k++) {
+    let l = level;
+    const bump = rnd() < 0.5 ? 0.13 + 0.06 * rnd() : 0;
+    const d = [];
+    for (let t = 1; t <= F; t++) {
+      l += 0.011 + 0.04 * gauss();
+      const lift = t >= 7 ? bump * (0.45 + 0.55 * 0.72 ** (t - 7)) : 0;
+      d.push(Math.round(Math.exp(l + lift + 0.025 * gauss())));
+    }
+    draws.push(d);
+  }
+  const dates = Array.from({ length: H + F }, (_, i) => new Date(2026, 5, 15 + 7 * i)); // Mondays from Jun 15
+
+  const num = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
+  const chart = hopForecast(document.querySelector('#hop'), {
+    history, dates, draws,
+    events: [{ step: 7, label: 'Store feature?' }],
+    random: makeRandom(7),
+    format: (v) => num.format(v),
+    formatDate: (d, mode) => d.toLocaleDateString('en-US', mode === 'month' ? { month: 'short' } : { month: 'long', day: 'numeric' })
+  });
+  const s = chart.summary;
+  const end = dates[H + F - 1].toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  document.querySelector('#readout').innerHTML =
+    `Week of ${end}: <b>${num.format(s.low80)}–${num.format(s.high80)}</b> (80%), median <b>${num.format(s.median)}</b>`;
+
+  // ?shot=1 — futures on, one frozen with a dozen trails, for the poster
+  if (new URLSearchParams(location.search).get('shot') === '1') chart.show(16, 12);
+</script>
+</body>
+</html>

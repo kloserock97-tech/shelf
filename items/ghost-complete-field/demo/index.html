@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Ghost Complete Field</title>
+<link rel="stylesheet" href="../variants/html/ghost-complete.css">
+<style>
+  :root {
+    --card: #ffffff;
+    --label: #1d1d1f;
+    --label-2: #636366;
+    --label-3: #86868b;
+    --hair: rgba(0, 0, 0, 0.1);
+    --accent: #0073e6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --card: #1c1c1e;
+      --label: #f5f5f7;
+      --label-2: #aaaaaf;
+      --label-3: #6e6e73;
+      --hair: rgba(255, 255, 255, 0.12);
+      --accent: #0a84ff;
+    }
+  }
+  html, body { margin: 0; background: transparent; }
+  body {
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    padding: 24px 16px;
+    box-sizing: border-box;
+    color: var(--label);
+    font: 400 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { width: min(640px, 100%); }
+  .card { background: var(--card); border-radius: 24px; padding: 22px; }
+  .to { display: flex; align-items: center; gap: 10px; margin: 0 2px 16px; }
+  .to .avatar { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--label); color: var(--card); font-size: 13px; font-weight: 600; }
+  .to b { display: block; font-weight: 600; }
+  .to span { color: var(--label-2); font-size: 13px; }
+  label { display: block; margin: 14px 2px 6px; color: var(--label-2); font-size: 13px; font-weight: 500; }
+  textarea { min-height: 7.5em; }
+  .foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; }
+  .foot small { color: var(--label-2); font-size: 13px; }
+  .send { height: 34px; padding: 0 18px; border: 0; border-radius: 999px; background: var(--accent); color: #fff; font: 500 14px/1 system-ui, -apple-system, "Segoe UI", sans-serif; cursor: pointer; transition: transform 100ms cubic-bezier(0.23, 1, 0.32, 1); }
+  .send:active { transform: scale(0.97); }
+  .send:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .hint { margin: 14px 4px 0; color: var(--label-2); font-size: 13px; text-align: center; }
+  .hint kbd { padding: 0 5px; border-radius: 4px; background: rgba(118, 118, 128, 0.16); font: 500 12px/18px system-ui, -apple-system, "Segoe UI", sans-serif; }
+  @media (prefers-reduced-motion: reduce) { .send:active { transform: none; } }
+  @media (min-width: 960px) and (min-height: 760px) {
+    .wrap { width: 700px; }
+    .gcf { font-size: 18px; }
+  }
+  @media (max-width: 480px) { .card { padding: 18px 14px; border-radius: 20px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="card" aria-labelledby="to">
+    <div class="to"><span class="avatar" aria-hidden="true">AK</span><div><b id="to">Message to Anna Kovacs</b><span>Client · Northwind checkout redesign</span></div></div>
+    <label for="subject">Subject</label>
+    <input id="subject" type="text">
+    <label for="body">Message</label>
+    <textarea id="body" rows="4"></textarea>
+    <div class="foot"><small id="status">Draft saved</small><button class="send" type="button" id="send">Send</button></div>
+  </section>
+  <p class="hint">Grey text is a guess: <kbd>Tab</kbd> takes it, <kbd id="mod">Ctrl</kbd> <kbd>→</kbd> one word, or keep typing. On touch, tap the grey word.</p>
+</div>
+<script src="../variants/html/ghost-complete.js"></script>
+<script>
+  if (/Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent)) document.getElementById('mod').textContent = '⌘';
+
+  // Subject: a local list, suggestions appear at once
+  const SUBJECTS = [
+    'Updated checkout flow for review', 'Feedback on the onboarding prototype', 'Invoice for September',
+    'Moving our Thursday sync to Friday', 'Design review notes', 'Handoff files for the mobile app', 'Question about the brand colours'
+  ];
+  const subject = GhostComplete.attach(document.getElementById('subject'), {
+    phrases: SUBJECTS,
+    examples: ['e.g. Updated checkout flow for review', 'e.g. Invoice for September', 'e.g. Moving our Thursday sync to Friday']
+  });
+
+  // Message: an async source standing in for a model — a small bank of sentences per topic, answered after a pause
+  const BANK = {
+    review: [
+      'Hi Anna,', 'I’ve attached the updated checkout flow.', 'The main change is a shorter address step: one screen instead of three.',
+      'Could you take a look before our call on Thursday?', 'Happy to walk you through it if that’s easier.', 'Best, Mira'
+    ],
+    invoice: ['Hi Anna,', 'Please find the invoice for September attached.', 'It covers the checkout research and two design sprints.', 'Payment is due within 14 days.', 'Thanks, Mira'],
+    sync: ['Hi Anna,', 'Could we move our Thursday sync to Friday at 10?', 'Friday works better for the whole team.', 'I’ll send a new invite once you confirm.', 'Best, Mira'],
+    other: ['Hi Anna,', 'Quick update on the checkout redesign.', 'We’re on track for the handoff next week.', 'Let me know if anything is unclear.', 'Best, Mira']
+  };
+  const topic = () => {
+    const s = document.getElementById('subject').value.toLowerCase();
+    if (/invoice|payment|bill/.test(s)) return 'invoice';
+    if (/sync|meeting|call|thursday|friday|move/.test(s)) return 'sync';
+    if (/review|flow|feedback|prototype|design|handoff/.test(s)) return 'review';
+    return 'other';
+  };
+  const q = new URLSearchParams(location.search);
+  function model(text, { signal }) {
+    return new Promise((done, fail) => {
+      const t = setTimeout(() => {
+        const bank = BANK[topic()];
+        const all = [...bank, ...Object.values(BANK).flat()];
+        // inside a sentence: finish it
+        const rest = GhostComplete.fromPhrases(text, all);
+        if (rest) return done(rest);
+        // after a finished sentence: offer the next one from the same topic
+        if (/[.,!?:]\s*$/.test(text)) {
+          const said = bank.filter((s) => text.includes(s));
+          const next = bank.find((s) => !text.includes(s));
+          if (next && said.length) return done(`${/\s$/.test(text) ? '' : ' '}${next}`);
+        }
+        done(null);
+      }, q.has('slow') ? 1600 : 420 + (text.length % 5) * 60);
+      signal.addEventListener('abort', () => { clearTimeout(t); fail(new DOMException('aborted', 'AbortError')); });
+    });
+  }
+  const EXAMPLES = {
+    review: ['e.g. Hi Anna, I’ve attached the updated checkout flow…', 'e.g. The main change is a shorter address step…'],
+    invoice: ['e.g. Please find the invoice for September attached…', 'e.g. Payment is due within 14 days…'],
+    sync: ['e.g. Could we move our Thursday sync to Friday at 10?', 'e.g. Friday works better for the whole team…'],
+    other: ['e.g. Hi Anna, quick update on the checkout redesign…', 'e.g. We’re on track for the handoff next week…']
+  };
+  const body = GhostComplete.attach(document.getElementById('body'), { source: model, examples: () => EXAMPLES[topic()] });
+  let lastTopic = topic();
+  document.getElementById('subject').addEventListener('input', () => {
+    if (topic() !== lastTopic) { lastTopic = topic(); body.refreshExamples(); } // the example follows the subject
+  });
+
+  document.getElementById('send').addEventListener('click', () => {
+    const status = document.getElementById('status');
+    status.textContent = document.getElementById('body').value.trim() ? 'Sent to Anna' : 'Write a message first';
+    setTimeout(() => { status.textContent = 'Draft saved'; }, 1800);
+  });
+
+  // ?shot=1 — the poster: a subject in place and a sentence half-typed with its grey rest showing;
+  // ?shot=wait — the shimmer while the source thinks
+  if (q.has('shot')) {
+    document.getElementById('subject').value = 'Updated checkout flow for review';
+    lastTopic = topic();
+    body.refreshExamples();
+    body.set(q.get('shot') === 'wait' ? 'Hi Anna, I’ve attached the updated checkout flow. ' : 'Hi Anna, I’ve attached the upd');
+  }
+</script>
+</body>
+</html>

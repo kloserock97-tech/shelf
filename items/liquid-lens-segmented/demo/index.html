@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Liquid Lens Segmented</title>
+<link rel="stylesheet" href="../variants/html/liquid-lens.css">
+<style>
+  :root {
+    --card: #ffffff;
+    --label: #1d1d1f;
+    --label-2: #636366;
+    --label-3: #86868b;
+    --bar: rgba(118, 118, 128, 0.26);
+    --accent: #0073e6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --card: #1c1c1e;
+      --label: #f5f5f7;
+      --label-2: #aaaaaf;
+      --label-3: #6e6e73;
+      --bar: rgba(118, 118, 128, 0.42);
+      --accent: #0a84ff;
+    }
+  }
+  html, body { margin: 0; background: transparent; }
+  body {
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    padding: 24px 16px;
+    box-sizing: border-box;
+    color: var(--label);
+    font: 400 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { width: min(640px, 100%); }
+  .card { background: var(--card); border-radius: 24px; padding: 22px 22px 18px; }
+  .card .lls { display: grid; width: 100%; box-sizing: border-box; --lls-h: 40px; font-size: 16px; }
+  @media (min-width: 720px) { .card .lls { --lls-h: 52px; --lls-pad: 4px; font-size: 19px; } }
+  .head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 22px 4px 0; }
+  .eyebrow { margin: 0; color: var(--label-2); font-size: 13px; font-weight: 500; }
+  .total { margin: 2px 0 0; font-size: 34px; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .delta { margin: 0; color: var(--label-2); font-size: 13px; text-align: right; }
+  .chart { display: flex; align-items: flex-end; height: 150px; margin: 18px 4px 0; }
+  .chart i {
+    flex: 0 0 0;
+    min-width: 0;
+    height: 0;
+    margin: 0;
+    border-radius: 3px 3px 1px 1px;
+    background: var(--bar);
+    opacity: 0;
+    transition: flex-grow 420ms cubic-bezier(0.32, 0.72, 0, 1), height 420ms cubic-bezier(0.32, 0.72, 0, 1), margin 420ms cubic-bezier(0.32, 0.72, 0, 1), opacity 160ms;
+  }
+  .chart i.on { flex-grow: 1; margin: 0 2px; opacity: 1; }
+  .chart i.now { background: var(--accent); }
+  .ticks { display: flex; justify-content: space-between; margin: 8px 6px 0; color: var(--label-3); font-size: 12px; }
+  .hint { margin: 14px 4px 0; color: var(--label-2); font-size: 13px; text-align: center; }
+  @media (prefers-reduced-motion: reduce) { .chart i { transition: opacity 160ms; } }
+  @media (max-width: 420px) {
+    .card { padding: 16px 14px 14px; border-radius: 20px; }
+    .card .lls { --lls-h: 36px; font-size: 14px; }
+    .card .lls-seg { padding: 0 6px; }
+    .total { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="card" aria-labelledby="spend">
+    <div class="lls" id="period" data-liquid-lens aria-label="Period">
+      <button type="button" class="lls-seg" role="radio" aria-checked="false" value="week">Week</button>
+      <button type="button" class="lls-seg" role="radio" aria-checked="true" value="month">Month</button>
+      <button type="button" class="lls-seg" role="radio" aria-checked="false" value="quarter">Quarter</button>
+      <button type="button" class="lls-seg" role="radio" aria-checked="false" value="year">Year</button>
+    </div>
+    <div class="head">
+      <div>
+        <p class="eyebrow" id="spend">Spent on the team card</p>
+        <p class="total" id="total">€1,284.50</p>
+      </div>
+      <p class="delta" id="delta">8% less than August</p>
+    </div>
+    <div class="chart" id="chart" aria-hidden="true"></div>
+    <div class="ticks" id="ticks" aria-hidden="true"></div>
+  </section>
+  <p class="hint">Press and drag the thumb: it turns to glass only while you hold it. Arrow keys switch without the glass.</p>
+</div>
+<script>
+  // made-up spending of a small design team, per bar
+  const DATA = {
+    week: { total: '€430.00', delta: '12% less than last week', ticks: ['Mon', 'Thu', 'Sun'],
+      bars: [38, 12, 64, 27, 91, 146, 52] },
+    month: { total: '€1,284.50', delta: '8% less than August', ticks: ['1 Sep', '15 Sep', '30 Sep'],
+      bars: [22, 48, 15, 60, 34, 8, 12, 70, 41, 55, 26, 91, 18, 9, 30, 64, 47, 38, 72, 25, 11, 6, 58, 83, 36, 29, 67, 44, 19, 52] },
+    quarter: { total: '€3,912.20', delta: '3% more than Q2', ticks: ['Jul', 'Aug', 'Sep'],
+      bars: [280, 310, 190, 405, 350, 260, 300, 330, 275, 360, 240, 295, 318] },
+    year: { total: '€15,480.00', delta: 'On budget for 2026', ticks: ['Jan', 'Jun', 'Dec'],
+      bars: [1120, 1340, 1210, 1480, 1290, 1150, 1310, 1402, 1284, 1390, 1250, 1455] }
+  };
+  const chart = document.getElementById('chart');
+  const MAX_BARS = 30;
+  chart.innerHTML = '<i></i>'.repeat(MAX_BARS);
+  const bars = [...chart.children];
+  function show(key) {
+    const d = DATA[key];
+    const top = Math.max(...d.bars);
+    bars.forEach((b, i) => {
+      const v = d.bars[i];
+      b.classList.toggle('on', v != null);
+      b.classList.toggle('now', i === d.bars.length - 1);
+      b.style.height = v != null ? `${Math.max(3, (v / top) * 100)}%` : '0';
+    });
+    document.getElementById('total').textContent = d.total;
+    document.getElementById('delta').textContent = d.delta;
+    document.getElementById('ticks').innerHTML = d.ticks.map((t) => `<span>${t}</span>`).join('');
+  }
+  show('month');
+  document.getElementById('period').addEventListener('change', (e) => show(e.detail.value));
+  // ?lens=blur — the fallback lens, as browsers without SVG filters on HTML get it
+  if (new URLSearchParams(location.search).get('lens') === 'blur') document.getElementById('period').dataset.lens = 'blur';
+</script>
+<script src="../variants/html/liquid-lens.js"></script>
+<script>
+  // ?shot=1 — the lens held between Month and Quarter (&at= in segments)
+  const q = new URLSearchParams(location.search);
+  const el = document.getElementById('period');
+  if (q.has('shot')) {
+    if (innerWidth >= 1000) document.querySelector('.wrap').style.zoom = '1.28'; // the poster: the control reads at thumbnail size
+    requestAnimationFrame(() => requestAnimationFrame(() => el.liquidLens.freeze(Number(q.get('at') ?? 1.3), 1)));
+  }
+</script>
+</body>
+</html>

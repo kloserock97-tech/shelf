@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>AI Edit Review</title>
+<link rel="stylesheet" href="../variants/html/edit-review.css">
+<style>
+  html, body { min-height: 100%; margin: 0; background: transparent; }
+  body {
+    display: grid; place-items: center; min-height: 100vh; box-sizing: border-box;
+    padding: 56px 16px 56px;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: #1d1d1f;
+    -webkit-font-smoothing: antialiased;
+  }
+  main { width: 100%; max-width: 680px; }
+  .meta { display: flex; flex-wrap: wrap; gap: 4px 10px; margin: 0 0 6px; font-size: 13px; color: #636366; }
+  .meta b { font-weight: 500; color: #1d1d1f; }
+  h1 { margin: 0 0 20px; font-size: 26px; line-height: 1.2; font-weight: 600; letter-spacing: -0.015em; }
+  .hint { margin: 20px 0 0; font-size: 13px; color: #86868b; }
+  @media (min-width: 900px) { .er-text { font-size: 21px; } }
+  @media (max-width: 480px) { h1 { font-size: 22px; } .er-text { font-size: 17px; } }
+  @media (prefers-color-scheme: dark) {
+    body { color: #f5f5f7; }
+    .meta { color: #aaaaaf; }
+    .meta b { color: #f5f5f7; }
+    .hint { color: #8e8e93; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <p class="meta"><b>Suggested rewrite</b><span>Clearer and warmer · 31 fewer words</span></p>
+  <h1>Reply to Marta, invoice #4471</h1>
+  <div id="reply"></div>
+  <p class="hint">Hover a change and press Y or N, or drag the slider to read any point between the original and the rewrite.</p>
+</main>
+<script src="../variants/html/edit-review.js"></script>
+<script>
+  var segments = [
+    'Hi Marta, ',
+    { from: 'thank you for reaching out to us regarding the issue you are experiencing with your invoice', to: 'thanks for flagging the invoice', why: 'Shorter' },
+    '. ',
+    { from: 'After looking into it, it seems that the charge of €49 was made due to the fact that', to: 'The €49 charge happened because', why: 'Plainer' },
+    ' your trial ended on ',
+    { from: 'the 3rd', to: 'May 3', why: 'Exact date' },
+    ' and the plan ',
+    { from: 'was renewed', to: 'renewed', why: 'Active voice' },
+    ' automatically. ',
+    { from: 'We would like to apologize for any inconvenience this may have caused.', to: 'Sorry for the surprise.', why: 'Warmer' },
+    ' ',
+    { from: 'If you want, we can refund the payment, just let us know.', to: 'I’ve already started a refund; it should reach your card within 5 business days.', why: 'Promises a refund, check policy' }
+  ];
+
+  var q = new URLSearchParams(location.search);
+  var review = EditReview.create(document.getElementById('reply'), { segments: segments });
+
+  // ?shot=1 — the poster: two edits kept, one rejected, a toolbar over the refund promise
+  // ?shot=2 — mid-scrub: the rewrite half applied, one hunk caught mid-morph
+  if (q.get('shot') === '1') {
+    document.querySelector('.hint').style.visibility = 'hidden';
+    review.accept(0); review.accept(2); review.reject(3);
+    setTimeout(function () { review.show(5); }, 1000);
+  } else if (q.get('shot') === '2') {
+    document.querySelector('.hint').style.visibility = 'hidden';
+    review.scrub(0.42);
+  }
+</script>
+</body>
+</html>

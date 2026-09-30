@@ -1,0 +1,19 @@
+<!-- Any live screen: put data-spec-lens on its container. The lens measures what is inside it.
+     data-spec-tokens — CSS custom properties whose colours get token names (--text-primary shows as text/primary).
+     data-spec-grid   — on the grid container whose columns to draw.
+     data-spec-name   — optional names for the rim tag; data-spec-skip hides a subtree from the spec.
+     data-lens-radius — starting radius, px (56–280). -->
+<main class="screen" data-spec-lens data-lens-radius="160"
+      data-spec-tokens="--surface-page --surface-card --text-primary --text-secondary --border-field --accent">
+  <div class="layout" data-spec-grid>
+    <form>
+      <h2>Contact</h2>
+      <input type="email" value="mira@example.com" aria-label="Email">
+      <button data-spec-name="Pay button">Pay €90.90</button>
+    </form>
+  </div>
+</main>
+
+<link rel="stylesheet" href="spec-lens.css">
+<script src="spec-lens.js" defer></script>
+<!-- screen.specLens.pinAt(x, y, radius) pins it from code; the spec rebuilds itself when the screen changes -->

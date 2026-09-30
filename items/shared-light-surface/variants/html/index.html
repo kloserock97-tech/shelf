@@ -1,0 +1,14 @@
+<!-- The root is the floor; every .ls-card inside is lit by the same lamp.
+     data-lamp-height — lamp height in px (90–640); data-lamp-rest — where it rests, as fractions "x y" of the root;
+     data-lamp-still — no glide-in on load. Per card: style="--ls-e: 24" raises it higher (longer shadow). -->
+<section class="board" data-shared-light data-lamp-height="260" data-lamp-rest="0.3 0.28"
+         aria-label="Studio overview. Arrow keys move the lamp, Page Up and Page Down change its height.">
+  <article class="ls-card">Revenue</article>
+  <article class="ls-card">Invoices paid</article>
+  <article class="ls-card" style="--ls-e: 26">Next payout</article>
+</section>
+
+<link rel="stylesheet" href="shared-light.css">
+<script src="shared-light.js" defer></script>
+<!-- from code: board.sharedLight.setHeight(320); board.sharedLight.placeLamp(x, y, h);
+     the root fires "lampheight" with the new height -->

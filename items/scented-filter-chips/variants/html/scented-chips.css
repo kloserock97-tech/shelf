@@ -1,0 +1,196 @@
+/* Scented Filter Chips — chips that show what they would leave before you press them. */
+.sfc {
+  --sfc-font: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --sfc-label: #1d1d1f;
+  --sfc-label-2: #636366;
+  --sfc-label-3: #86868b;
+  --sfc-surface: #ffffff;
+  --sfc-fill: rgba(118, 118, 128, 0.12);
+  --sfc-fill-hover: rgba(118, 118, 128, 0.2);
+  --sfc-fill-off: rgba(118, 118, 128, 0.06);
+  --sfc-track: rgba(118, 118, 128, 0.26);
+  --sfc-hair: rgba(0, 0, 0, 0.1);
+  --sfc-inverse: #1d1d1f;
+  --sfc-on-inverse: #ffffff;
+  --sfc-accent: #0073e6;
+  --sfc-accent-text: #0066cc;
+  --sfc-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  font-family: var(--sfc-font);
+  color: var(--sfc-label);
+  -webkit-font-smoothing: antialiased;
+}
+@media (prefers-color-scheme: dark) {
+  .sfc {
+    --sfc-label: #f5f5f7;
+    --sfc-label-2: #aaaaaf;
+    --sfc-label-3: #6e6e73;
+    --sfc-surface: #1c1c1e;
+    --sfc-fill: rgba(118, 118, 128, 0.24);
+    --sfc-fill-hover: rgba(118, 118, 128, 0.34);
+    --sfc-fill-off: rgba(118, 118, 128, 0.12);
+    --sfc-track: rgba(118, 118, 128, 0.4);
+    --sfc-hair: rgba(255, 255, 255, 0.1);
+    --sfc-inverse: #f5f5f7;
+    --sfc-on-inverse: #000000;
+    --sfc-accent: #0a84ff;
+    --sfc-accent-text: #2997ff;
+  }
+}
+
+/* chips */
+.sfc__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.sfc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 12px 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--sfc-fill);
+  color: var(--sfc-label);
+  font: 500 14px/1 var(--sfc-font);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: background-color 160ms ease, color 160ms ease, opacity 160ms ease, transform 100ms var(--sfc-ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .sfc-chip:hover { background: var(--sfc-fill-hover); }
+}
+.sfc-chip.is-previewing { background: var(--sfc-fill-hover); }
+.sfc-chip:active { transform: scale(0.97); }
+.sfc-chip:focus-visible { outline: 2px solid var(--sfc-accent); outline-offset: 2px; }
+.sfc-chip[aria-pressed="true"] { background: var(--sfc-inverse); color: var(--sfc-on-inverse); }
+.sfc-chip[aria-disabled="true"] { background: var(--sfc-fill-off); cursor: default; }
+.sfc-chip[aria-disabled="true"] > * { opacity: 0.4; }
+.sfc-chip[aria-disabled="true"]:active { transform: none; }
+
+/* the scent: how much of the current list this chip would keep */
+.sfc-chip__meter {
+  position: relative;
+  width: 24px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--sfc-track);
+  overflow: hidden;
+}
+.sfc-chip__meter i {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--sfc-accent);
+  transform-origin: left center;
+  transform: scaleX(var(--sfc-p, 1));
+  transition: transform 240ms var(--sfc-ease-out);
+}
+.sfc-chip__count {
+  min-width: 1.2ch;
+  color: var(--sfc-label-2);
+  font-size: 13px;
+  text-align: right;
+}
+.sfc-chip[aria-pressed="true"] .sfc-chip__meter { display: none; }
+.sfc-chip[aria-pressed="true"] .sfc-chip__count { color: inherit; opacity: 0.66; }
+
+/* status line */
+.sfc__status {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-height: 20px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--sfc-label-2);
+  font-variant-numeric: tabular-nums;
+}
+.sfc__count { color: var(--sfc-label); font-weight: 600; }
+.sfc__preview {
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 160ms ease, transform 240ms var(--sfc-ease-out);
+}
+.sfc__preview b { color: var(--sfc-accent-text); font-weight: 600; }
+.sfc.is-previewing .sfc__preview { opacity: 1; transform: none; }
+.sfc__clear {
+  margin-left: auto;
+  padding: 4px 2px;
+  border: 0;
+  background: none;
+  color: var(--sfc-accent-text);
+  font: 500 13px/1 var(--sfc-font);
+  cursor: pointer;
+  border-radius: 6px;
+}
+.sfc__clear[hidden] { display: none; }
+.sfc__clear:focus-visible { outline: 2px solid var(--sfc-accent); outline-offset: 2px; }
+
+/* list */
+.sfc__list {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sfc-row { position: relative; }
+.sfc-row[hidden] { display: none; }
+.sfc-row:not([hidden]) ~ .sfc-row:not([hidden]) { box-shadow: inset 0 0.5px 0 var(--sfc-hair); }
+.sfc-row__body {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  column-gap: 16px;
+  padding: 11px 2px;
+  transition: opacity 220ms ease, transform 280ms var(--sfc-ease-out);
+}
+.sfc-row__title { font-size: 15px; font-weight: 500; line-height: 1.3; }
+.sfc-row__meta { margin-top: 2px; font-size: 13px; color: var(--sfc-label-2); line-height: 1.3; }
+.sfc-row__price {
+  font-size: 15px;
+  font-weight: 500;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  transition: opacity 160ms ease;
+}
+.sfc-row__price small { display: block; margin-top: 2px; font-size: 12px; font-weight: 400; color: var(--sfc-label-2); }
+.sfc-row__why {
+  position: absolute;
+  right: 2px;
+  top: 50%;
+  translate: 0 -50%;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--sfc-label-2);
+  opacity: 0;
+  transition: opacity 160ms ease;
+  pointer-events: none;
+}
+
+/* preview: rows the chip would remove dim and step aside, and say why */
+.sfc-row.is-going .sfc-row__body { opacity: 0.32; transform: translateX(16px); }
+.sfc-row.is-going .sfc-row__price { opacity: 0; }
+.sfc-row.is-going .sfc-row__why { opacity: 1; }
+
+.sfc-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sfc-row.is-going .sfc-row__body { transform: none; }
+  .sfc__preview { transform: none; }
+  .sfc-chip__meter i { transition: none; }
+}

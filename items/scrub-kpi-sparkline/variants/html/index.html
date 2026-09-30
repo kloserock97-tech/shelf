@@ -1,0 +1,34 @@
+<section class="kpi" aria-labelledby="kpi-title" data-scrubbing="false">
+  <header class="kpi__head">
+    <h2 class="kpi__title" id="kpi-title">Monthly recurring revenue</h2>
+  </header>
+  <p class="kpi__date"></p>
+  <p class="kpi__value"><span class="kpi__digits" aria-hidden="true"></span><span class="kpi__sr"></span></p>
+  <p class="kpi__meta"><span class="kpi__delta"></span> <span class="kpi__context"></span></p>
+  <div class="kpi__chart" tabindex="0" role="slider" aria-label="Day"></div>
+  <div class="kpi__axis" aria-hidden="true"><span></span><span></span></div>
+</section>
+
+<link rel="stylesheet" href="scrub-kpi.css">
+<script type="module">
+  import { scrubKpi } from './scrub-kpi.js';
+
+  const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+  const pct = new Intl.NumberFormat('en-US', { style: 'percent', minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const sign = (n) => (n < 0 ? '−' : '+');
+
+  // oldest first; the last point is today
+  const points = [/* { date: new Date(2026, 6, 2), value: 43521 }, … */];
+
+  scrubKpi(document.querySelector('.kpi'), {
+    points,
+    restLabel: 'past 3 months',
+    format: (n) => money.format(n),
+    formatDelta: (d, r) => `${sign(d)}${money.format(Math.abs(d))} (${sign(r)}${pct.format(Math.abs(r))})`,
+    formatDate: (date, mode) => (mode === 'today'
+      ? 'Today'
+      : date.toLocaleDateString('en-US', mode === 'full'
+        ? { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }
+        : { weekday: 'short', month: 'short', day: 'numeric' }))
+  });
+</script>

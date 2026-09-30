@@ -1,0 +1,216 @@
+/* Agent Plan Card — an agent's plan as editable steps; run, watch, rewind to any finished step. */
+
+.ap {
+  --ap-label: #1d1d1f;
+  --ap-label-2: #636366;
+  --ap-label-3: #86868b;
+  --ap-card: #fff;
+  --ap-fill: rgba(118, 118, 128, 0.12);
+  --ap-fill-hover: rgba(118, 118, 128, 0.2);
+  --ap-fill-subtle: rgba(0, 0, 0, 0.04);
+  --ap-sep: rgba(0, 0, 0, 0.1);
+  --ap-accent: #0073e6;
+  --ap-accent-hover: #0068d1;
+  --ap-accent-text: #0066cc;
+  --ap-green: #1e7536;
+  --ap-red: #ca0014;
+  --ap-red-tint: rgba(202, 0, 20, 0.08);
+  --ap-lift: 0 12px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  --ap-ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --ap-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 540px;
+  padding: 22px 22px 18px;
+  border-radius: 22px;
+  background: var(--ap-card);
+  color: var(--ap-label);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+}
+@media (prefers-color-scheme: dark) {
+  .ap {
+    --ap-label: #f5f5f7;
+    --ap-label-2: #aaaaaf;
+    --ap-label-3: #6e6e73;
+    --ap-card: #1c1c1e;
+    --ap-fill: rgba(118, 118, 128, 0.24);
+    --ap-fill-hover: rgba(118, 118, 128, 0.34);
+    --ap-fill-subtle: rgba(255, 255, 255, 0.06);
+    --ap-sep: rgba(255, 255, 255, 0.12);
+    --ap-accent: #0a84ff;
+    --ap-accent-text: #2997ff;
+    --ap-green: #30d158;
+    --ap-red: #ff6961;
+    --ap-red-tint: rgba(255, 105, 97, 0.16);
+    --ap-lift: 0 12px 32px rgba(0, 0, 0, 0.55), 0 0 0 0.5px rgba(255, 255, 255, 0.1);
+  }
+}
+.ap *, .ap *::before, .ap *::after { box-sizing: border-box; }
+
+/* ---------- header ---------- */
+.ap-status { margin: 0 0 6px; font-size: 13px; color: var(--ap-label-2); font-variant-numeric: tabular-nums; }
+.ap-status b { font-weight: 500; color: var(--ap-label); }
+.ap-title { margin: 0; font-size: 21px; line-height: 1.25; font-weight: 600; letter-spacing: -0.012em; }
+.ap-sub { margin: 4px 0 0; font-size: 13px; color: var(--ap-label-2); }
+
+/* ---------- steps ---------- */
+.ap-steps { position: relative; list-style: none; margin: 16px -10px 0; padding: 0; }
+.ap-rail, .ap-rail-fill {
+  position: absolute; left: 55px; width: 2px; margin-left: -1px; border-radius: 1px; pointer-events: none;
+}
+.ap-rail { background: var(--ap-fill-hover); }
+.ap-rail-fill { background: var(--ap-green); transition: height 420ms var(--ap-drawer); }
+
+.ap-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 26px 26px 1fr auto;
+  align-items: start;
+  column-gap: 6px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  transition: background-color 160ms var(--ap-ease), transform 240ms var(--ap-ease);
+}
+.ap-step[data-rolled] { animation: ap-rolled 900ms var(--ap-ease); }
+@keyframes ap-rolled { 0% { background-color: var(--ap-fill); } 100% { background-color: transparent; } }
+.ap-step[data-dragging] {
+  z-index: 3; background: var(--ap-card); box-shadow: var(--ap-lift);
+  transition: box-shadow 160ms var(--ap-ease);
+}
+.ap-steps[data-sorting] .ap-step:not([data-dragging]) { transition: transform 240ms var(--ap-ease); }
+.ap-steps[data-still] .ap-step { transition: none !important; }
+
+.ap-grip {
+  display: grid; place-items: center; width: 26px; height: 26px; margin: -1px 0 0; padding: 0;
+  border: 0; border-radius: 7px; background: none; color: var(--ap-label-3);
+  cursor: grab; touch-action: none; opacity: 0;
+  transition: opacity 160ms var(--ap-ease);
+}
+.ap-grip svg { width: 14px; height: 14px; }
+.ap-grip:focus-visible { opacity: 1; outline: 2px solid var(--ap-accent); outline-offset: -2px; }
+.ap-step:hover .ap-grip, .ap-step:focus-within .ap-grip, .ap-step[data-dragging] .ap-grip { opacity: 1; }
+@media (pointer: coarse) { .ap-grip { opacity: 1; } }
+.ap-step:not([data-state="idle"]) .ap-grip { visibility: hidden; }
+.ap-step[data-dragging] .ap-grip { cursor: grabbing; }
+
+/* the status glyph: ring → spinning arc → check or cross */
+.ap-glyph { position: relative; width: 26px; height: 26px; display: grid; place-items: center; z-index: 1; }
+.ap-glyph::before { content: ""; position: absolute; inset: 1px; border-radius: 50%; background: var(--ap-card); }
+.ap-glyph svg { position: relative; width: 22px; height: 22px; overflow: visible; }
+.ap-glyph circle, .ap-glyph path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.g-ring { stroke: var(--ap-label-3); stroke-width: 1.5; opacity: 0.7; transition: stroke 240ms var(--ap-ease), opacity 240ms var(--ap-ease); }
+.g-arc {
+  stroke: var(--ap-accent); stroke-width: 2; stroke-dasharray: 0 100; opacity: 0;
+  transform-origin: 11px 11px; transform: rotate(-90deg);
+  transition: stroke-dasharray 320ms var(--ap-ease), opacity 160ms var(--ap-ease), stroke 200ms var(--ap-ease);
+}
+.ap-glyph .g-fill { fill: var(--ap-green); stroke: none; transform-origin: 11px 11px; transform: scale(0.4); opacity: 0; transition: transform 320ms var(--ap-ease) 120ms, opacity 200ms var(--ap-ease) 120ms, fill 200ms; }
+.g-mark { stroke: #fff; stroke-width: 2; stroke-dasharray: 10; stroke-dashoffset: 10; transition: stroke-dashoffset 260ms var(--ap-ease) 220ms; }
+
+.ap-step[data-state="run"] .g-ring { stroke: var(--ap-fill-hover); opacity: 1; }
+.ap-step[data-state="run"] .g-arc { stroke-dasharray: 26 74; opacity: 1; animation: ap-spin 900ms linear infinite; }
+@keyframes ap-spin { from { transform: rotate(-90deg); } to { transform: rotate(270deg); } }
+.ap-step[data-state="done"] .g-arc, .ap-step[data-state="fail"] .g-arc { stroke-dasharray: 100 0; opacity: 1; }
+.ap-step[data-state="done"] .g-fill, .ap-step[data-state="fail"] .g-fill { transform: none; opacity: 1; }
+.ap-step[data-state="done"] .g-check, .ap-step[data-state="fail"] .g-cross { stroke-dashoffset: 0; }
+.ap-step[data-state="done"] .g-arc { stroke: var(--ap-green); }
+.ap-step[data-state="fail"] .g-arc { stroke: var(--ap-red); }
+.ap-step[data-state="fail"] .g-fill { fill: var(--ap-red); }
+.ap-step[data-skip] .g-ring { stroke-dasharray: 2 3.2; opacity: 0.6; }
+
+/* text, note, time */
+.ap-body { min-width: 0; padding-top: 2px; }
+.ap-text {
+  display: inline; padding: 1px 3px; margin: 0 -3px; border-radius: 5px;
+  font-weight: 450; overflow-wrap: anywhere;
+  text-decoration-line: line-through; text-decoration-color: transparent; text-decoration-thickness: 1.5px;
+  transition: color 240ms var(--ap-ease), text-decoration-color 240ms var(--ap-ease);
+  outline: none;
+}
+.ap-step[data-state="idle"] .ap-text { cursor: text; }
+.ap-text:focus-visible { outline: 2px solid var(--ap-accent); outline-offset: 1px; }
+@media (hover: hover) and (pointer: fine) { .ap-step[data-state="idle"] .ap-text:hover { background: var(--ap-fill); } }
+.ap-step[data-skip] .ap-text { color: var(--ap-label-3); text-decoration-color: currentColor; }
+.ap-step[data-state="run"] .ap-text { font-weight: 550; }
+.ap-input {
+  width: 100%; margin: -3px -4px; padding: 2px 4px; border: 0; border-radius: 6px;
+  background: var(--ap-fill); color: var(--ap-label); font: inherit; font-weight: 450;
+  outline: 2px solid var(--ap-accent); outline-offset: 0;
+}
+.ap-note {
+  display: block; margin-top: 2px; font-size: 13px; color: var(--ap-label-2); min-height: 0;
+  transition: opacity 200ms var(--ap-ease);
+}
+.ap-note:empty { display: none; }
+.ap-step[data-state="fail"] .ap-note { color: var(--ap-red); }
+.ap-note[data-fade] { animation: ap-fade 2000ms var(--ap-ease) forwards; }
+@keyframes ap-fade { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+
+.ap-side { position: relative; display: flex; align-items: center; gap: 6px; min-height: 26px; }
+/* actions float over the time column on hover or focus, so they never squeeze the step text */
+.ap-acts {
+  position: absolute; top: 0; right: 0; display: flex; gap: 6px; padding-left: 10px;
+  background: var(--ap-card); opacity: 0; pointer-events: none;
+  transition: opacity 160ms var(--ap-ease);
+}
+.ap-step:hover .ap-acts, .ap-step:focus-within .ap-acts, .ap-step[data-show] .ap-acts { opacity: 1; pointer-events: auto; }
+.ap-step[data-skip][data-state="idle"] .ap-acts { position: static; opacity: 1; pointer-events: auto; padding: 0; background: none; }
+.ap-acts:not(:has(.ap-mini:not([hidden]))) { display: none; }
+.ap-time { font-size: 13px; color: var(--ap-label-2); font-variant-numeric: tabular-nums; text-align: right; min-width: 38px; }
+.ap-step[data-state="run"] .ap-time { color: var(--ap-accent-text); }
+.ap-mini {
+  display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px;
+  border: 0; border-radius: 999px; background: var(--ap-fill); color: var(--ap-label);
+  font: inherit; font-size: 12px; font-weight: 500; white-space: nowrap; cursor: pointer;
+  transition: background-color 160ms var(--ap-ease);
+}
+.ap-mini svg { width: 13px; height: 13px; }
+.ap-mini[hidden] { display: none; }
+.ap-mini:focus-visible { outline: 2px solid var(--ap-accent); outline-offset: 1px; }
+@media (pointer: coarse) {
+  .ap-acts { position: static; opacity: 1; pointer-events: auto; padding: 0; background: none; }
+  .ap-mini span { display: none; }
+  .ap-mini { width: 30px; height: 30px; padding: 0; justify-content: center; }
+}
+@media (hover: hover) and (pointer: fine) { .ap-mini:hover { background: var(--ap-fill-hover); } }
+.ap-mini:active { transform: scale(0.97); }
+
+/* ---------- footer ---------- */
+.ap-foot {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin-top: 14px; padding-top: 14px; border-top: 0.5px solid var(--ap-sep);
+}
+.ap-hint { margin-right: auto; font-size: 13px; color: var(--ap-label-2); }
+.ap-btn {
+  display: inline-flex; align-items: center; gap: 7px; height: 34px; padding: 0 16px;
+  border: 0; border-radius: 999px; background: var(--ap-fill); color: var(--ap-label);
+  font: inherit; font-size: 14px; font-weight: 500; cursor: pointer;
+  transition: background-color 160ms var(--ap-ease);
+}
+.ap-btn svg { width: 14px; height: 14px; }
+.ap-btn[hidden] { display: none; }
+.ap-btn:focus-visible { outline: 2px solid var(--ap-accent); outline-offset: 2px; }
+.ap-btn--main { background: var(--ap-accent); color: #fff; }
+@media (hover: hover) and (pointer: fine) {
+  .ap-btn:hover { background: var(--ap-fill-hover); }
+  .ap-btn--main:hover { background: var(--ap-accent-hover); }
+}
+.ap-btn:active { transform: scale(0.97); }
+
+.ap-sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (max-width: 480px) {
+  .ap { padding: 18px 16px 14px; border-radius: 20px; }
+  .ap-steps { margin: 14px -8px 0; }
+  .ap-step { padding: 8px; grid-template-columns: 24px 26px 1fr auto; }
+  .ap-rail, .ap-rail-fill { left: 51px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ap-step[data-state="run"] .g-arc { animation-duration: 2.4s; }
+  .ap-step, .ap-rail-fill, .g-arc, .g-fill, .g-mark { transition-duration: 1ms !important; transition-delay: 0s !important; }
+  .ap-step[data-rolled] { animation: none; }
+}

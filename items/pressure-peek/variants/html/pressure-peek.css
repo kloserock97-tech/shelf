@@ -1,0 +1,150 @@
+/* Pressure Peek — the layer that lifts a card, grows its preview and opens it.
+   Colours are custom properties, so a product can repaint it without touching the rules. */
+.pp-layer {
+  --pp-sheet: #ffffff;
+  --pp-label: #1d1d1f;
+  --pp-scrim: rgb(242 242 245 / 0.38);
+  --pp-edge: rgb(0 0 0 / 0.08);
+  --pp-ring-bg: rgb(255 255 255 / 0.9);
+  --pp-ring-track: rgb(118 118 128 / 0.22);
+  --pp-ring-idle: #636366;
+  --pp-accent: #0073e6;
+  --pp-fill: rgb(118 118 128 / 0.12);
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  pointer-events: none;
+  -webkit-tap-highlight-color: transparent;
+}
+@media (prefers-color-scheme: dark) {
+  .pp-layer {
+    --pp-sheet: #1c1c1e;
+    --pp-label: #f5f5f7;
+    --pp-scrim: rgb(0 0 0 / 0.38);
+    --pp-edge: rgb(255 255 255 / 0.1);
+    --pp-ring-bg: rgb(44 44 46 / 0.86);
+    --pp-ring-track: rgb(118 118 128 / 0.34);
+    --pp-ring-idle: #aaaaaf;
+    --pp-accent: #0a84ff;
+    --pp-fill: rgb(118 118 128 / 0.24);
+  }
+}
+.pp-layer[hidden] { display: none; }
+.pp-layer.pp-open { pointer-events: auto; }
+
+/* The rest of the page: dimmed and blurred. The blur radius stays fixed and only the opacity moves,
+   so the browser does not re-rasterise the backdrop at a new radius every frame. */
+.pp-scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--pp-scrim);
+  -webkit-backdrop-filter: blur(4px) saturate(1.05);
+  backdrop-filter: blur(4px) saturate(1.05);
+  opacity: 0;
+}
+
+/* A copy of the pressed card, lifted above the scrim. */
+.pp-ghost {
+  position: absolute !important;
+  margin: 0 !important;
+  box-sizing: border-box;
+  pointer-events: none;
+  transform-origin: 50% 55%;
+  will-change: transform, opacity;
+}
+
+/* The destination: laid out at its final size, then scaled and cut down to the card while it grows. */
+.pp-sheet {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: hidden;
+  transform-origin: 0 0;
+  background: var(--pp-sheet);
+  color: var(--pp-label);
+  box-shadow: 0 0 0 0.5px var(--pp-edge), 0 24px 64px rgb(0 0 0 / 0.16), 0 4px 14px rgb(0 0 0 / 0.08);
+  will-change: transform, opacity;
+  outline: none;
+}
+.pp-sheet__body {
+  box-sizing: border-box;
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+.pp-open .pp-sheet__body { overflow-y: auto; }
+.pp-sheet__close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 1;
+  height: 30px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--pp-fill);
+  color: var(--pp-label);
+  font: 500 14px/30px system-ui, -apple-system, "Segoe UI", sans-serif;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 160ms cubic-bezier(.25, .1, .25, 1), visibility 0s linear 160ms;
+}
+.pp-open .pp-sheet__close { opacity: 1; visibility: visible; transition-delay: 60ms, 0s; }
+.pp-sheet__close:active { transform: scale(0.97); }
+.pp-sheet__close:focus-visible { outline: 2px solid var(--pp-accent); outline-offset: 2px; }
+
+/* Depth ring: how deep the press is. The notch marks where the preview opens, the full circle opens it. */
+.pp-ring {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 52px;
+  height: 52px;
+  margin: -26px 0 0 -26px;
+  opacity: 0;
+  transition: opacity 140ms cubic-bezier(.25, .1, .25, 1);
+  will-change: transform, opacity;
+}
+.pp-ring.pp-on { opacity: 1; }
+.pp-ring__bg { fill: var(--pp-ring-bg); }
+.pp-ring__track { fill: none; stroke: var(--pp-ring-track); stroke-width: 3.5; }
+.pp-ring__arc {
+  fill: none;
+  stroke: var(--pp-ring-idle);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  transition: stroke 160ms cubic-bezier(.25, .1, .25, 1);
+}
+.pp-ring__tick { stroke: var(--pp-ring-idle); stroke-width: 1.5; stroke-linecap: round; }
+.pp-ring.pp-peeked .pp-ring__arc { stroke: var(--pp-accent); }
+.pp-ring__dot { fill: var(--pp-ring-idle); transition: fill 160ms; }
+
+/* What the press does next, next to the ring */
+.pp-tip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 26px;
+  padding: 0 11px;
+  border-radius: 999px;
+  background: var(--pp-ring-bg);
+  box-shadow: 0 0 0 0.5px var(--pp-edge), 0 4px 14px rgb(0 0 0 / 0.08);
+  color: var(--pp-label);
+  font: 500 12.5px/26px system-ui, -apple-system, "Segoe UI", sans-serif;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 140ms cubic-bezier(.25, .1, .25, 1);
+}
+.pp-tip.pp-on { opacity: 1; }
+.pp-ring.pp-peeked .pp-ring__dot { fill: var(--pp-accent); }
+
+/* Cards that can be pressed: no callout, selection or native drag getting in the way of a long press. */
+[data-peek] {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  touch-action: pan-y;
+}
+/* opacity, not visibility: a hidden element would drop keyboard focus */
+[data-peek].pp-is-source { opacity: 0; }

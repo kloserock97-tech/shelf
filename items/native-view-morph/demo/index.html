@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Selected work</title>
+<link rel="stylesheet" href="../variants/html/morph.css">
+<link rel="stylesheet" href="demo.css">
+<script src="../variants/html/morph.js"></script>
+<script src="projects.js"></script>
+<style>
+  .work { box-sizing: border-box; max-width: 900px; margin: 0 auto; padding: 40px 24px 48px; }
+  .intro { display: flex; align-items: end; justify-content: space-between; gap: 8px 24px; flex-wrap: wrap; margin-bottom: 22px; }
+  .intro h1 { margin: 0; font-size: 34px; line-height: 1.1; font-weight: 700; letter-spacing: -0.02em; }
+  .intro p { margin: 0; max-width: 380px; font-size: 14px; line-height: 1.45; color: var(--label-2); }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+
+  .card {
+    position: relative; isolation: isolate; display: block; padding: 10px 10px 16px; border-radius: 22px; overflow: clip;
+    text-decoration: none; -webkit-tap-highlight-color: transparent;
+    transition: translate 0.24s var(--ease-out), scale 0.1s var(--ease-out);
+  }
+  .card:focus-visible { outline-offset: 3px; }
+  .card:active { scale: 0.985; }
+  @media (hover: hover) and (pointer: fine) { .card:hover { translate: 0 -3px; } }
+  .card-bg { position: absolute; inset: 0; z-index: -1; background: var(--tint); --morph-radius: 22px; }
+  .card-clip { display: block; aspect-ratio: 16 / 10; border-radius: 14px; overflow: clip; box-shadow: 0 0 0 0.5px var(--hair); }
+  .card-media { display: block; width: 100%; height: 100%; --morph-radius: 14px; }
+  .card-text { display: grid; gap: 1px; padding: 14px 6px 0; }
+  /* the same line-height, weight and letter-spacing (in em) as the hero title: the two snapshots then have one
+     shape and the cross-fade doesn't ghost */
+  .card-title { width: fit-content; font-size: 20px; line-height: 1.1; font-weight: 700; letter-spacing: -0.02em; }
+  .card-kicker { margin-top: 3px; font-size: 14px; color: var(--label-2); }
+
+  @media (max-width: 520px) {
+    .work { padding: 28px 16px 40px; }
+    .intro h1 { font-size: 30px; }
+    .grid { grid-template-columns: 1fr; gap: 12px; }
+  }
+</style>
+</head>
+<body>
+<main class="work">
+  <header class="intro">
+    <h1>Selected work</h1>
+    <p>Each case is a separate page. Open one and the card becomes its header; go back and it folds into the card again.</p>
+  </header>
+  <nav class="grid" id="grid" aria-label="Case studies"></nav>
+</main>
+<script>
+  document.getElementById('grid').innerHTML = PROJECTS.map((p) => `
+    <a class="card p-${p.id}" href="case.html?p=${p.id}" data-morph-card>
+      <span class="card-bg" data-morph="bg"></span>
+      <span class="card-clip">${projectArt(p.id, `${p.title} cover`, 'class="art card-media" data-morph="media" aria-hidden="true"').replace(/ role="img" aria-label="[^"]*"/, '')}</span>
+      <span class="card-text"><span class="card-title" data-morph="title">${p.title}</span><span class="card-kicker">${p.kicker} · ${p.year}</span></span>
+    </a>`).join('');
+
+  // ?shot=1 — the poster: opens the first case by itself and freezes the morph part-way (see case.html).
+  const q = new URLSearchParams(location.search);
+  if (q.has('shot')) {
+    const first = document.querySelector('[data-morph-card]');
+    first.href += `&shot=1${q.has('t') ? `&t=${encodeURIComponent(q.get('t'))}` : ''}`;
+    addEventListener('load', () => setTimeout(() => first.click(), 700));
+  }
+</script>
+</body>
+</html>

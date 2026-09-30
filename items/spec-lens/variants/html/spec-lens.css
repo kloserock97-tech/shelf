@@ -1,0 +1,133 @@
+/* Spec Lens. The script adds three children to [data-spec-lens]: the spec layer (clipped to a circle),
+   the lens rim with its tag, and a polite live region. */
+@property --sl-r {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+.sl-root {
+  --sl-accent: #0073e6;
+  --sl-paper: rgba(246, 248, 251, 0.76);
+  --sl-ink: #1d1d1f;
+  --sl-chip: #ffffff;
+  --sl-edge: rgba(0, 0, 0, 0.12);
+  --sl-ring: rgba(0, 0, 0, 0.2);
+  position: relative;
+  touch-action: none;             /* a finger drags the lens instead of scrolling */
+  transition: --sl-r 200ms cubic-bezier(.23, 1, .32, 1);
+}
+@media (prefers-color-scheme: dark) {
+  .sl-root {
+    --sl-accent: #0a84ff;
+    --sl-paper: rgba(14, 17, 22, 0.76);
+    --sl-ink: #f5f5f7;
+    --sl-chip: #1c1c1e;
+    --sl-edge: rgba(255, 255, 255, 0.14);
+    --sl-ring: rgba(255, 255, 255, 0.28);
+  }
+}
+.sl-root:focus-visible { outline: 2px solid var(--sl-accent); outline-offset: 3px; }
+
+.sl-lens {
+  position: absolute;
+  z-index: 10;
+  left: calc(var(--sl-x, 50%) - var(--sl-r));
+  top: calc(var(--sl-y, 50%) - var(--sl-r));
+  width: calc(var(--sl-r) * 2);
+  height: calc(var(--sl-r) * 2);
+  border-radius: 50%;
+  overflow: hidden;
+  pointer-events: none;
+  /* spec paper: the screen under the lens loses its colour and fades back */
+  background: var(--sl-paper);
+  -webkit-backdrop-filter: grayscale(1);
+  backdrop-filter: grayscale(1);
+}
+/* the drawing is as big as the screen and shifted back by the lens offset, so it lines up pixel for pixel */
+.sl-lens svg {
+  position: absolute;
+  left: calc(var(--sl-r) - var(--sl-x, 50%));
+  top: calc(var(--sl-r) - var(--sl-y, 50%));
+  display: block;
+}
+
+.sl-lens .sl-col { fill: var(--sl-accent); fill-opacity: 0.045; }
+.sl-lens .sl-box { fill: none; stroke: var(--sl-accent); stroke-opacity: 0.55; stroke-width: 1; }
+.sl-lens .sl-icon { fill: none; stroke: var(--sl-accent); stroke-opacity: 0.55; stroke-width: 1; stroke-dasharray: 2 2; }
+.sl-lens .sl-hatch { stroke: var(--sl-accent); stroke-opacity: 0.3; stroke-width: 1; }
+.sl-lens .sl-type { fill: var(--sl-accent); fill-opacity: 0.08; }
+.sl-lens .sl-red { fill: none; stroke: var(--sl-accent); stroke-width: 1; }
+.sl-lens .sl-sel { fill: none; stroke: var(--sl-accent); stroke-width: 2; }
+.sl-lens .sl-pill { fill: var(--sl-accent); }
+.sl-lens .sl-padpill { fill: var(--sl-chip); stroke: var(--sl-accent); stroke-width: 1; }
+.sl-lens .sl-chip { fill: var(--sl-chip); stroke: var(--sl-edge); stroke-width: 0.5; }
+.sl-lens .sl-dot { stroke: var(--sl-edge); stroke-width: 0.5; }
+.sl-lens text {
+  font: 500 10px system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+.sl-lens .sl-pill-t { fill: #fff; }
+.sl-lens .sl-padpill-t { fill: var(--sl-accent); }
+.sl-lens .sl-chip-t { fill: var(--sl-ink); }
+
+.sl-rim {
+  position: absolute;
+  z-index: 11;
+  left: calc(var(--sl-x, 50%) - var(--sl-r));
+  top: calc(var(--sl-y, 50%) - var(--sl-r));
+  width: calc(var(--sl-r) * 2);
+  height: calc(var(--sl-r) * 2);
+  border-radius: 50%;
+  pointer-events: none;
+  box-shadow:
+    0 0 0 1px var(--sl-ring),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.45),
+    0 18px 40px -16px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  transition: opacity 160ms cubic-bezier(.25, .1, .25, 1);
+}
+.sl-on .sl-rim { opacity: 1; }
+/* a small cross marks the point being inspected */
+.sl-rim::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 11px;
+  height: 11px;
+  translate: -50% -50%;
+  background:
+    linear-gradient(var(--sl-accent), var(--sl-accent)) center / 1px 100% no-repeat,
+    linear-gradient(var(--sl-accent), var(--sl-accent)) center / 100% 1px no-repeat;
+}
+.sl-tag {
+  position: absolute;
+  left: calc(50% + var(--sl-r) * 0.7071 + 4px);
+  top: calc(50% + var(--sl-r) * 0.7071 + 4px);
+  white-space: nowrap;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font: 500 12px/16px system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  background: var(--sl-accent);
+}
+.sl-tag:empty { display: none; }
+.sl-flip .sl-tag { left: auto; right: calc(50% + var(--sl-r) * 0.7071 + 4px); }
+.sl-up .sl-tag { top: auto; bottom: calc(50% + var(--sl-r) * 0.7071 + 4px); }
+.sl-mid .sl-tag { left: 50%; right: auto; translate: -50% 0; top: calc(50% + var(--sl-r) + 8px); }
+.sl-mid.sl-up .sl-tag { top: auto; bottom: calc(50% + var(--sl-r) + 8px); }
+
+.sl-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sl-root, .sl-rim { transition: none; }
+}

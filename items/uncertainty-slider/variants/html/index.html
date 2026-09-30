@@ -1,0 +1,15 @@
+<!-- The script builds the readout, the curve, the axis and the legend inside the element. -->
+<div data-uncertainty-slider
+     data-label="Checkout redesign estimate"
+     data-min="0" data-max="30" data-step="1"
+     data-value="12" data-spread="3" data-unit="days"></div>
+
+<link rel="stylesheet" href="uncertainty-slider.css">
+<script src="uncertainty-slider.js" defer></script>
+
+<script>
+  // detail = { mean, low, high }: low and high bound the central 90%
+  document.addEventListener('change', (e) => {
+    if (e.target.matches('[data-uncertainty-slider]')) console.log(e.detail);
+  });
+</script>

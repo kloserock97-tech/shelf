@@ -1,0 +1,31 @@
+<!-- The root gets data-hand and --hand; the bar and the button follow it. -->
+<div class="phone" id="phone">
+  <div class="ta-surface" id="surface">
+    <header>
+      <button class="reach-handle" id="reach" type="button" aria-label="Bring the top within reach"></button>
+      <h1>Today</h1>
+    </header>
+    <ul class="tasks">…</ul>
+    <footer class="ta-thumb-row">
+      <span>3 of 7 done</span>
+      <button type="button">Sort</button>
+    </footer>
+    <button class="ta-fab" type="button" aria-label="New task">+</button>
+  </div>
+  <button class="reach-gap" id="gap" type="button" aria-label="Back to full screen" hidden></button>
+</div>
+
+<link rel="stylesheet" href="thumb-aware.css">
+<script type="module">
+  import { thumbAware, reach } from './thumb-aware.js';
+
+  const phone = document.getElementById('phone');
+
+  // the bar's items and the button glide to the other side when the guess flips
+  const hand = thumbAware(phone, {
+    move: '.ta-thumb-row > *, .ta-fab',
+    onUpdate({ hand, confidence, pRight }) { /* e.g. show a meter */ }
+  });
+  // a manual choice wins over the guess: hand.setOverride('left' | 'right' | 'auto')
+  reach(document.getElementById('surface'), { handle: document.getElementById('reach'), gap: document.getElementById('gap') });
+</script>

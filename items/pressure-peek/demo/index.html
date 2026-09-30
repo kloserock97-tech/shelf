@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Pressure Peek</title>
+<link rel="stylesheet" href="../variants/html/pressure-peek.css">
+<style>
+  :root {
+    --label: #1d1d1f; --label-2: #636366; --label-3: #86868b;
+    --card: #ffffff; --fill: rgb(118 118 128 / .12); --hair: rgb(0 0 0 / .08);
+    --accent: #0073e6; --accent-text: #0066cc;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --label: #f5f5f7; --label-2: #aaaaaf; --label-3: #6e6e73;
+      --card: #1c1c1e; --fill: rgb(118 118 128 / .24); --hair: rgb(255 255 255 / .08);
+      --accent: #0a84ff; --accent-text: #2997ff;
+    }
+  }
+  html, body { height: 100%; margin: 0; background: transparent; }
+  body {
+    display: grid; place-items: center; overflow: hidden;
+    font: 15px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--label);
+    -webkit-font-smoothing: antialiased;
+  }
+  .inbox { width: min(100% - 32px, 460px); display: grid; gap: 14px; padding: 24px 0; }
+  .inbox__head { display: flex; align-items: baseline; justify-content: space-between; padding: 0 4px; }
+  .inbox__head h1 { margin: 0; font-size: 26px; line-height: 1.15; font-weight: 700; letter-spacing: -.02em; }
+  .inbox__count { font-size: 13px; color: var(--label-2); font-variant-numeric: tabular-nums; }
+  .inbox__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+
+  .mail {
+    display: grid; grid-template-columns: 38px 1fr; gap: 12px; align-items: start;
+    padding: 13px 16px 14px 14px; border-radius: 18px; background: var(--card);
+    box-shadow: 0 0 0 .5px var(--hair);
+    color: inherit; text-decoration: none; cursor: default; outline: none;
+    transition: transform 100ms cubic-bezier(.23, 1, .32, 1);
+  }
+  .mail:focus-visible { box-shadow: 0 0 0 2px var(--accent); }
+  .mail:active { transform: scale(.985); }
+  .avatar {
+    width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--fill); color: var(--label-2); font-size: 13px; font-weight: 600; letter-spacing: .02em;
+  }
+  .mail__main { min-width: 0; display: grid; gap: 1px; }
+  .mail__top { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+  .mail__from { font-weight: 600; font-size: 15px; }
+  .mail__time { flex: none; font-size: 12.5px; color: var(--label-2); font-variant-numeric: tabular-nums; }
+  .mail__subject { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mail__snippet { font-size: 13px; color: var(--label-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mail.unread .mail__from::before {
+    content: ""; display: inline-block; width: 7px; height: 7px; margin: 0 6px 1px 0; border-radius: 50%; background: var(--accent);
+  }
+
+  .foot { display: grid; gap: 8px; justify-items: center; padding-top: 4px; text-align: center; }
+  .hint { margin: 0; font-size: 13px; color: var(--label-2); max-width: 36ch; }
+  .source {
+    display: inline-flex; align-items: center; gap: 7px; height: 26px; padding: 0 11px; border-radius: 999px;
+    background: var(--fill); font-size: 12.5px; color: var(--label-2);
+  }
+  .source svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
+  .source b { color: var(--label); font-weight: 600; }
+
+  /* the destination: an opened message */
+  .msg { padding: 20px 22px 28px; font-size: 15px; line-height: 1.5; }
+  .msg__head { display: grid; grid-template-columns: 38px 1fr; gap: 12px; align-items: center; padding-right: 76px; }
+  .msg .msg__head p { margin: 0; }
+  .msg__from { font-weight: 600; }
+  .msg__meta { font-size: 13px; color: var(--label-2); }
+  .msg h2 { margin: 18px 0 12px; font-size: 21px; line-height: 1.25; letter-spacing: -.015em; }
+  .msg p { margin: 0 0 12px; }
+  .msg__card { margin: 16px 0; padding: 14px 16px; border-radius: 14px; background: var(--fill); display: grid; gap: 4px; font-size: 14px; }
+  .msg__card b { font-size: 15px; }
+  .msg__card span { color: var(--label-2); }
+  .msg__actions { display: flex; gap: 8px; margin-top: 18px; }
+  .msg__actions button {
+    height: 32px; padding: 0 16px; border: 0; border-radius: 999px; background: var(--fill); color: var(--label);
+    font: 500 14px/32px system-ui, -apple-system, "Segoe UI", sans-serif; cursor: pointer;
+  }
+  .msg__actions button.primary { background: var(--accent); color: #fff; }
+  .msg__actions button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  @media (max-width: 420px) {
+    .inbox { gap: 12px; }
+    .mail { padding: 12px 14px 13px 12px; }
+  }
+</style>
+</head>
+<body>
+<main class="inbox">
+  <header class="inbox__head">
+    <h1>Inbox</h1>
+    <span class="inbox__count" id="count">3 unread</span>
+  </header>
+  <ul class="inbox__list" id="list"></ul>
+  <div class="foot">
+    <p class="hint">Press and hold a message to peek at it. Keep holding to open it, let go early to go back.</p>
+    <span class="source" aria-live="polite">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 4.5V8l2.2 1.4"/></svg>
+      Depth from <b id="source">hold time</b>
+    </span>
+  </div>
+</main>
+<script src="../variants/html/pressure-peek.js"></script>
+<script>
+  const MAIL = [
+    { id: 'venue', from: 'Maya Chen', initials: 'MC', time: '09:41', unread: true,
+      subject: 'Offsite venue: two options left',
+      snippet: 'Both have a terrace and room for forty. The second one is a ten-minute walk from the station.',
+      meta: 'To you and Tomás · Today, 09:41',
+      body: [
+        'Both places have a terrace and room for forty, and both can do lunch for the vegetarians without a separate order.',
+        'The Mill is cheaper but needs a coach from the station. Harbour Loft is a ten-minute walk and has a proper projector, which matters for the roadmap session.'
+      ],
+      card: ['Harbour Loft · 14–15 November', '€3,200 for two days, lunch included'],
+      actions: ['Reply', 'Hold the date'] },
+    { id: 'invoice', from: 'Northwind Billing', initials: 'NB', time: '08:12', unread: true,
+      subject: 'Invoice 2026-118 is ready',
+      snippet: 'Your October invoice for 12 seats is €1,380.00. Payment is due on 14 November.',
+      meta: 'To billing · Today, 08:12',
+      body: [
+        'Your invoice for October is ready. Twelve seats on the Team plan, billed monthly.',
+        'Two seats were added on 9 October and are charged for the days they were active. Nothing else changed since September.'
+      ],
+      card: ['€1,380.00 · due 14 November', 'Visa ending 4421 will be charged automatically'],
+      actions: ['View invoice', 'Download PDF'] },
+    { id: 'onboarding', from: 'Tomás Ortega', initials: 'TO', time: 'Yesterday', unread: true,
+      subject: 'Re: onboarding flow, round 3',
+      snippet: 'I tried the new empty state with five people from support. Four found the import button.',
+      meta: 'To you · Yesterday, 17:26',
+      body: [
+        'I tried the new empty state with five people from support. Four of them found the import button in under ten seconds; the fifth went looking in Settings first.',
+        'Nobody read the three-step checklist. I would cut it to one line and move the sample project up.'
+      ],
+      card: ['Import found by 4 of 5', 'Median time 7 s, was 26 s in round 2'],
+      actions: ['Reply', 'Open the recordings'] },
+    { id: 'lisbon', from: 'Priya Raman', initials: 'PR', time: 'Tue',
+      subject: 'Flight change for Lisbon',
+      snippet: 'The 7:05 was moved to 9:30, so I rebooked the airport transfer and pushed the kickoff.',
+      meta: 'To the team · Tuesday, 12:03',
+      body: [
+        'The 7:05 flight was moved to 9:30. I rebooked the airport transfer for 12:10 and pushed the kickoff to 15:00.',
+        'Hotel check-in is still fine. If anyone needs the earlier train back on Friday, tell me by Thursday.'
+      ],
+      card: ['TP 1351 · Amsterdam → Lisbon', 'Thursday, departs 9:30, arrives 11:40'],
+      actions: ['Reply', 'Add to calendar'] },
+    { id: 'weekly', from: 'Field Notes', initials: 'FN', time: 'Mon',
+      subject: 'Motion that explains, not decorates',
+      snippet: 'Three interfaces where the animation carries the meaning, and one where it gets in the way.',
+      meta: 'Newsletter · Monday, 07:00',
+      body: [
+        'This week: three interfaces where the animation carries the meaning, and one where it gets in the way.',
+        'A transfer screen that shows money leaving one account before it lands in the other. A map that zooms out before it moves, so you never lose your place.'
+      ],
+      card: ['Issue 48 · 6 min read', 'Plus: why most loaders lie about time'],
+      actions: ['Read online', 'Save'] }
+  ];
+
+  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const list = document.getElementById('list');
+  for (const m of MAIL) {
+    const li = document.createElement('li');
+    li.innerHTML = `
+      <a class="mail${m.unread ? ' unread' : ''}" href="#${m.id}" draggable="false" data-peek="#peek-${m.id}"
+         aria-label="${esc(m.from)}: ${esc(m.subject)}. ${m.unread ? 'Unread. ' : ''}Hold Space to peek, Enter to open.">
+        <span class="avatar" aria-hidden="true">${m.initials}</span>
+        <span class="mail__main">
+          <span class="mail__top"><span class="mail__from">${esc(m.from)}</span><span class="mail__time">${m.time}</span></span>
+          <span class="mail__subject">${esc(m.subject)}</span>
+          <span class="mail__snippet">${esc(m.snippet)}</span>
+        </span>
+      </a>`;
+    list.append(li);
+    const tpl = document.createElement('template');
+    tpl.id = `peek-${m.id}`;
+    tpl.innerHTML = `
+      <article class="msg">
+        <header class="msg__head">
+          <span class="avatar" aria-hidden="true">${m.initials}</span>
+          <div><p class="msg__from">${esc(m.from)}</p><p class="msg__meta">${esc(m.meta)}</p></div>
+        </header>
+        <h2>${esc(m.subject)}</h2>
+        <p>${esc(m.body[0])}</p>
+        <div class="msg__card"><b>${esc(m.card[0])}</b><span>${esc(m.card[1])}</span></div>
+        <p>${esc(m.body[1])}</p>
+        <div class="msg__actions"><button type="button" class="primary">${m.actions[0]}</button><button type="button">${m.actions[1]}</button></div>
+      </article>`;
+    document.body.append(tpl);
+  }
+
+  PressurePeek.init({ selector: '[data-peek]', closeLabel: 'Done' });
+
+  const NAMES = { hold: 'hold time', pen: 'pen pressure', force: 'trackpad force' };
+  const source = document.getElementById('source');
+  document.addEventListener('peeksource', (e) => { source.textContent = NAMES[e.detail.source]; });
+  // an opened message is read
+  document.addEventListener('peekcommit', (e) => {
+    e.target.classList.remove('unread');
+    const n = document.querySelectorAll("#list .mail.unread").length;
+    document.getElementById('count').textContent = n ? `${n} unread` : 'All read';
+  });
+
+  // ?shot=1 freezes a press two thirds of the way down the second message; ?depth=0..1&card=1..5 picks any
+  const q = new URLSearchParams(location.search);
+  if (q.has('shot') || q.has('depth')) {
+    const card = list.querySelectorAll('.mail')[(Number(q.get('card')) || 2) - 1];
+    const depth = q.has("depth") ? Number(q.get("depth")) : 0.55;
+    requestAnimationFrame(() => {
+      const r = card.getBoundingClientRect();
+      PressurePeek.pose(card, depth, r.left + r.width * 0.62, r.top + r.height * 0.55);
+    });
+  }
+</script>
+</body>
+</html>

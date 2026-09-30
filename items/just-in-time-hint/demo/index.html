@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Just-in-Time Hint</title>
+<link rel="stylesheet" href="../variants/html/jit-hint.css">
+<style>
+  :root {
+    --label: #1d1d1f; --label-2: #636366; --label-3: #86868b;
+    --surface: #ffffff; --raised: #ffffff; --fill: rgba(118, 118, 128, 0.12); --fill-hover: rgba(118, 118, 128, 0.2);
+    --fill-subtle: rgba(0, 0, 0, 0.04); --selected: rgba(0, 115, 230, 0.1); --sep: rgba(60, 60, 67, 0.14);
+    --accent: #0073e6; --accent-text: #0066cc; --green: #248a3d;
+    --menu-shadow: 0 10px 30px rgba(0, 0, 0, 0.14), 0 0 0 0.5px rgba(0, 0, 0, 0.1);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --label: #f5f5f7; --label-2: #aaaaaf; --label-3: #6e6e73;
+      --surface: #1c1c1e; --raised: #2c2c2e; --fill: rgba(118, 118, 128, 0.24); --fill-hover: rgba(118, 118, 128, 0.34);
+      --fill-subtle: rgba(255, 255, 255, 0.06); --selected: rgba(10, 132, 255, 0.2); --sep: rgba(255, 255, 255, 0.1);
+      --accent: #0a84ff; --accent-text: #2997ff; --green: #30d158;
+      --menu-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 0 0.5px rgba(255, 255, 255, 0.12);
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: transparent; }
+  body {
+    min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: 24px 16px;
+    font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--label);
+    -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
+  }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .page { width: min(1000px, 100%); display: grid; gap: 14px; }
+  .app { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 16px; align-items: start; }
+
+  /* inbox */
+  .mail { background: var(--surface); border-radius: 18px; overflow: hidden; }
+  .mail__bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 12px 12px 18px; box-shadow: inset 0 -0.5px 0 var(--sep); }
+  h1 { margin: 0; font-size: 20px; font-weight: 650; letter-spacing: -0.01em; display: flex; align-items: baseline; gap: 8px; }
+  h1 .count { font-size: 14px; font-weight: 500; color: var(--label-2); font-variant-numeric: tabular-nums; }
+  .tools { display: flex; align-items: center; gap: 4px; }
+  .tools__sep { width: 0.5px; height: 20px; margin: 0 4px; background: var(--sep); }
+  .tool {
+    width: 36px; height: 36px; border: 0; border-radius: 10px; display: grid; place-items: center;
+    background: transparent; color: var(--label-2); cursor: pointer;
+    transition: background-color 160ms cubic-bezier(.25, .1, .25, 1), transform 100ms cubic-bezier(.23, 1, .32, 1);
+  }
+  .tool svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .tool:active { transform: scale(0.94); }
+  .tool[aria-expanded="true"] { background: var(--fill); }
+  @media (hover: hover) and (pointer: fine) { .tool:hover { background: var(--fill); color: var(--label); } }
+  #btn-more { anchor-name: --more; }
+
+  .list { list-style: none; margin: 0; padding: 6px; display: grid; outline: none; }
+  .list:focus-visible .msg[aria-selected="true"] { box-shadow: inset 0 0 0 2px var(--accent); }
+  .msg {
+    display: grid; grid-template-columns: 8px 140px minmax(0, 1fr) auto; align-items: center; gap: 12px;
+    min-height: 46px; padding: 0 12px; border-radius: 10px; cursor: default; overflow: hidden;
+  }
+  @media (hover: hover) and (pointer: fine) { .msg:hover { background: var(--fill-subtle); } }
+  .msg[aria-selected="true"] { background: var(--selected); }
+  .msg__dot { width: 8px; height: 8px; border-radius: 50%; }
+  .msg[data-unread="true"] .msg__dot { background: var(--accent); }
+  .msg__from { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .msg[data-unread="true"] .msg__from, .msg[data-unread="true"] .msg__subj { font-weight: 650; }
+  .msg__line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .msg__snip { color: var(--label-2); }
+  .msg__time { color: var(--label-2); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  .mail__status { margin: 0; padding: 8px 18px 12px; min-height: 38px; color: var(--label-2); font-size: 12.5px; }
+
+  /* the ⋯ menu: its own popover, anchored to the button */
+  .menu {
+    position: fixed; inset: auto; margin: 0; min-width: 210px; padding: 5px; border: 0; border-radius: 12px;
+    background: var(--raised); color: var(--label); box-shadow: var(--menu-shadow);
+    opacity: 0; transform: scale(0.97); transform-origin: top right;
+    transition: opacity 160ms cubic-bezier(.25, .1, .25, 1), transform 180ms cubic-bezier(.23, 1, .32, 1),
+      display 180ms allow-discrete, overlay 180ms allow-discrete;
+  }
+  .menu:popover-open { opacity: 1; transform: none; }
+  @starting-style { .menu:popover-open { opacity: 0; transform: scale(0.97); } }
+  @supports (anchor-name: --a) and (position-area: bottom) {
+    .menu { position-anchor: --more; position-area: bottom span-left; margin-block: 6px; position-try-fallbacks: top span-left, bottom span-right; }
+  }
+  .menu button {
+    display: flex; align-items: center; gap: 10px; width: 100%; height: 34px; padding: 0 10px; border: 0; border-radius: 7px;
+    background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer;
+  }
+  .menu button svg { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; opacity: 0.8; }
+  .menu button:hover, .menu button:focus-visible { background: var(--accent); color: #fff; outline: none; }
+
+  /* what the app noticed */
+  .log { background: var(--surface); border-radius: 18px; padding: 16px; display: grid; gap: 12px; }
+  .log h2 { margin: 0; font-size: 14px; font-weight: 600; }
+  .log__lead { margin: 0; color: var(--label-2); font-size: 12.5px; }
+  .log__rows { list-style: none; margin: 0; padding: 0; display: grid; }
+  .log__row { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; padding: 9px 0; box-shadow: inset 0 -0.5px 0 var(--sep); }
+  .log__row:last-child { box-shadow: none; }
+  .log__name { font-weight: 500; }
+  .dots { display: flex; gap: 4px; align-items: center; }
+  .dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--fill-hover); transition: background-color 160ms cubic-bezier(.25, .1, .25, 1); }
+  .dots i.on { background: var(--label); }
+  .log__state { grid-column: 1 / -1; color: var(--label-2); font-size: 12.5px; }
+  .log__state[data-tone="showing"] { color: var(--accent-text); }
+  .log__state[data-tone="used"] { color: var(--green); }
+  .log__store {
+    margin: 0; padding: 8px 10px; border-radius: 8px; background: var(--fill-subtle); color: var(--label-2);
+    font: 11.5px/1.45 ui-monospace, "SF Mono", Menlo, Consolas, monospace; overflow-wrap: anywhere;
+  }
+  .btn {
+    justify-self: start; height: 30px; padding: 0 12px; border: 0; border-radius: 999px; background: var(--fill);
+    color: var(--label); font: inherit; font-size: 13px; font-weight: 500; cursor: pointer;
+    transition: background-color 160ms cubic-bezier(.25, .1, .25, 1), transform 100ms cubic-bezier(.23, 1, .32, 1);
+  }
+  .btn:active { transform: scale(0.97); }
+  @media (hover: hover) and (pointer: fine) { .btn:hover { background: var(--fill-hover); } }
+  .hint { margin: 0; text-align: center; color: var(--label-2); font-size: 13px; }
+  .hint kbd { font: 600 12px ui-monospace, Menlo, Consolas, monospace; padding: 1px 5px; border-radius: 5px; background: var(--fill); }
+
+  @media (max-width: 760px) {
+    body { place-items: start center; padding: 16px 12px; }
+    .app { grid-template-columns: 1fr; gap: 12px; }
+    .msg { grid-template-columns: 8px minmax(0, 1fr) auto; grid-template-rows: auto auto; gap: 0 10px; min-height: 58px; padding: 8px 10px; }
+    .msg__dot { grid-row: 1 / 3; }
+    .msg__from { grid-column: 2; }
+    .msg__time { grid-column: 3; grid-row: 1; }
+    .msg__line { grid-column: 2 / 4; grid-row: 2; font-size: 13px; }
+    .mail__bar { padding: 10px 8px 10px 14px; }
+    .tool { width: 40px; height: 40px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <main class="app">
+    <section class="mail" aria-labelledby="inbox-title">
+      <header class="mail__bar">
+        <h1 id="inbox-title">Inbox <span class="count" id="count">10</span></h1>
+        <div class="tools" role="toolbar" aria-label="Message actions">
+          <button class="tool" type="button" id="btn-archive" aria-label="Archive" aria-keyshortcuts="E">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2.8" y="3.8" width="14.4" height="4.2" rx="1.2"/><path d="M4.2 8v7a1.4 1.4 0 0 0 1.4 1.4h8.8a1.4 1.4 0 0 0 1.4-1.4V8M8 11.2h4"/></svg>
+          </button>
+          <button class="tool" type="button" id="btn-snooze" aria-label="Snooze until tomorrow" aria-keyshortcuts="H">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10.6" r="6.6"/><path d="M10 7.2v3.6l2.4 1.6M4 3.6 2.6 5M16 3.6 17.4 5"/></svg>
+          </button>
+          <button class="tool" type="button" id="btn-unread" aria-label="Mark as unread" aria-keyshortcuts="U">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M11.4 5H4.4a1.6 1.6 0 0 0-1.6 1.6v8a1.6 1.6 0 0 0 1.6 1.6h11.2a1.6 1.6 0 0 0 1.6-1.6V10"/><path d="m3.2 6.6 6.8 4.6 2.6-1.8"/><circle cx="15.6" cy="5.4" r="2.2"/></svg>
+          </button>
+          <span class="tools__sep" aria-hidden="true"></span>
+          <button class="tool" type="button" id="btn-more" aria-label="More actions" aria-haspopup="menu" popovertarget="more-menu">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="4.8" cy="10" r="1.3" fill="currentColor" stroke="none"/><circle cx="10" cy="10" r="1.3" fill="currentColor" stroke="none"/><circle cx="15.2" cy="10" r="1.3" fill="currentColor" stroke="none"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="menu" id="more-menu" popover role="menu" aria-label="More actions">
+        <button type="button" role="menuitem" data-cmd="archive"><svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2.8" y="3.8" width="14.4" height="4.2" rx="1.2"/><path d="M4.2 8v7a1.4 1.4 0 0 0 1.4 1.4h8.8a1.4 1.4 0 0 0 1.4-1.4V8M8 11.2h4"/></svg>Archive</button>
+        <button type="button" role="menuitem" data-cmd="snooze"><svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10.6" r="6.6"/><path d="M10 7.2v3.6l2.4 1.6"/></svg>Snooze until tomorrow</button>
+        <button type="button" role="menuitem" data-cmd="unread"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M11.4 5H4.4a1.6 1.6 0 0 0-1.6 1.6v8a1.6 1.6 0 0 0 1.6 1.6h11.2a1.6 1.6 0 0 0 1.6-1.6V10"/><path d="m3.2 6.6 6.8 4.6 2.6-1.8"/><circle cx="15.6" cy="5.4" r="2.2"/></svg>Mark as unread</button>
+      </div>
+
+      <div class="jit-pop" id="hint" popover="manual" role="group" aria-labelledby="hint-title">
+        <div class="jit-pop__row">
+          <kbd class="jit-pop__key">E</kbd>
+          <div><strong class="jit-pop__title" id="hint-title"></strong><span class="jit-pop__body"></span></div>
+        </div>
+        <div class="jit-pop__actions"><button class="jit-pop__close" type="button">Got it</button></div>
+        <div class="jit-pop__done"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4.5 10.4 3.6 3.6 7.4-8"/></svg>That’s the fast way.</div>
+      </div>
+
+      <ul class="list" id="list" role="listbox" aria-label="Messages" tabindex="0"></ul>
+      <p class="mail__status" id="status" role="status"></p>
+    </section>
+
+    <aside class="log" aria-labelledby="log-title">
+      <h2 id="log-title">What the app noticed</h2>
+      <p class="log__lead">Picking the same command from ⋯ three times brings a hint to the faster way. Each hint shows once.</p>
+      <ol class="log__rows" id="log"></ol>
+      <p class="log__store" id="store"></p>
+      <button class="btn" type="button" id="reset">Reset hints</button>
+    </aside>
+  </main>
+  <p class="hint">Select a message and archive it through <kbd>⋯</kbd> three times.</p>
+</div>
+
+<script type="module">
+  import { justInTimeHints, support, placeByHand } from '../variants/html/jit-hint.js';
+
+  const q = new URLSearchParams(location.search);
+  const shot = q.get('shot') === '1';
+  const $ = (s) => document.querySelector(s);
+  const list = $('#list'), menu = $('#more-menu'), status = $('#status');
+
+  const MESSAGES = [
+    ['Maya Chen', 'Q4 roadmap review moves to Thursday', 'Quick heads-up: we’re shifting it so design can join.', '09:41', true],
+    ['Northwind Billing', 'Invoice #2041 is paid', 'We received €240.00 for September. Receipt attached.', '09:12', true],
+    ['Jonas Weber', 'Onboarding flow, round two', 'Pushed the new empty states to the file. Screen two needs…', '08:57', true],
+    ['Loop CI', 'Build 1182 passed on main', 'All 214 checks passed in 3 min 12 s.', '08:30', false],
+    ['Priya Raman', 'Coffee next week?', 'I’m in Amsterdam from Tuesday, free most afternoons.', 'Yesterday', true],
+    ['Parcel', 'Your order is out for delivery', 'Arriving today between 14:00 and 16:00.', 'Yesterday', false],
+    ['Calendar', 'Design critique, Fri 11:00', 'Maya Chen invited you. Room 4B or video.', 'Mon', false],
+    ['Elena Duarte', 'Usability test notes', 'Five sessions done. Biggest surprise: nobody found the filter.', 'Mon', false],
+    ['Northwind Billing', 'Your plan renews in 7 days', 'Team plan, 6 seats, €72 a month.', 'Sun', false],
+    ['Tom Okafor', 'Re: accessibility audit', 'Contrast fixes are in. Focus order is next.', 'Sat', false]
+  ];
+  const NAMES = { archive: 'Archive', snooze: 'Snooze', unread: 'Mark unread' };
+  const KEYS = { e: 'archive', h: 'snooze', u: 'unread' };
+
+  function fill() {
+    list.replaceChildren(...MESSAGES.map(([from, subj, snip, time, unread], i) => {
+      const li = document.createElement('li');
+      li.className = 'msg';
+      li.id = `m${i}`;
+      li.setAttribute('role', 'option');
+      li.dataset.unread = String(unread);
+      li.innerHTML = `<span class="msg__dot" aria-hidden="true"></span><span class="msg__from"></span>
+        <span class="msg__line"><span class="msg__subj"></span> <span class="msg__snip"></span></span><time class="msg__time"></time>`;
+      li.querySelector('.msg__from').textContent = from;
+      li.querySelector('.msg__subj').textContent = subj;
+      li.querySelector('.msg__snip').textContent = `— ${snip}`;
+      li.querySelector('.msg__time').textContent = time;
+      return li;
+    }));
+    select(list.firstElementChild);
+    $('#count').textContent = list.children.length;
+  }
+
+  function select(li) {
+    list.querySelectorAll('[aria-selected="true"]').forEach((el) => el.setAttribute('aria-selected', 'false'));
+    if (!li) { list.removeAttribute('aria-activedescendant'); return; }
+    li.setAttribute('aria-selected', 'true');
+    list.setAttribute('aria-activedescendant', li.id);
+    li.scrollIntoView({ block: 'nearest' });
+  }
+  const selected = () => list.querySelector('[aria-selected="true"]');
+
+  const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function removeRow(li, instant) {
+    const next = li.nextElementSibling ?? li.previousElementSibling;
+    select(next);
+    if (instant || calm) li.remove();
+    else {
+      li.animate([{ height: `${li.offsetHeight}px`, opacity: 1 }, { height: '0px', opacity: 0 }],
+        { duration: 220, easing: 'cubic-bezier(.77,0,.175,1)' }).finished.then(() => li.remove());
+    }
+    $('#count').textContent = list.children.length - 1;
+  }
+
+  function run(cmd, how, instant = false) {
+    const li = selected();
+    if (!li) { status.textContent = 'Inbox is empty. Reset hints to refill it.'; return; }
+    const subj = li.querySelector('.msg__subj').textContent;
+    if (cmd === 'unread') {
+      const unread = li.dataset.unread !== 'true';
+      li.dataset.unread = String(unread);
+      status.textContent = `Marked “${subj}” as ${unread ? 'unread' : 'read'}.`;
+    } else {
+      removeRow(li, instant);
+      status.textContent = cmd === 'archive' ? `Archived “${subj}”.` : `Snoozed “${subj}” until tomorrow, 08:00.`;
+    }
+    if (how === 'menu') hints.slow(cmd); else hints.fast(cmd);
+  }
+
+  // the log beside the inbox
+  function render({ counts, seen, current, threshold }) {
+    $('#log').replaceChildren(...Object.keys(NAMES).map((cmd) => {
+      const row = document.createElement('li');
+      row.className = 'log__row';
+      const n = Math.min(counts[cmd] ?? 0, threshold);
+      const fate = seen[cmd];
+      let text = `${n} of ${threshold} from ⋯`;
+      let tone = '';
+      if (fate === 'shown' && current === cmd) { text = 'Hint is showing'; tone = 'showing'; }
+      else if (fate === 'shown') { text = 'Hint shown, dismissed'; }
+      else if (fate === 'used') { text = 'Learned the fast way'; tone = 'used'; }
+      else if (fate === 'known') { text = 'Already uses the fast way, no hint'; }
+      const dots = Array.from({ length: threshold }, (_, i) => `<i class="${fate === 'used' || fate === 'shown' || i < n ? 'on' : ''}"></i>`).join('');
+      row.innerHTML = `<span class="log__name">${NAMES[cmd]}</span><span class="dots" aria-hidden="true">${dots}</span><span class="log__state" data-tone="${tone}">${text}</span>`;
+      return row;
+    }));
+    $('#store').textContent = `localStorage["jit-hints"] = ${JSON.stringify(seen)}`;
+  }
+
+  const hints = justInTimeHints({
+    pop: $('#hint'),
+    storageKey: 'jit-hints',
+    persist: !shot,
+    hints: {
+      archive: { target: '#btn-archive', key: 'E', title: 'Archive in one step', body: 'You picked Archive from ⋯ three times. Press E, or use this button.' },
+      snooze: { target: '#btn-snooze', key: 'H', title: 'Snooze in one step', body: 'You picked Snooze from ⋯ three times. Press H, or use this button.' },
+      unread: { target: '#btn-unread', key: 'U', title: 'Mark unread in one step', body: 'You picked Mark as unread from ⋯ three times. Press U, or use this button.' }
+    },
+    onChange: render
+  });
+
+  // fast paths: the toolbar and the keys
+  $('#btn-archive').addEventListener('click', () => run('archive', 'fast'));
+  $('#btn-snooze').addEventListener('click', () => run('snooze', 'fast'));
+  $('#btn-unread').addEventListener('click', () => run('unread', 'fast'));
+  document.addEventListener('keydown', (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey || e.target.closest('input, textarea, [role="menu"]')) return;
+    const cmd = KEYS[e.key.toLowerCase()];
+    if (cmd) { e.preventDefault(); run(cmd, 'fast'); return; }
+    if (e.target === list && (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'j' || e.key === 'k')) {
+      e.preventDefault();
+      const cur = selected();
+      const down = e.key === 'ArrowDown' || e.key === 'j';
+      select((down ? cur?.nextElementSibling : cur?.previousElementSibling) ?? cur);
+    }
+  });
+  list.addEventListener('click', (e) => { const li = e.target.closest('.msg'); if (li) select(li); });
+
+  // the slow path: ⋯ menu
+  const items = [...menu.querySelectorAll('[role="menuitem"]')];
+  menu.addEventListener('toggle', (e) => {
+    $('#btn-more').setAttribute('aria-expanded', String(e.newState === 'open'));
+    if (e.newState !== 'open') return;
+    if (!support.anchors) placeByHand(menu, $('#btn-more'), ['bottom-end', 'top-end', 'bottom-start'], 6);
+    items[0].focus();
+  });
+  menu.addEventListener('keydown', (e) => {
+    const i = items.indexOf(document.activeElement);
+    const go = { ArrowDown: i + 1, ArrowUp: i - 1, Home: 0, End: items.length - 1 }[e.key];
+    if (go === undefined) return;
+    e.preventDefault();
+    items[(go + items.length) % items.length].focus();
+  });
+  items.forEach((b) => b.addEventListener('click', () => {
+    menu.hidePopover();
+    run(b.dataset.cmd, 'menu');
+    list.focus({ preventScroll: true });
+  }));
+
+  $('#reset').addEventListener('click', () => {
+    hints.reset();
+    fill();
+    status.textContent = 'Hints reset. The inbox is full again.';
+  });
+
+  fill();
+  render(hints.state);
+
+  // ?shot=1 — the moment after the third ⋯ → Archive: the hint points at the real button
+  if (shot) {
+    for (let i = 0; i < 3; i++) run('archive', 'menu', true);
+    status.textContent = '';
+    hints.show('archive');
+  }
+</script>
+</body>
+</html>

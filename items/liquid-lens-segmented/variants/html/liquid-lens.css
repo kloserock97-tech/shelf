@@ -1,0 +1,131 @@
+/* Liquid Lens Segmented: a flat thumb that turns into a glass lens only while held. */
+.lls {
+  --lls-h: 34px;
+  --lls-pad: 3px;
+  --lls-track: #efeff0; /* solid, so the lens can repaint it under the glass */
+  --lls-thumb: #ffffff;
+  --lls-label: #1d1d1f;
+  --lls-accent: #0073e6;
+  --lls-shadow: 0, 0, 0;
+  position: relative;
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  padding: var(--lls-pad);
+  border-radius: 999px;
+  background: var(--lls-track);
+  color: var(--lls-label);
+  font: 500 14px/1 system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+}
+@media (prefers-color-scheme: dark) {
+  .lls {
+    --lls-track: #313134;
+    --lls-thumb: #5a5a5f;
+    --lls-label: #f5f5f7;
+    --lls-accent: #0a84ff;
+  }
+}
+
+.lls-seg {
+  position: relative;
+  height: var(--lls-h);
+  margin: 0;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.lls-thumb {
+  --lift: 0;
+  position: absolute;
+  top: var(--lls-pad);
+  left: var(--lls-pad);
+  z-index: 1;
+  width: var(--lls-seg-w, 0px);
+  height: var(--lls-h);
+  border-radius: 999px;
+  background: var(--lls-track);
+  box-shadow:
+    0 0 0 0.5px rgba(var(--lls-shadow), calc(0.05 + 0.03 * var(--lift))),
+    0 calc(2px + 8px * var(--lift)) calc(6px + 18px * var(--lift)) rgba(var(--lls-shadow), calc(0.12 + 0.08 * var(--lift)));
+  pointer-events: none;
+  will-change: transform;
+}
+.lls-plate {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--lls-thumb);
+  opacity: calc(1 - var(--lift));
+}
+.lls-clip {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+}
+/* bigger than the thumb by the bleed, so the filter can pull in what lies just past the rim */
+.lls-lens {
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  overflow: visible;
+}
+.lls-bleed { fill: var(--lls-track); opacity: var(--lift); }
+.lls-mirror text {
+  fill: currentColor;
+  font-weight: 600;
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+/* the glass edge: a bright inner rim and a soft top glint, both only while lifted */
+.lls-rim {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: var(--lift);
+  box-shadow:
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.85),
+    inset 0 1.5px 1px -0.5px rgba(255, 255, 255, 0.95),
+    inset 0 -1.5px 2px -1px rgba(var(--lls-shadow), 0.12),
+    inset 0 0 6px rgba(255, 255, 255, 0.16);
+}
+.lls-rim::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 16%;
+  width: 30%;
+  height: 16%;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.45);
+  filter: blur(2px);
+}
+@media (prefers-color-scheme: dark) {
+  .lls-rim {
+    box-shadow:
+      inset 0 0 0 0.5px rgba(255, 255, 255, 0.35),
+      inset 0 1.5px 1px -0.5px rgba(255, 255, 255, 0.55),
+      inset 0 -1.5px 2px -1px rgba(0, 0, 0, 0.3),
+      inset 0 0 10px rgba(255, 255, 255, 0.1);
+  }
+  .lls-rim::after { background: rgba(255, 255, 255, 0.22); }
+}
+
+/* keyboard focus sits on the thumb: the checked segment is the focused one */
+.lls:not(.is-pointer):has(.lls-seg:focus-visible) .lls-thumb {
+  outline: 2px solid var(--lls-accent);
+  outline-offset: 2px;
+}

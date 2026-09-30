@@ -1,0 +1,16 @@
+<div class="lls" data-liquid-lens aria-label="Period">
+  <button type="button" class="lls-seg" role="radio" aria-checked="false" value="week">Week</button>
+  <button type="button" class="lls-seg" role="radio" aria-checked="true" value="month">Month</button>
+  <button type="button" class="lls-seg" role="radio" aria-checked="false" value="quarter">Quarter</button>
+  <button type="button" class="lls-seg" role="radio" aria-checked="false" value="year">Year</button>
+</div>
+
+<link rel="stylesheet" href="liquid-lens.css">
+<script src="liquid-lens.js" defer></script>
+
+<script>
+  // detail = { index, value }; data-lens="blur" forces the fallback lens
+  document.addEventListener('change', (e) => {
+    if (e.target.matches('[data-liquid-lens]')) console.log(e.detail);
+  });
+</script>

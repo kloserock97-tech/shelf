@@ -1,0 +1,39 @@
+/* Shared look of the two demo pages. The morph itself is in ../variants/html/morph.css. */
+:root {
+  color-scheme: light dark;
+  --label: light-dark(#1d1d1f, #f5f5f7);
+  --label-2: light-dark(#636366, #aaaaaf);
+  --fill: light-dark(rgb(118 118 128 / 0.12), rgb(118 118 128 / 0.24));
+  --hair: light-dark(rgb(0 0 0 / 0.1), rgb(255 255 255 / 0.12));
+  --accent: light-dark(#0073e6, #0a84ff);
+  --accent-text: light-dark(#0066cc, #2997ff);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  /* cover art */
+  --m-surface: light-dark(#ffffff, #151517);
+  --m-side: light-dark(#f4f4f6, #1e1e21);
+  --m-line: light-dark(#e3e3e8, #303034);
+  --m-text: light-dark(#1d1d1f, #f2f2f4);
+  --m-sub: light-dark(#8a8a90, #7d7d85);
+}
+html, body { margin: 0; background: transparent; }
+body {
+  font: 400 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--label);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* project colours: content may have its own tint; the chrome stays grey and blue */
+.p-ledger { --tint: light-dark(#e7edf6, #1a212c); --ink: light-dark(#3f6fb3, #7aa3e0); --ink-soft: light-dark(#d6e2f3, #26344a); }
+.p-harbor { --tint: light-dark(#f0e9de, #28231c); --ink: light-dark(#b06b33, #d99a63); --ink-soft: light-dark(#e6d6c2, #3d3226); }
+.p-fieldnote { --tint: light-dark(#e3eee5, #1a261e); --ink: light-dark(#4b8660, #7bb68f); --ink-soft: light-dark(#cfe2d4, #28392d); }
+.p-tandem { --tint: light-dark(#f4e5e2, #2b1e1d); --ink: light-dark(#bd5347, #e0837a); --ink-soft: light-dark(#ecd3cf, #3e2a28); }
+
+.art text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+.art .t-sub { font-size: 9.5px; fill: var(--m-sub); }
+.art .t-big { font-size: 22px; font-weight: 700; fill: var(--m-text); letter-spacing: -0.02em; }
+.art .t-btn { font-size: 10px; font-weight: 600; fill: #fff; text-anchor: middle; }
+.art .t-pill { font-size: 8.5px; font-weight: 600; fill: var(--ink); text-anchor: middle; }
+.art .t-quote { font-size: 11px; font-weight: 600; fill: var(--m-text); }
+.art .t-card { font-size: 10.5px; font-weight: 600; fill: var(--m-text); }

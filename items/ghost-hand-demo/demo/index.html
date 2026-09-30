@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Ghost Hand Demo</title>
+<link rel="stylesheet" href="../variants/html/ghost-hand.css">
+<style>
+  :root {
+    --label: #1d1d1f; --label-2: #636366; --label-3: #86868b;
+    --surface: #ffffff; --card: rgba(118, 118, 128, 0.08); --fill: rgba(118, 118, 128, 0.12); --fill-hover: rgba(118, 118, 128, 0.2);
+    --accent: #0073e6; --accent-text: #0066cc; --focus: #0073e6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --label: #f5f5f7; --label-2: #aaaaaf; --label-3: #6e6e73;
+      --surface: #1c1c1e; --card: rgba(118, 118, 128, 0.16); --fill: rgba(118, 118, 128, 0.24); --fill-hover: rgba(118, 118, 128, 0.34);
+      --accent: #0a84ff; --accent-text: #2997ff; --focus: #0a84ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: transparent; }
+  body {
+    min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: 24px 16px;
+    font: clamp(14px, 0.75vw + 8px, 17px)/1.35 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--label);
+    -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
+    --gh-hand-size: 3.3em;
+  }
+  .trip { width: min(56em, 100%); display: grid; gap: 1.2em; }
+  .trip__head { display: flex; align-items: flex-end; justify-content: space-between; gap: 0.8em; padding: 0 0.25em; }
+  h1 { margin: 0; font-size: 1.75em; font-weight: 650; letter-spacing: -0.02em; line-height: 1.15; }
+  h2 { margin: 0; font-size: 1em; font-weight: 600; }
+  .sub { margin: 0.2em 0 0; color: var(--label-2); font-size: 0.93em; }
+  .count { color: var(--label-2); font-size: 0.87em; font-variant-numeric: tabular-nums; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.4em; height: 2.3em; padding: 0 1em; border: 0; border-radius: 999px;
+    background: var(--fill); color: var(--label); font: inherit; font-size: 0.93em; font-weight: 500; cursor: pointer;
+    transition: background-color 160ms cubic-bezier(.25, .1, .25, 1), transform 100ms cubic-bezier(.23, 1, .32, 1);
+  }
+  .btn svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .btn:active { transform: scale(0.97); }
+  @media (hover: hover) and (pointer: fine) { .btn:hover { background: var(--fill-hover); } }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-areas: "ideas day"; gap: 1.05em; }
+  .panel { background: var(--surface); border-radius: 1.35em; padding: 1.05em; display: grid; gap: 0.8em; align-content: start; }
+  .panel__head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5em; padding: 0.15em 0.3em 0; }
+  .day { grid-area: day; }
+  .ideas-panel { grid-area: ideas; }
+  ul, ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.55em; }
+
+  .idea, .plan-item {
+    display: flex; align-items: center; gap: 0.8em; min-height: 4.3em; padding: 0.65em 0.7em 0.65em 0.95em;
+    border-radius: 0.95em; background: var(--card); color: var(--label);
+  }
+  .panel .idea { cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+  .gh-carry.idea { background: var(--surface); cursor: grabbing; }
+  .gh-carry.idea::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--card); }
+  .gh-carry.idea > * { position: relative; }
+  .idea__text { display: grid; gap: 0.1em; flex: 1; min-width: 0; }
+  .idea__text b { font-weight: 550; font-size: 1em; }
+  .idea__text span { color: var(--label-2); font-size: 0.87em; }
+  .idea__add {
+    flex: none; width: 2.4em; height: 2.4em; border: 0; border-radius: 50%; display: grid; place-items: center;
+    background: var(--surface); color: var(--accent-text); cursor: pointer; font: inherit;
+    transition: background-color 160ms cubic-bezier(.25, .1, .25, 1), transform 100ms cubic-bezier(.23, 1, .32, 1);
+  }
+  .idea__add svg { width: 1.05em; height: 1.05em; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .idea__add:active { transform: scale(0.94); }
+  .idea__add .ic-done { display: none; }
+  .idea[aria-disabled="true"] { cursor: default; }
+  .idea[aria-disabled="true"] .idea__text { opacity: 0.45; }
+  .idea[aria-disabled="true"] .idea__add { color: var(--label-2); background: transparent; cursor: default; }
+  .idea[aria-disabled="true"] .ic-add { display: none; }
+  .idea[aria-disabled="true"] .ic-done { display: block; }
+  @media (hover: hover) and (pointer: fine) { .idea:not([aria-disabled="true"]) .idea__add:hover { background: var(--fill-hover); } }
+
+  .plan-item time { flex: none; width: 3em; color: var(--label-2); font-size: 0.87em; font-variant-numeric: tabular-nums; }
+  .day { grid-template-rows: auto 1fr; }
+  .day__body { display: grid; grid-template-rows: auto auto 1fr; gap: 0.55em; }
+  .day__body .gh-slot { min-height: 4.3em; border-radius: 0.95em; }
+  .day[data-has-plans="true"] .gh-slot { display: none; }
+  .day[data-has-plans="true"] [data-dragging="true"] .gh-slot { display: grid; }
+  .empty-note {
+    margin: 0; padding: 1.2em 0.3em; display: grid; justify-items: center; align-content: center; gap: 0.5em;
+    color: var(--label-2); font-size: 0.87em; text-align: center;
+  }
+  .empty-note svg { width: 2.2em; height: 2.2em; fill: none; stroke: var(--label-3); stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+  .day[data-has-plans="true"] .empty-note { display: none; }
+
+  .hint { margin: 0; text-align: center; color: var(--label-2); font-size: 0.87em; }
+  .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+  @media (max-width: 640px) {
+    body { place-items: start center; padding-top: 20px; }
+    .grid { grid-template-columns: 1fr; grid-template-areas: "day" "ideas"; gap: 0.8em; }
+    h1 { font-size: 1.5em; }
+    .panel { padding: 0.9em 0.75em; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .plan-item.is-new { animation: land 360ms cubic-bezier(.23, 1, .32, 1); }
+  }
+  @keyframes land { from { opacity: 0.5; } to { opacity: 1; } }
+</style>
+</head>
+<body>
+<main class="trip">
+  <header class="trip__head">
+    <div>
+      <h1>Lisbon weekend</h1>
+      <p class="sub">Oct 3–5 · 2 travellers</p>
+    </div>
+    <button class="btn" type="button" id="replay">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.8 8a5.2 5.2 0 1 0 1.6-3.8"/><path d="M2.6 2.4v3h3"/></svg>
+      Replay
+    </button>
+  </header>
+
+  <div class="grid">
+    <section class="panel day" id="day" aria-labelledby="day-title" data-has-plans="false">
+      <div class="panel__head"><h2 id="day-title">Saturday, Oct 4</h2><span class="count" id="count">No plans</span></div>
+      <div class="day__body" id="day-body" data-gh-list data-dragging="false" data-over="false">
+        <ol class="plan" id="plan" aria-label="Saturday plan"></ol>
+        <div class="gh-slot" id="slot" data-state="idle" aria-hidden="true">
+          <div class="gh-slot__ghost"></div>
+          <div class="gh-slot__turn"><b id="turn-title">Your turn</b><span id="turn-sub">Drag an idea here, or tap +</span></div>
+        </div>
+        <p class="empty-note">
+          <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="5" y="7" width="22" height="20" rx="4"/><path d="M5 13h22M11 4.5v5M21 4.5v5"/><path d="M12.5 20h7"/></svg>
+          Nothing planned for Saturday yet.
+        </p>
+      </div>
+    </section>
+
+    <section class="panel ideas-panel" aria-labelledby="ideas-title">
+      <div class="panel__head"><h2 id="ideas-title">Saved ideas</h2><span class="count">4 places</span></div>
+      <ul class="ideas" id="ideas">
+        <li class="idea" id="idea-tram" data-gh-item data-min="40">
+          <div class="idea__text"><b>Tram 28 through Alfama</b><span>Sightseeing · 40 min</span></div>
+          <button class="idea__add" type="button" aria-label="Add Tram 28 through Alfama to Saturday">
+            <svg class="ic-add" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>
+            <svg class="ic-done" viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 8.4 3 3 6-6.8"/></svg>
+          </button>
+        </li>
+        <li class="idea" id="idea-pasteis" data-gh-item data-min="20">
+          <div class="idea__text"><b>Pastéis de Belém</b><span>Breakfast · 20 min</span></div>
+          <button class="idea__add" type="button" aria-label="Add Pastéis de Belém to Saturday">
+            <svg class="ic-add" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>
+            <svg class="ic-done" viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 8.4 3 3 6-6.8"/></svg>
+          </button>
+        </li>
+        <li class="idea" id="idea-lx" data-gh-item data-min="90">
+          <div class="idea__text"><b>LX Factory market</b><span>Shopping · 1 h 30 min</span></div>
+          <button class="idea__add" type="button" aria-label="Add LX Factory market to Saturday">
+            <svg class="ic-add" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>
+            <svg class="ic-done" viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 8.4 3 3 6-6.8"/></svg>
+          </button>
+        </li>
+        <li class="idea" id="idea-sunset" data-gh-item data-min="45">
+          <div class="idea__text"><b>Sunset at Senhora do Monte</b><span>Viewpoint · 45 min</span></div>
+          <button class="idea__add" type="button" aria-label="Add Sunset at Senhora do Monte to Saturday">
+            <svg class="ic-add" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>
+            <svg class="ic-done" viewBox="0 0 16 16" aria-hidden="true"><path d="m3.5 8.4 3 3 6-6.8"/></svg>
+          </button>
+        </li>
+      </ul>
+    </section>
+  </div>
+
+  <p class="hint" id="hint">Watch once, then take over: drag an idea into Saturday, or tap +.</p>
+  <p class="sr-only" role="status" id="status"></p>
+</main>
+
+<script type="module">
+  import { ghostHand, dragToList } from '../variants/html/ghost-hand.js';
+
+  const q = new URLSearchParams(location.search);
+  const $ = (s) => document.querySelector(s);
+  const day = $('#day'), plan = $('#plan'), slot = $('#slot'), status = $('#status'), hint = $('#hint');
+
+  // The first action, written as keyframes over the real elements.
+  const TRAM = '#idea-tram';
+  const PASTEIS = '#idea-pasteis';
+  const loops = [
+    [ // drag a card into the empty day
+      { do: 'enter', at: { el: TRAM, x: 0.3, y: 0.55 }, dur: 380 },
+      { do: 'wait', dur: 320 },
+      { do: 'press', grab: TRAM, dur: 240 },
+      { do: 'move', to: { el: slot, x: 0.3, y: 0.55 }, dur: 1150 },
+      { do: 'release', dur: 320 },
+      { do: 'move', to: { el: slot, x: 0.62, y: 1, dy: 30 }, dur: 560 },
+      { do: 'wait', dur: 700 },
+      { do: 'leave', dur: 300 },
+      { do: 'clear', dur: 380 }
+    ],
+    [ // or tap +
+      { do: 'enter', at: { el: `${PASTEIS} .idea__add` }, dur: 380 },
+      { do: 'wait', dur: 300 },
+      { do: 'tap', ghost: PASTEIS, dur: 820 },
+      { do: 'move', to: { el: `${PASTEIS} .idea__add`, x: 0.9, y: 1, dx: 18, dy: 30 }, dur: 480 },
+      { do: 'wait', dur: 600 },
+      { do: 'leave', dur: 300 }
+    ]
+  ];
+
+  let hand = null;
+  const turnTitle = $('#turn-title'), turnSub = $('#turn-sub');
+
+  function start({ autoplay = true } = {}) {
+    hand?.destroy();
+    hint.textContent = 'Watch once, then take over: drag an idea into Saturday, or tap +.';
+    hand = ghostHand({
+      root: document, slot, loops, delay: 700,
+      onHandOff() { hint.textContent = 'Your turn: drag an idea into Saturday, or tap +.'; }
+    });
+    if (autoplay) hand.play();
+    return hand;
+  }
+
+  // Real adding: by drag or by the + button.
+  const minutes = (m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+  let clock = 10 * 60;
+  function add(idea, fromRect) {
+    if (idea.getAttribute('aria-disabled') === 'true') return;
+    const title = idea.querySelector('b').textContent;
+    const li = document.createElement('li');
+    li.className = 'plan-item is-new';
+    li.innerHTML = `<time>${minutes(clock)}</time>${idea.querySelector('.idea__text').outerHTML}`;
+    clock += Number(idea.dataset.min) + 30;
+    clock = Math.ceil(clock / 15) * 15;
+    plan.append(li);
+    day.dataset.hasPlans = 'true';
+    const n = plan.children.length;
+    $('#count').textContent = n === 1 ? '1 plan' : `${n} plans`;
+    turnTitle.textContent = 'Drop to add';
+    turnSub.textContent = '';
+    idea.setAttribute('aria-disabled', 'true');
+    const btn = idea.querySelector('.idea__add');
+    btn.setAttribute('aria-disabled', 'true');
+    btn.setAttribute('aria-label', `${title} is on Saturday`);
+    status.textContent = `${title} added to Saturday at ${li.querySelector('time').textContent}.`;
+    hint.textContent = n < 4 ? 'Nice. Keep going, or press Replay to watch again.' : 'Saturday is full. Press Replay to start over.';
+    // the new row grows from where the card was let go
+    if (fromRect && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const to = li.getBoundingClientRect();
+      li.animate([
+        { transform: `translate(${fromRect.left - to.left}px, ${fromRect.top - to.top}px) rotate(-2deg) scale(1.03)` },
+        { transform: 'none' }
+      ], { duration: 320, easing: 'cubic-bezier(.23,1,.32,1)' });
+    }
+  }
+
+  document.querySelectorAll('.idea__add').forEach((btn) => btn.addEventListener('click', () => {
+    add(btn.closest('.idea'), null);
+    // keep the keyboard on the next idea that is still free
+    const next = [...document.querySelectorAll('.idea:not([aria-disabled="true"]) .idea__add')][0];
+    next?.focus({ preventScroll: true });
+  }));
+  dragToList({ root: document, list: '#day-body', onDrop: (idea, rect) => add(idea, rect) });
+
+  $('#replay').addEventListener('click', () => {
+    plan.replaceChildren();
+    clock = 10 * 60;
+    day.dataset.hasPlans = 'false';
+    $('#count').textContent = 'No plans';
+    turnTitle.textContent = 'Your turn';
+    turnSub.textContent = 'Drag an idea here, or tap +';
+    status.textContent = '';
+    document.querySelectorAll('.idea').forEach((idea) => {
+      idea.removeAttribute('aria-disabled');
+      const btn = idea.querySelector('.idea__add');
+      btn.removeAttribute('aria-disabled');
+      btn.setAttribute('aria-label', `Add ${idea.querySelector('b').textContent} to Saturday`);
+    });
+    slot.dataset.state = 'idle';
+    start();
+  });
+
+  // ?shot=1 — frozen mid-drag for the poster; ?play=0 — straight to "Your turn"
+  if (q.get('shot') === '1') {
+    const h = start({ autoplay: false });
+    h.seek(1780);
+  } else if (q.get('play') === '0') {
+    start({ autoplay: false }).skip();
+  } else {
+    start();
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>AI Edit Review</title>
+<link rel="stylesheet" href="edit-review.css">
+</head>
+<body>
+<div id="review"></div>
+
+<script src="edit-review.js"></script>
+<script>
+  var original = 'Our team will be holding the quarterly planning session on Thursday, and we would really appreciate it if everyone could come prepared with their priorities.';
+
+  // Any async rewrite works here: your model call, a server route, a worker.
+  async function rewrite(text) {
+    // e.g. const res = await fetch('/api/rewrite', { method: 'POST', body: text }); return res.text();
+    return 'Quarterly planning is on Thursday. Please bring your top three priorities.';
+  }
+
+  rewrite(original).then(function (edited) {
+    // { original, edited } is diffed word by word; pass { segments } instead to add a reason per hunk:
+    // ['Hi Marta, ', { from: 'thank you for reaching out', to: 'thanks for writing', why: 'Shorter' }, '.']
+    var review = EditReview.create(document.getElementById('review'), { original: original, edited: edited }, {
+      onChange: function (state) { console.log(state.text); }
+    });
+    // review.acceptAll(), review.scrub(0.5), review.keep(), review.getText()
+  });
+</script>
+</body>
+</html>

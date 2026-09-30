@@ -1,0 +1,278 @@
+/* Minimizing Tab Bar
+   A floating glass bar. Scrolling down tucks it into a round pill of the current tab, and the accessory above it
+   (a now-playing strip) slides down into the same row. Scrolling up, a tap on the pill or keyboard focus brings it
+   back. Pressing and sliding along the bar lifts a lens over the tabs; letting go switches to the tab under it.
+   The lens is a clone of the tab row inside the thumb: the thumb is scaled, so whatever it covers reads magnified. */
+
+.mtb {
+  --mtb-accent: #0073e6;
+  --mtb-label: #1d1d1f;
+  --mtb-label-2: #636366;
+  --mtb-material: rgba(250, 250, 252, 0.74);
+  --mtb-edge: rgba(255, 255, 255, 0.75);
+  --mtb-selected: rgba(0, 0, 0, 0.065);
+  --mtb-lens: rgba(255, 255, 255, 0.78);
+  --mtb-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+  --mtb-lens-shadow: 0 10px 24px rgba(0, 0, 0, 0.12), 0 0 0 0.5px rgba(0, 0, 0, 0.1), inset 0 0 0 1.5px rgba(255, 255, 255, 0.95), inset 0 -10px 18px rgba(0, 0, 0, 0.035);
+
+  --mtb-h: 62px;          /* expanded bar height */
+  --mtb-c: 50px;          /* collapsed pill: a circle */
+  --mtb-side: 16px;
+  --mtb-bottom: 22px;
+  --mtb-gap: 8px;
+  --mtb-lift: 1.3;        /* lens magnification */
+  --mtb-n: 5;             /* set by the script */
+  --mtb-i: 0;             /* index of the current tab, set by the script */
+  --mtb-tw: 70px;         /* width of one tab, measured by the script */
+
+  --mtb-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --mtb-spring: linear(0, 0.129, 0.374, 0.611, 0.792, 0.91, 0.977, 1.008, 1.019, 1.019, 1.015, 1.01, 1.006, 1.003, 1.001, 1, 1);
+  --mtb-morph: 0.46s;
+
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0;
+  z-index: 10;
+  pointer-events: none;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (prefers-color-scheme: dark) {
+  .mtb {
+    --mtb-accent: #0a84ff;
+    --mtb-label: #f5f5f7;
+    --mtb-label-2: #aeaeb2;
+    --mtb-material: rgba(40, 40, 44, 0.7);
+    --mtb-edge: rgba(255, 255, 255, 0.1);
+    --mtb-selected: rgba(255, 255, 255, 0.11);
+    --mtb-lens: rgba(78, 78, 84, 0.86);
+    --mtb-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 1px 3px rgba(0, 0, 0, 0.3);
+    --mtb-lens-shadow: 0 10px 24px rgba(0, 0, 0, 0.5), 0 0 0 0.5px rgba(0, 0, 0, 0.4), inset 0 0 0 1.5px rgba(255, 255, 255, 0.16), inset 0 -10px 18px rgba(0, 0, 0, 0.12);
+  }
+}
+
+/* ---------- the bar ---------- */
+.mtb__bar {
+  position: absolute;
+  left: var(--mtb-side);
+  bottom: var(--mtb-bottom);
+  width: calc(100% - 2 * var(--mtb-side));
+  height: var(--mtb-h);
+  border-radius: 999px;
+  pointer-events: auto;
+  touch-action: none;                 /* a slide along the bar scrubs tabs instead of panning */
+  user-select: none;
+  -webkit-user-select: none;
+  background: var(--mtb-material);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  backdrop-filter: blur(22px) saturate(180%);
+  box-shadow: var(--mtb-shadow), inset 0 0 0 0.5px var(--mtb-edge);
+  transition: width var(--mtb-morph) var(--mtb-drawer), height var(--mtb-morph) var(--mtb-drawer);
+}
+.mtb[data-state="collapsed"] .mtb__bar {
+  width: var(--mtb-c);
+  height: var(--mtb-c);
+  cursor: pointer;
+}
+
+/* The row keeps its full width at all times; collapsed, it slides so the current tab sits in the pill. */
+.mtb__tabs,
+.mtb__lensrow {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  display: flex;
+  width: calc(var(--mtb-n) * var(--mtb-tw));
+  height: calc(var(--mtb-h) - 8px);
+}
+.mtb__tabs {
+  z-index: 1;
+  translate: 0 0;
+  transition: translate var(--mtb-morph) var(--mtb-drawer);
+}
+.mtb[data-state="collapsed"] .mtb__tabs {
+  translate: calc(var(--mtb-c) / 2 - 4px - (var(--mtb-i) + 0.5) * var(--mtb-tw)) 1.5px;
+}
+
+.mtb__tab {
+  appearance: none;
+  flex: none;
+  width: var(--mtb-tw);
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--mtb-label);
+  font: 600 10px/12px system-ui, -apple-system, "Segoe UI", sans-serif;
+  letter-spacing: 0.01em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  transition: opacity 0.2s ease, color 0.16s ease;
+}
+.mtb__tab svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.mtb__tab span { transition: opacity 0.16s ease; }
+.mtb__tab[aria-selected="true"] { color: var(--mtb-accent); }
+.mtb__tab:focus-visible {
+  outline: 2px solid var(--mtb-accent);
+  outline-offset: -3px;
+}
+.mtb[data-state="collapsed"] .mtb__tab { pointer-events: none; }
+.mtb[data-state="collapsed"] .mtb__tab:not([aria-selected="true"]),
+.mtb[data-state="collapsed"] .mtb__tab span { opacity: 0; }
+
+/* ---------- the thumb, which becomes the lens ---------- */
+.mtb__thumb {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: var(--mtb-tw);
+  height: calc(var(--mtb-h) - 8px);
+  border-radius: 999px;
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--mtb-selected);
+  translate: calc(var(--mtb-i) * var(--mtb-tw)) 0;
+  scale: 1;
+  transition:
+    translate 0.42s var(--mtb-spring),
+    scale 0.3s var(--mtb-spring),
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.16s ease;
+}
+.mtb[data-state="collapsed"] .mtb__thumb { opacity: 0; }
+
+.mtb__lensrow {
+  top: 0;
+  left: 0;
+  opacity: 0;
+  translate: calc(var(--mtb-i) * var(--mtb-tw) * -1) 0;
+  transition: translate 0.42s var(--mtb-spring), opacity 0.24s ease;
+}
+.mtb__lensrow .mtb__tab { pointer-events: none; }
+.mtb__lensrow .mtb__tab.is-hot { color: var(--mtb-accent); }
+
+.mtb.is-lens .mtb__thumb,
+.mtb.is-settling .mtb__thumb { z-index: 2; }
+.mtb.is-lens .mtb__thumb {
+  scale: var(--mtb-lift);
+  background: var(--mtb-lens);
+  box-shadow: var(--mtb-lens-shadow), inset 0 0 0 0.5px var(--mtb-edge);
+  /* frosts the real tabs under the lens, so only the magnified copy reads sharp */
+  -webkit-backdrop-filter: blur(8px) saturate(150%);
+  backdrop-filter: blur(8px) saturate(150%);
+}
+.mtb.is-lens .mtb__lensrow { opacity: 1; }
+/* while the finger drives it, the lens follows without lag */
+.mtb.is-dragging .mtb__thumb { transition-property: scale, background-color, box-shadow, opacity; }
+.mtb.is-dragging .mtb__lensrow { transition-property: opacity; }
+
+/* ---------- the accessory: sits above the bar, merges into its row when collapsed ---------- */
+.mtb__accessory {
+  position: absolute;
+  left: var(--mtb-side);
+  right: var(--mtb-side);
+  bottom: calc(var(--mtb-bottom) + var(--mtb-h) + var(--mtb-gap));
+  height: var(--mtb-c);
+  border-radius: 999px;
+  pointer-events: auto;
+  background: var(--mtb-material);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  backdrop-filter: blur(22px) saturate(180%);
+  box-shadow: var(--mtb-shadow), inset 0 0 0 0.5px var(--mtb-edge);
+  color: var(--mtb-label);
+  transition: left var(--mtb-morph) var(--mtb-drawer), translate var(--mtb-morph) var(--mtb-drawer);
+}
+.mtb[data-state="collapsed"] .mtb__accessory {
+  left: calc(var(--mtb-side) + var(--mtb-c) + var(--mtb-gap));
+  translate: 0 calc(var(--mtb-h) + var(--mtb-gap));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mtb__bar,
+  .mtb__tabs,
+  .mtb__accessory { transition: none; }
+  .mtb__thumb,
+  .mtb__lensrow { transition-property: background-color, box-shadow, opacity; }
+}
+
+/* ---------- sample accessory content: a now-playing strip ---------- */
+.mtb__accessory {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 6px 0 8px;
+  overflow: hidden;
+}
+.now {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.now__art {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  overflow: hidden;
+  background: #1f4e5f;
+}
+.now__art svg { display: block; width: 100%; height: 100%; }
+.now__text { min-width: 0; display: flex; flex-direction: column; }
+.now__text b,
+.now__text small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.now__text b { font: 600 14px/18px system-ui, -apple-system, "Segoe UI", sans-serif; }
+.now__text small { font: 400 12px/16px system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--mtb-label-2); }
+.now__btn {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: inherit;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.now__btn svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.now__btn svg .solid { fill: currentColor; stroke-width: 1.2; }
+.now:focus-visible,
+.now__btn:focus-visible { outline: 2px solid var(--mtb-accent); outline-offset: -2px; }

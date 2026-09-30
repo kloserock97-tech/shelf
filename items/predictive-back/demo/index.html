@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Predictive Back</title>
+<link rel="stylesheet" href="../variants/html/predictive-back.css">
+<style>
+  :root {
+    color-scheme: light dark;
+    --label: light-dark(#1d1d1f, #f5f5f7);
+    --label-2: light-dark(#636366, #aaaaaf);
+    --label-3: light-dark(#86868b, #6e6e73);
+    --canvas: light-dark(#ffffff, #000000);
+    --grouped: light-dark(#f2f2f7, #000000);
+    --cell: light-dark(#ffffff, #1c1c1e);
+    --cell-2: light-dark(#f5f5f7, #1c1c1e);
+    --fill: light-dark(rgb(118 118 128 / 0.12), rgb(118 118 128 / 0.24));
+    --fill-hover: light-dark(rgb(118 118 128 / 0.2), rgb(118 118 128 / 0.34));
+    --hair: light-dark(rgb(60 60 67 / 0.18), rgb(84 84 88 / 0.6));
+    --accent: light-dark(#0073e6, #0a84ff);
+    --accent-text: light-dark(#0066cc, #2997ff);
+  }
+  html, body { height: 100%; margin: 0; background: transparent; }
+  body {
+    display: grid;
+    place-items: center;
+    font: 400 17px/1.35 system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: var(--label);
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* the phone screen: full bleed on a phone, a 390×844 screen in the middle of anything wider */
+  .app { width: 100vw; height: 100vh; height: 100dvh; background: var(--grouped); }
+  @media (min-width: 560px) {
+    .app { width: 390px; height: min(844px, calc(100vh - 32px)); border-radius: 44px; box-shadow: 0 0 0 0.5px var(--hair); }
+  }
+
+  .page { box-sizing: border-box; padding: 54px 0 40px; background: var(--grouped); }
+  .page--trip { background: var(--canvas); }
+
+  /* Trips */
+  .large-head { padding: 18px 20px 14px; }
+  .large-head h1 { margin: 0; font-size: 34px; line-height: 1.12; font-weight: 700; letter-spacing: -0.02em; }
+  .large-head p { margin: 4px 0 0; color: var(--label-2); font-size: 15px; }
+  h1:focus { outline: none; }
+  .group { list-style: none; margin: 0 16px; padding: 0; background: var(--cell); border-radius: 14px; overflow: hidden; }
+  .row {
+    display: flex; align-items: center; gap: 14px; width: 100%; min-height: 72px; padding: 12px 14px 12px 12px;
+    border: 0; background: transparent; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  }
+  .row:active { background: var(--fill); }
+  @media (hover: hover) and (pointer: fine) { .row:hover { background: var(--fill); } }
+  .row:focus-visible { outline-offset: -2px; border-radius: 14px; }
+  .group li + li .row-text { border-top: 0.5px solid var(--hair); }
+  .thumb { flex: none; width: 48px; height: 48px; border-radius: 11px; overflow: hidden; }
+  .row-text { flex: 1; display: grid; gap: 2px; align-self: stretch; align-content: center; min-width: 0; margin: -12px 0; padding: 12px 0; }
+  .row-title { font-size: 17px; font-weight: 600; }
+  .row-sub { font-size: 15px; color: var(--label-2); }
+  .chev { flex: none; width: 14px; height: 14px; color: var(--label-3); }
+  .section-label { margin: 26px 20px 8px; font-size: 13px; font-weight: 600; color: var(--label-2); text-transform: none; }
+  .hint { margin: 22px 24px 0; font-size: 13px; line-height: 1.45; color: var(--label-2); }
+
+  /* Trip */
+  .navbar { position: sticky; top: -54px; display: flex; align-items: center; justify-content: space-between; height: 44px; padding: 0 8px; }
+  .nav-back {
+    display: inline-flex; align-items: center; gap: 2px; height: 44px; padding: 0 10px 0 6px; border: 0; border-radius: 22px;
+    background: transparent; color: var(--accent-text); font-size: 17px; cursor: pointer;
+  }
+  .nav-back svg { width: 22px; height: 22px; }
+  .icon-btn { width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 22px; background: transparent; color: var(--accent-text); cursor: pointer; }
+  .icon-btn svg { width: 22px; height: 22px; }
+  @media (hover: hover) and (pointer: fine) { .nav-back:hover, .icon-btn:hover { background: var(--fill); } }
+  .hero { margin: 4px 16px 0; border-radius: 18px; overflow: hidden; aspect-ratio: 358 / 184; }
+  .hero svg { display: block; width: 100%; height: 100%; }
+  .trip-head { padding: 16px 20px 0; }
+  .trip-head h1 { margin: 0; font-size: 30px; line-height: 1.15; font-weight: 700; letter-spacing: -0.015em; }
+  .trip-head p { margin: 4px 0 0; color: var(--label-2); font-size: 15px; }
+  .gesture-hint {
+    display: flex; gap: 10px; align-items: center; margin: 16px 16px 0; padding: 10px 14px; border-radius: 14px;
+    background: var(--fill); color: var(--label-2); font-size: 13px; line-height: 1.4;
+  }
+  .gesture-hint svg { flex: none; width: 28px; height: 20px; color: var(--label); }
+  .page--trip .group { background: var(--cell-2); }
+  .info { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 12px 16px; }
+  .info + .info { border-top: 0.5px solid var(--hair); }
+  .info b { font-weight: 600; font-size: 16px; }
+  .info span { color: var(--label-2); font-size: 14px; }
+  .info time { grid-row: span 2; align-self: center; font-size: 15px; color: var(--label); font-variant-numeric: tabular-nums; }
+  .cta { padding: 26px 16px 0; }
+  .primary {
+    width: 100%; height: 50px; border: 0; border-radius: 25px; background: var(--accent); color: #fff; font-weight: 600; font-size: 17px; cursor: pointer;
+    transition: scale 0.1s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .primary:active { scale: 0.97; }
+
+  /* scene colours: content is allowed its own palette, the chrome stays grey and blue */
+  .sc-lisbon { --sky: light-dark(#f4e6d4, #3b3027); --sun: light-dark(#eba45c, #c7874a); --far: light-dark(#d9906c, #8c5a44); --mid: light-dark(#b8664b, #6c3e30); --near: light-dark(#93b3c6, #34495a); --acc: light-dark(#e6c14b, #a8893a); }
+  .sc-kyoto { --sky: light-dark(#e8ede3, #283029); --sun: light-dark(#f2d9b0, #8f7a59); --far: light-dark(#a9bba5, #4a5a4a); --mid: light-dark(#7f9a83, #34443a); --near: light-dark(#5f7a67, #223027); --acc: light-dark(#c95a3f, #a64a35); }
+  .sc-reykjavik { --sky: light-dark(#e3e9f0, #222a33); --sun: light-dark(#f0c79b, #9c7a55); --far: light-dark(#94a6b8, #45535f); --mid: light-dark(#6d8296, #334250); --near: light-dark(#51677b, #1f2b36); --acc: light-dark(#ffffff, #c9d3dc); }
+  .sc-porto { --sky: light-dark(#efe6dd, #33291f); --sun: light-dark(#e7b073, #b58651); --far: light-dark(#c98e6d, #7a5641); --mid: light-dark(#a7735a, #5d4131); --near: light-dark(#7f9bb0, #354a5a); --acc: light-dark(#59697a, #aab6c2); }
+</style>
+</head>
+<body>
+<div class="pb app" id="app">
+  <section class="page page--root" data-pb-page aria-labelledby="t-trips">
+    <header class="large-head">
+      <h1 id="t-trips" data-pb-title tabindex="-1">Trips</h1>
+      <p>3 upcoming · 1 draft</p>
+    </header>
+    <ul class="group" id="trip-list" role="list"></ul>
+    <p class="section-label">Past</p>
+    <ul class="group" role="list">
+      <li><button class="row" type="button" data-trip="porto"></button></li>
+    </ul>
+    <p class="hint">Open a trip, then swipe back from the left or right edge, or with two fingers on a trackpad. Let go early and you stay where you were.</p>
+  </section>
+
+  <section class="page page--trip" data-pb-page aria-labelledby="t-trip">
+    <nav class="navbar" aria-label="Trip">
+      <button class="nav-back" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>
+        Trips
+      </button>
+      <button class="icon-btn" type="button" aria-label="Share trip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v11M8 7.5l4-4 4 4M6 11H5a1 1 0 0 0-1 1v7.5a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V12a1 1 0 0 0-1-1h-1"/></svg>
+      </button>
+    </nav>
+    <div class="hero" id="hero"></div>
+    <div class="trip-head">
+      <h1 id="t-trip" data-pb-title tabindex="-1"></h1>
+      <p id="trip-dates"></p>
+    </div>
+    <p class="gesture-hint">
+      <svg viewBox="0 0 28 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 2v16"/><path d="M6 10h17M18 5l5 5-5 5"/></svg>
+      <span>Swipe in from an edge to peek at Trips. The arrow turns blue when letting go will take you back.</span>
+    </p>
+    <div id="trip-body"></div>
+    <div class="cta"><button class="primary" type="button" id="trip-cta">Show boarding pass</button></div>
+  </section>
+
+  <div class="pb-arrow" aria-hidden="true">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.5 4.5 7 10l5.5 5.5"/></svg>
+  </div>
+</div>
+
+<script type="module">
+  import { predictiveBack } from '../variants/html/predictive-back.js';
+
+  /* Flat scenes drawn in SVG: sky, sun, two ridges and a landmark. viewBox 358×184. */
+  const SCENES = {
+    lisbon: `<rect width="358" height="184" fill="var(--sky)"/>
+      <circle cx="262" cy="58" r="26" fill="var(--sun)"/>
+      <path fill="var(--far)" d="M0 184V104h26V92h20v-8l16-8 16 8v14h22V80l20-11 20 11v20h22V88h20V76l10-14 10 14v16h26v-8h22v16h22V86l20-9 20 9v16h24v-8h14v6h8V184z"/>
+      <path fill="var(--mid)" d="M0 184V122h34v-10h30v14h26v-18h36v20h30v-12h34v16h32v-10h30v14h28v-12h40v16h38V184z"/>
+      <rect y="138" width="358" height="46" fill="var(--near)"/>
+      <rect x="52" y="146" width="74" height="26" rx="6" fill="var(--acc)"/>
+      <path fill="var(--sky)" d="M60 151h12v9H60zm17 0h12v9H77zm17 0h12v9H94zm17 0h8v9h-8z"/>`,
+    kyoto: `<rect width="358" height="184" fill="var(--sky)"/>
+      <circle cx="246" cy="56" r="24" fill="var(--sun)"/>
+      <path fill="var(--far)" d="M0 116c42-40 86-44 126-16 30-30 70-40 112-18 38-18 82-14 120 12v90H0z"/>
+      <path fill="var(--mid)" d="M0 146c50-22 104-26 150-8 44-16 98-20 208 4v42H0z"/>
+      <rect y="160" width="358" height="24" fill="var(--near)"/>
+      <path fill="var(--acc)" d="M78 84c30 6 102 6 132 0v10H78zm10 16h112v7H88zm12-6h9v68h-9zm80 0h9v68h-9z"/>`,
+    reykjavik: `<rect width="358" height="184" fill="var(--sky)"/>
+      <circle cx="96" cy="118" r="24" fill="var(--sun)"/>
+      <path fill="var(--far)" d="M0 128 62 86l36 26 58-50 52 46 46-22 48 28 56-20v90H0z"/>
+      <path fill="var(--acc)" d="m156 62-15 13 8-2 7 6 7-6 8 2zM62 86l-11 8 6-1 5 4 5-4 5 1z"/>
+      <path fill="var(--mid)" d="M0 146c60-14 120-16 180-6 60-10 120-10 178 0v44H0z"/>
+      <rect y="152" width="358" height="32" fill="var(--near)"/>`,
+    porto: `<rect width="358" height="184" fill="var(--sky)"/>
+      <circle cx="84" cy="54" r="20" fill="var(--sun)"/>
+      <path fill="var(--far)" d="M0 110h18V96h16v10h14V90l12-8 12 8v24l22 16v54H0zm358 0h-18V98h-16v12h-14V94l-12-6-12 6v22l-22 14v54h94z"/>
+      <rect y="150" width="358" height="34" fill="var(--near)"/>
+      <path fill="none" stroke="var(--acc)" stroke-width="7" d="M84 184c20-78 60-110 95-110s75 32 95 110"/>
+      <rect x="60" y="112" width="238" height="7" fill="var(--acc)"/>`
+  };
+  const scene = (id, label) => `<svg class="sc-${id}" viewBox="0 0 358 184" preserveAspectRatio="xMidYMid slice" role="img" aria-label="${label}">${SCENES[id]}</svg>`;
+
+  const TRIPS = {
+    lisbon: {
+      title: 'Lisbon', sub: '12 – 15 Oct · 3 nights', dates: 'Sat 12 Oct – Tue 15 Oct · 3 nights', art: 'Rooftops of Alfama and the yellow tram',
+      sections: [
+        ['Flights', [['TP 663 · AMS → LIS', 'Sat 12 Oct · seat 14A', '07:25'], ['TP 666 · LIS → AMS', 'Tue 15 Oct · seat 9C', '18:20']]],
+        ['Stay', [['Alfama loft', 'Rua dos Remédios 42 · check-in from 15:00', '3 nights']]],
+        ['Plans', [['Tram 28 from Martim Moniz', 'Sun 13 Oct', '10:00'], ['Dinner at Casa do Largo', 'Sun 13 Oct · table for two', '20:30']]]
+      ], cta: 'Show boarding pass'
+    },
+    kyoto: {
+      title: 'Kyoto', sub: '2 – 9 Nov · 7 nights', dates: 'Sat 2 Nov – Sat 9 Nov · 7 nights', art: 'Hills and a vermilion gate',
+      sections: [
+        ['Flights', [['KL 867 · AMS → KIX', 'Sat 2 Nov · seat 31K', '14:40'], ['KL 868 · KIX → AMS', 'Sat 9 Nov · seat 30A', '11:25']]],
+        ['Stay', [['Machiya near Gion', 'Check-in from 16:00 · key box', '7 nights']]],
+        ['Plans', [['Fushimi Inari before the crowds', 'Sun 3 Nov', '06:30'], ['Tea ceremony', 'Wed 6 Nov · Higashiyama', '11:00']]]
+      ], cta: 'Show boarding pass'
+    },
+    reykjavik: {
+      title: 'Reykjavík', sub: '18 – 21 Dec · 3 nights', dates: 'Wed 18 Dec – Sat 21 Dec · 3 nights', art: 'Low winter sun over snowy peaks',
+      sections: [
+        ['Flights', [['FI 501 · AMS → KEF', 'Wed 18 Dec · seat 6F', '14:10'], ['FI 500 · KEF → AMS', 'Sat 21 Dec · seat 7A', '07:40']]],
+        ['Stay', [['Harbour guesthouse', 'Mýrargata · late check-in arranged', '3 nights']]],
+        ['Plans', [['Golden Circle day tour', 'Thu 19 Dec · pickup at the door', '08:30'], ['Geothermal pool', 'Fri 20 Dec', '17:00']]]
+      ], cta: 'Show boarding pass'
+    },
+    porto: {
+      title: 'Porto', sub: 'May 2024 · 4 nights', dates: 'Thu 9 May – Mon 13 May 2024 · 4 nights', art: 'The iron bridge over the river',
+      sections: [
+        ['Flights', [['TP 1331 · AMS → OPO', 'Thu 9 May · flown', '09:05'], ['TP 1332 · OPO → AMS', 'Mon 13 May · flown', '13:10']]],
+        ['Notes', [['Ribeira at sunset', 'Worth the climb back up', '★ 5'], ['Port lodge tour', 'Book two days ahead next time', '★ 4']]]
+      ], cta: 'Book Porto again'
+    }
+  };
+
+  const rowHTML = (id) => {
+    const t = TRIPS[id];
+    return `${scene(id, '').replace('role="img" aria-label=""', 'aria-hidden="true"').replace('<svg class="', '<svg class="thumb ')}
+      <span class="row-text"><span class="row-title">${t.title}</span><span class="row-sub">${t.sub}</span></span>
+      <svg class="chev" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 2.5 4.5 4.5L5 11.5"/></svg>`;
+  };
+  document.getElementById('trip-list').innerHTML = ['lisbon', 'kyoto', 'reykjavik']
+    .map((id) => `<li><button class="row" type="button" data-trip="${id}">${rowHTML(id)}</button></li>`).join('');
+  document.querySelector('[data-trip="porto"]').innerHTML = rowHTML('porto');
+
+  const app = document.getElementById('app');
+  const [root, trip] = app.querySelectorAll('[data-pb-page]');
+  let opener = null;
+  const nav = predictiveBack(app, {
+    root,
+    onChange(top) { if (top === root && opener) opener.focus({ preventScroll: true }); }
+  });
+
+  function fill(id) {
+    const t = TRIPS[id];
+    document.getElementById('hero').innerHTML = scene(id, t.art);
+    document.getElementById('t-trip').textContent = t.title;
+    document.getElementById('trip-dates').textContent = t.dates;
+    document.getElementById('trip-cta').textContent = t.cta;
+    document.getElementById('trip-body').innerHTML = t.sections.map(([h, rows]) => `
+      <p class="section-label">${h}</p>
+      <ul class="group" role="list">${rows.map(([b, s, v]) => `<li class="info"><b>${b}</b><time>${v}</time><span>${s}</span></li>`).join('')}</ul>`).join('');
+  }
+
+  root.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-trip]');
+    if (!b) return;
+    opener = b;
+    fill(b.dataset.trip);
+    nav.push(trip);
+  });
+  trip.querySelector('.nav-back').addEventListener('click', () => nav.back());
+
+  // ?shot=1 — the poster: Lisbon is open and the back swipe is a third of the way, just past the commit point.
+  // ?p=0.2&edge=right — any frozen progress from either edge.
+  const q = new URLSearchParams(location.search);
+  if (q.has('shot') || q.has('p')) {
+    const id = TRIPS[q.get('trip')] ? q.get('trip') : 'lisbon';
+    opener = root.querySelector(`[data-trip="${id}"]`);
+    fill(id);
+    nav.push(trip);
+    nav.preview(q.has('p') ? Number(q.get('p')) : 0.37, q.get('edge') === 'right' ? 'right' : 'left', Number(q.get('y')) || 468);
+  }
+</script>
+</body>
+</html>

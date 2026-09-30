@@ -1,0 +1,166 @@
+/* Snap Sheet
+   The sheet lives inside a plain scroll container with scroll-snap detents, so a drag, a fling and the rubber band at
+   the ends are the browser's own. The script only reads scrollTop and writes three numbers:
+     --ss-k   0 → 1 from peek to half
+     --ss-e   0 → 1 from half to full ("edge": inset card → edge-to-edge sheet, page behind steps back)
+     --ss-vis the visible height of the card
+   Put .ss over the page it belongs to and give that page the class .ss-behind. Both need the same positioned parent. */
+
+.ss {
+  --ss-surface: #ffffff;
+  --ss-edge: rgba(0, 0, 0, 0.08);
+  --ss-grabber: rgba(60, 60, 67, 0.3);
+  --ss-accent: #0073e6;
+  --ss-shadow: rgba(0, 0, 0, 0.16);
+  --ss-inset: 8px;          /* gap around the card at peek and half */
+  --ss-r: 34px;             /* card corners while it floats */
+  --ss-r-full: 16px;        /* top corners at full height */
+
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;     /* the empty part of the scroller lets taps through to the page */
+}
+@media (prefers-color-scheme: dark) {
+  .ss {
+    --ss-surface: #1c1c1e;
+    --ss-edge: rgba(255, 255, 255, 0.1);
+    --ss-grabber: rgba(235, 235, 245, 0.3);
+    --ss-accent: #0a84ff;
+    --ss-shadow: rgba(0, 0, 0, 0.5);
+  }
+}
+
+.ss__scroller {
+  position: absolute;
+  inset: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  pointer-events: none;
+}
+.ss__scroller::-webkit-scrollbar { display: none; }
+.ss.is-dragging .ss__scroller { scroll-snap-type: none; }   /* a mouse drag sets scrollTop by hand */
+
+/* scroll range: from peek (0) to full (H - top - peek) */
+.ss__track {
+  position: relative;
+  height: calc(2 * var(--ss-H, 844px) - var(--ss-P, 156px) - var(--ss-top, 62px));
+}
+.ss__snap {
+  position: absolute;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  scroll-snap-align: start;
+}
+
+.ss__sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--ss-H, 844px) - var(--ss-P, 156px));
+  height: calc(var(--ss-H, 844px) - var(--ss-top, 62px));
+  pointer-events: none;
+}
+
+.ss__card {
+  --e: var(--ss-e, 0);
+  position: absolute;
+  top: 0;
+  left: calc(var(--ss-inset) * (1 - var(--e)));
+  right: calc(var(--ss-inset) * (1 - var(--e)));
+  height: var(--ss-vis, 148px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  pointer-events: auto;
+  background: var(--ss-surface);
+  border-radius:
+    calc(var(--ss-r) - (var(--ss-r) - var(--ss-r-full)) * var(--e))
+    calc(var(--ss-r) - (var(--ss-r) - var(--ss-r-full)) * var(--e))
+    calc(var(--ss-r) * (1 - var(--e)))
+    calc(var(--ss-r) * (1 - var(--e)));
+  box-shadow: 0 0 0 0.5px var(--ss-edge), 0 8px 34px rgb(0 0 0 / calc(0.16 * (1 - var(--e))));
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+@media (prefers-color-scheme: dark) {
+  .ss__card { box-shadow: 0 0 0 0.5px var(--ss-edge), 0 8px 34px rgb(0 0 0 / calc(0.5 * (1 - var(--e)))); }
+}
+/* continuous corners where the browser has them; they read smaller, so the radii grow */
+@supports (corner-shape: squircle) {
+  .ss { --ss-r: 48px; --ss-r-full: 24px; }
+  .ss__card { corner-shape: squircle; }
+}
+
+/* Content keeps one width while the card widens to the edges, so nothing rewraps mid-drag. */
+.ss__head,
+.ss__content {
+  width: calc(var(--ss-W, 390px) - 2 * var(--ss-inset));
+  margin-inline: auto;
+}
+.ss__head { flex: none; }
+.ss__body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+/* only at full height does the inside scroll; at its top a pull down chains back to the sheet */
+.ss[data-detent="full"] .ss__body {
+  overflow-y: auto;
+  overscroll-behavior-y: auto;
+  scrollbar-width: none;
+}
+.ss__body::-webkit-scrollbar { display: none; }
+
+.ss__grabber {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 20px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: grab;
+}
+.ss.is-dragging .ss__grabber,
+.ss.is-dragging .ss__card { cursor: grabbing; }
+.ss__grabber::before {
+  content: "";
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  width: 36px;
+  height: 5px;
+  margin-left: -18px;
+  border-radius: 3px;
+  background: var(--ss-grabber);
+}
+.ss__grabber:focus-visible { outline: none; }
+.ss__grabber:focus-visible::before { outline: 2px solid var(--ss-accent); outline-offset: 3px; }
+
+/* ---------- the page behind ---------- */
+.ss-behind {
+  transform-origin: 50% 0;
+  scale: calc(1 - 0.07 * var(--ss-e, 0));
+  translate: 0 calc(var(--ss-e, 0) * 46px);
+  border-radius: calc(var(--ss-e, 0) * 14px);
+  overflow: hidden;
+  will-change: scale, translate;
+}
+.ss-behind::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: calc(var(--ss-e, 0) * 0.24);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ss-behind { scale: 1; translate: none; border-radius: 0; }
+}

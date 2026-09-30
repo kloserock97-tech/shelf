@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Multi Pull</title>
+<link rel="stylesheet" href="../variants/html/multi-pull.css">
+<style>
+  :root {
+    --app-bg: #ffffff;
+    --label: #1d1d1f;
+    --label-2: #636366;
+    --label-3: #86868b;
+    --fill: rgba(118, 118, 128, 0.12);
+    --sep: rgba(60, 60, 67, 0.16);
+    --accent: #0073e6;
+    --accent-text: #0066cc;
+    --raised: #ffffff;
+    --scrim: rgba(0, 0, 0, 0.2);
+    --inverse: #1d1d1f;
+    --on-inverse: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --app-bg: #000000;
+      --label: #f5f5f7;
+      --label-2: #aaaaaf;
+      --label-3: #6e6e73;
+      --fill: rgba(118, 118, 128, 0.24);
+      --sep: rgba(84, 84, 88, 0.55);
+      --accent: #0a84ff;
+      --accent-text: #2997ff;
+      --raised: #1c1c1e;
+      --scrim: rgba(0, 0, 0, 0.55);
+      --inverse: #f5f5f7;
+      --on-inverse: #000000;
+    }
+  }
+  html, body { height: 100%; margin: 0; background: transparent; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--label); -webkit-font-smoothing: antialiased; }
+  button, input, textarea { font: inherit; color: inherit; }
+  svg.i { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+
+  .device { position: fixed; inset: 0; overflow: hidden; background: var(--app-bg); contain: layout paint; }
+  @media (min-width: 600px) and (min-height: 600px) {
+    .device { margin: auto; width: 390px; height: min(844px, calc(100% - 40px)); border-radius: 48px; box-shadow: 0 0 0 0.5px var(--sep), 0 30px 80px rgba(0, 0, 0, 0.12); }
+  }
+  .status {
+    position: absolute; inset: 0 0 auto; height: 54px; z-index: 5;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 4px 28px 0 44px; box-sizing: border-box;
+    font: 600 16px/1 system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--app-bg);
+  }
+  .status svg { display: block; height: 12px; fill: currentColor; }
+  .status__icons { display: flex; gap: 6px; align-items: center; }
+  .nav {
+    position: absolute; top: 54px; left: 0; right: 0; height: 44px; z-index: 5;
+    display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 4px;
+    background: var(--app-bg);
+  }
+  .nav__back, .nav__btn { height: 44px; border: 0; background: none; display: flex; align-items: center; cursor: pointer; border-radius: 12px; }
+  .nav__back { gap: 2px; padding: 0 8px 0 4px; color: var(--accent-text); font-size: 17px; }
+  .nav__back svg.i { width: 24px; height: 24px; stroke-width: 2.2; }
+  .nav__btn { width: 44px; justify-content: center; color: var(--accent-text); }
+  .nav__btn[aria-pressed="false"] { color: var(--label-3); }
+  .nav__back:focus-visible, .nav__btn:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; }
+
+  .mp { position: absolute; top: 98px; left: 0; right: 0; bottom: 0; }
+  .mp__scroller { scrollbar-width: none; }
+  .mp__scroller::-webkit-scrollbar { display: none; }
+
+  .title { margin: 0 20px 2px; font: 700 34px/41px system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .hint { margin: 0 20px 12px; font: 400 13px/18px system-ui, sans-serif; color: var(--label-2); text-wrap: pretty; }
+
+  .search { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.34s cubic-bezier(0.32, 0.72, 0, 1); }
+  .search > div { overflow: hidden; }
+  .is-searching .search { grid-template-rows: 1fr; }
+  .search__row { display: flex; align-items: center; gap: 10px; padding: 2px 16px 12px; }
+  .search__field { flex: 1; display: flex; align-items: center; gap: 6px; height: 38px; padding: 0 10px; border-radius: 11px; background: var(--fill); color: var(--label-2); }
+  .search__field svg.i { width: 18px; height: 18px; flex: none; }
+  .search__field input { flex: 1; min-width: 0; border: 0; background: none; outline: none; color: var(--label); font-size: 17px; }
+  .search__field:focus-within { box-shadow: 0 0 0 2px var(--accent); }
+  .search__cancel { border: 0; background: none; padding: 6px 2px; color: var(--accent-text); font-size: 17px; cursor: pointer; border-radius: 8px; }
+  .search__cancel:focus-visible { outline: 2px solid var(--accent); }
+
+  .mail { margin: 0; padding: 0; list-style: none; }
+  .mail li { position: relative; padding: 11px 16px 12px 32px; }
+  .mail li::after { content: ""; position: absolute; left: 32px; right: 0; bottom: 0; height: 0.5px; background: var(--sep); }
+  .mail li.is-unread::before { content: ""; position: absolute; left: 12px; top: 18px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+  .mail li.is-new { animation: arrive 1.6s ease-out; }
+  @keyframes arrive { from { background: var(--fill); } }
+  .mail .top { display: flex; align-items: baseline; gap: 8px; }
+  .mail .who { flex: 1; min-width: 0; font: 600 16px/21px system-ui, sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mail .when { font: 400 14px/19px system-ui, sans-serif; color: var(--label-2); }
+  .mail .subj { font: 400 15px/20px system-ui, sans-serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mail .prev { font: 400 15px/20px system-ui, sans-serif; color: var(--label-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .mail .empty { padding: 28px 20px; color: var(--label-2); text-align: center; font-size: 15px; }
+  .mail .empty::after { display: none; }
+  .foot { padding: 18px 20px 40px; text-align: center; font: 400 12px/16px system-ui, sans-serif; color: var(--label-2); }
+
+  /* compose: a plain sheet for the New action */
+  .scrim { position: absolute; inset: 0; z-index: 8; background: var(--scrim); opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+  .compose {
+    position: absolute; left: 0; right: 0; top: 62px; bottom: 0; z-index: 9;
+    display: flex; flex-direction: column; border-radius: 16px 16px 0 0;
+    background: var(--raised); box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.18);
+    translate: 0 105%; visibility: hidden;
+    transition: translate 0.42s cubic-bezier(0.32, 0.72, 0, 1), visibility 0s linear 0.42s;
+  }
+  .composing .scrim { opacity: 1; pointer-events: auto; }
+  .composing .compose { translate: 0 0; visibility: visible; transition: translate 0.42s cubic-bezier(0.32, 0.72, 0, 1); }
+  .compose header { display: flex; align-items: center; justify-content: space-between; padding: 12px 8px 8px; }
+  .compose h2 { margin: 0; font: 600 17px/22px system-ui, sans-serif; }
+  .compose header button { border: 0; background: none; padding: 8px 10px; font-size: 17px; color: var(--accent-text); cursor: pointer; border-radius: 10px; }
+  .compose header button[disabled] { opacity: 0.4; cursor: default; }
+  .compose header button:focus-visible { outline: 2px solid var(--accent); }
+  .compose label { display: flex; gap: 8px; align-items: center; margin-left: 16px; padding: 11px 16px 11px 0; box-shadow: inset 0 -0.5px 0 var(--sep); color: var(--label-2); font-size: 16px; }
+  .compose label input { flex: 1; min-width: 0; border: 0; background: none; outline: none; font-size: 16px; color: var(--label); }
+  .compose textarea { flex: 1; margin: 0; padding: 12px 16px; border: 0; background: none; resize: none; outline: none; font-size: 16px; line-height: 22px; }
+  .toast {
+    position: absolute; left: 50%; bottom: 36px; z-index: 10; translate: -50% 12px; opacity: 0;
+    padding: 9px 16px; border-radius: 999px; background: var(--inverse); color: var(--on-inverse);
+    font: 500 14px/18px system-ui, sans-serif; white-space: nowrap; pointer-events: none;
+    transition: opacity 0.16s ease, translate 0.24s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .toast.is-on { opacity: 1; translate: -50% 0; }
+
+  /* poster only: where the thumb is */
+  .finger { position: absolute; z-index: 7; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; background: rgba(120, 120, 128, 0.28); box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.9), 0 4px 14px rgba(0, 0, 0, 0.12); pointer-events: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .search, .compose, .composing .compose, .scrim { transition: none; }
+    .mail li.is-new { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="device" id="app">
+  <div class="status" aria-hidden="true">
+    <span>9:41</span>
+    <span class="status__icons">
+      <svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+      <svg viewBox="0 0 16 12"><path d="M8 11.6 5.6 9.1a3.4 3.4 0 0 1 4.8 0zM3.5 7a6.4 6.4 0 0 1 9 0l1.5-1.6a8.6 8.6 0 0 0-12 0zM.9 4.3a10.2 10.2 0 0 1 14.2 0L16 3.3A11.6 11.6 0 0 0 0 3.3z"/></svg>
+      <svg viewBox="0 0 27 12"><rect x="0.5" y="0.5" width="23" height="11" rx="3.2" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="17" height="8" rx="2"/><path d="M25 4v4a2 2 0 0 0 0-4z" opacity=".45"/></svg>
+    </span>
+  </div>
+  <div class="nav">
+    <button class="nav__back" type="button"><svg class="i" viewBox="0 0 24 24"><path d="m14.5 5.5-6.5 6.5 6.5 6.5"/></svg>Mailboxes</button>
+    <button class="nav__btn" type="button" id="sound" aria-label="Sound ticks" aria-pressed="true"></button>
+  </div>
+
+  <div class="mp">
+    <div class="mp__menu" aria-hidden="true">
+      <div class="mp__row">
+        <span class="mp__hl"></span>
+        <span class="mp__item" data-action="refresh" style="--i: 0">
+          <span class="mp__icon"><svg viewBox="0 0 24 24"><path d="M19 12a7 7 0 1 1-2.05-4.95M19 4.5V9h-4.5"/></svg></span>
+          <span class="mp__label">Refresh</span>
+        </span>
+        <span class="mp__item" data-action="new" style="--i: 1">
+          <span class="mp__icon"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
+          <span class="mp__label">New</span>
+        </span>
+        <span class="mp__item" data-action="search" style="--i: 2">
+          <span class="mp__icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m15.5 15.5 4 4"/></svg></span>
+          <span class="mp__label">Search</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="mp__scroller" tabindex="0" aria-label="Inbox" aria-describedby="mp-help">
+      <h1 class="title">Inbox</h1>
+      <p class="hint">Pull down from the top: deeper opens Refresh, New, Search. Drift sideways to switch.</p>
+      <div class="search" inert>
+        <div>
+          <div class="search__row">
+            <label class="search__field"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m15.5 15.5 4 4"/></svg><input type="search" placeholder="Search mail" aria-label="Search mail"></label>
+            <button class="search__cancel" type="button">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <ul class="mail" id="mail"></ul>
+      <p class="foot" id="updated">Updated just now</p>
+    </div>
+
+    <p class="mp__sr" id="mp-help">At the top of the list, press the up arrow for Refresh, New and Search.</p>
+    <p class="mp__sr mp__live" aria-live="polite"></p>
+  </div>
+
+  <div class="scrim"></div>
+  <section class="compose" role="dialog" aria-modal="true" aria-labelledby="compose-title">
+    <header>
+      <button type="button" data-close>Cancel</button>
+      <h2 id="compose-title">New Message</h2>
+      <button type="button" data-send disabled>Send</button>
+    </header>
+    <label>To: <input type="email" autocomplete="off" aria-label="To"></label>
+    <label>Subject: <input type="text" aria-label="Subject"></label>
+    <textarea aria-label="Message"></textarea>
+  </section>
+  <div class="toast" role="status"></div>
+</div>
+<script type="module" src="app.js"></script>
+</body>
+</html>

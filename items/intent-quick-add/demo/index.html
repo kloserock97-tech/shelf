@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Intent Quick Add</title>
+<link rel="stylesheet" href="../variants/html/intent-quick-add.css">
+<style>
+  :root {
+    --card: #ffffff;
+    --label: #1d1d1f;
+    --label-2: #636366;
+    --label-3: #86868b;
+    --hair: rgba(0, 0, 0, 0.1);
+    --fill: rgba(118, 118, 128, 0.12);
+    --fill-hover: rgba(118, 118, 128, 0.2);
+    --accent: #0073e6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --card: #1c1c1e;
+      --label: #f5f5f7;
+      --label-2: #aaaaaf;
+      --label-3: #6e6e73;
+      --hair: rgba(255, 255, 255, 0.12);
+      --fill: rgba(118, 118, 128, 0.24);
+      --fill-hover: rgba(118, 118, 128, 0.34);
+      --accent: #0a84ff;
+    }
+  }
+  html, body { margin: 0; background: transparent; }
+  body {
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    padding: 24px 16px;
+    box-sizing: border-box;
+    color: var(--label);
+    font: 400 15px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { width: min(640px, 100%); }
+  .card { background: var(--card); border-radius: 24px; padding: 22px 22px 10px; }
+  .head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 2px 14px; }
+  .head h1 { margin: 0; font-size: 21px; font-weight: 600; letter-spacing: -0.01em; }
+  .head span { color: var(--label-2); font-size: 13px; }
+  .try { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 12px 0 4px; }
+  .try b { color: var(--label-2); font-size: 13px; font-weight: 500; margin-right: 2px; }
+  .try button {
+    padding: 5px 11px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--fill);
+    color: var(--label);
+    font: 400 13px/1.3 system-ui, -apple-system, "Segoe UI", sans-serif;
+    cursor: pointer;
+    transition: transform 100ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .try button:active { transform: scale(0.97); }
+  .try button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media (hover: hover) and (pointer: fine) { .try button:hover { background: var(--fill-hover); } }
+  ul { list-style: none; margin: 14px 0 0; padding: 0; }
+  li { display: grid; grid-template-columns: 22px 1fr; gap: 2px 12px; padding: 12px 2px; border-top: 0.5px solid var(--hair); }
+  li i { grid-row: span 2; width: 18px; height: 18px; margin-top: 2px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--label-3); }
+  li p { margin: 0; }
+  li .meta { color: var(--label-2); font-size: 13px; }
+  li.is-new { animation: arrive 320ms cubic-bezier(0.23, 1, 0.32, 1); }
+  @keyframes arrive { from { opacity: 0; transform: translateY(-6px); } }
+  .hint { margin: 14px 4px 0; color: var(--label-2); font-size: 13px; text-align: center; }
+  @media (prefers-reduced-motion: reduce) {
+    li.is-new { animation: none; }
+    .try button:active { transform: none; }
+  }
+  @media (min-width: 960px) and (min-height: 760px) {
+    .wrap { width: 720px; }
+    .iqa { --iqa-font: 400 19px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .iqa-ghost { font-size: 15px; }
+    .head h1 { font-size: 23px; }
+    li p { font-size: 16px; }
+  }
+  @media (max-width: 480px) {
+    .card { padding: 18px 14px 6px; border-radius: 20px; }
+    .iqa { --iqa-font: 400 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="card" aria-labelledby="inbox">
+    <div class="head"><h1 id="inbox">Offsite team</h1><span id="count">2 tasks</span></div>
+    <div id="quick-add" data-label="New task" data-placeholder="Add a task, e.g. Lunch with @ben friday 1pm"></div>
+    <div class="try" aria-label="Examples">
+      <b>Try</b>
+      <button type="button">Lunch with @ben friday 1pm for 1h</button>
+      <button type="button">Pay the caterer €480 by 12 oct #offsite p1</button>
+      <button type="button">Remind me to call @chloe every monday at 10</button>
+    </div>
+    <ul id="list" aria-label="Tasks">
+      <li><i></i><p>Send the venue shortlist to Emma</p><p class="meta">Fri 2 Oct · Emma Lindqvist · Offsite</p></li>
+      <li><i></i><p>Renew the design tool seats</p><p class="meta">Mon 5 Oct · Finance · €360.00</p></li>
+    </ul>
+  </section>
+  <p class="hint">Type it the way you’d say it. Backspace right after a chip keeps those words as text; Esc turns reading off.</p>
+</div>
+<script src="../variants/html/intent-parse.js"></script>
+<script src="../variants/html/intent-quick-add.js"></script>
+<script>
+  const q = new URLSearchParams(location.search);
+  // ?shot=1 freezes the clock at Wed 30 Sep 2026, 10:12, so the poster reads the same every time
+  const fixed = q.has('shot') ? new Date(2026, 8, 30, 10, 12) : null;
+  const el = document.getElementById('quick-add');
+  const qa = IntentQuickAdd.create(el, {
+    now: () => fixed ?? new Date(),
+    people: [
+      { handle: 'anna', name: 'Anna Kovacs' }, { handle: 'ben', name: 'Ben Okafor' }, { handle: 'chloe', name: 'Chloe Martin' },
+      { handle: 'daan', name: 'Daan de Vries' }, { handle: 'emma', name: 'Emma Lindqvist' }
+    ],
+    projects: [{ tag: 'offsite', name: 'Offsite' }, { tag: 'design', name: 'Design' }, { tag: 'finance', name: 'Finance' }, { tag: 'hiring', name: 'Hiring' }]
+  });
+  const list = document.getElementById('list');
+  const count = () => { document.getElementById('count').textContent = `${list.children.length} tasks`; };
+  el.addEventListener('submit', (e) => {
+    const [, ...meta] = IntentParse.summary({ ...e.detail, dueLabel: e.detail.dueLabel });
+    const li = document.createElement('li');
+    li.className = 'is-new';
+    li.innerHTML = '<i></i><p></p><p class="meta"></p>';
+    li.children[1].textContent = e.detail.title;
+    li.children[2].textContent = [e.detail.kind === 'Task' ? null : e.detail.kind, ...meta].filter(Boolean).join(' · ') || 'No date';
+    list.prepend(li);
+    count();
+  });
+  document.querySelectorAll('.try button').forEach((b) => b.addEventListener('click', () => {
+    qa.set(b.textContent);
+    qa.focus();
+  }));
+  if (q.has('shot')) {
+    const text = 'Book flights to Lisbon for @anna tomorrow 9am #offsite €240';
+    qa.set(text, text.indexOf('9am') + 3);
+    qa.focus();
+    qa.input.setSelectionRange(text.indexOf('9am') + 3, text.indexOf('9am') + 3);
+  }
+</script>
+</body>
+</html>

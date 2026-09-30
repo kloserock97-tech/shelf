@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Snap Sheet</title>
+<link rel="stylesheet" href="../variants/html/snap-sheet.css">
+<style>
+  :root {
+    --label: #1d1d1f;
+    --label-2: #636366;
+    --label-3: #86868b;
+    --fill: rgba(118, 118, 128, 0.12);
+    --sep: rgba(60, 60, 67, 0.16);
+    --accent: #0073e6;
+    --accent-text: #0066cc;
+    --green: #248a3d;
+    --glass: rgba(255, 255, 255, 0.78);
+    --glass-edge: rgba(255, 255, 255, 0.7);
+    /* map */
+    --m-land: #eeebe4;
+    --m-block: #e6e2d9;
+    --m-water: #a9cde6;
+    --m-street: #ffffff;
+    --m-park: #cfe3c1;
+    --m-wlabel: #4a7ba1;
+    --m-slabel: #85858a;
+    --m-pin: #1d1d1f;
+    --m-on-pin: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --label: #f5f5f7;
+      --label-2: #aaaaaf;
+      --label-3: #6e6e73;
+      --fill: rgba(118, 118, 128, 0.24);
+      --sep: rgba(84, 84, 88, 0.55);
+      --accent: #0a84ff;
+      --accent-text: #2997ff;
+      --green: #30d158;
+      --glass: rgba(36, 36, 40, 0.72);
+      --glass-edge: rgba(255, 255, 255, 0.1);
+      --m-land: #1f2023;
+      --m-block: #25262a;
+      --m-water: #1b3448;
+      --m-street: #37383d;
+      --m-park: #1d3024;
+      --m-wlabel: #72a2c9;
+      --m-slabel: #8e8e93;
+      --m-pin: #f5f5f7;
+      --m-on-pin: #1d1d1f;
+    }
+  }
+  html, body { height: 100%; margin: 0; background: transparent; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--label); -webkit-font-smoothing: antialiased; }
+  button { font: inherit; color: inherit; }
+  svg.i { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+  .device { position: fixed; inset: 0; overflow: hidden; background: #000; contain: layout paint; }
+  @media (min-width: 600px) and (min-height: 600px) {
+    .device { margin: auto; width: 390px; height: min(844px, calc(100% - 40px)); border-radius: 48px; box-shadow: 0 0 0 0.5px var(--sep), 0 30px 80px rgba(0, 0, 0, 0.12); }
+  }
+
+  .status {
+    position: absolute; inset: 0 0 auto; height: 54px; z-index: 6;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 4px 28px 0 44px; box-sizing: border-box;
+    font: 600 16px/1 system-ui, -apple-system, "Segoe UI", sans-serif;
+    /* turns white as the page behind steps back onto black */
+    color: color-mix(in srgb, #ffffff calc(var(--ss-e, 0) * 100%), var(--label));
+    pointer-events: none;
+  }
+  .status svg { display: block; height: 12px; fill: currentColor; }
+  .status__icons { display: flex; gap: 6px; align-items: center; }
+
+  /* ---------- the page: a map ---------- */
+  .map { position: absolute; inset: 0; background: var(--m-land); }
+  .map > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .m-land { fill: var(--m-land); }
+  .m-block { fill: var(--m-block); }
+  .m-water { fill: var(--m-water); }
+  .m-canal { fill: none; stroke: var(--m-water); stroke-width: 18; }
+  .m-street { fill: none; stroke: var(--m-street); stroke-linecap: round; }
+  .m-park { fill: var(--m-park); }
+  .m-wlabel { fill: var(--m-wlabel); font: italic 500 10.5px/1 system-ui, sans-serif; letter-spacing: 0.06em; }
+  .m-slabel { fill: var(--m-slabel); font: 500 9.5px/1 system-ui, sans-serif; letter-spacing: 0.03em; }
+  .m-poi circle { fill: var(--m-slabel); }
+  .m-poi path { fill: none; stroke: var(--m-land); stroke-width: 1.4; stroke-linecap: round; }
+  .m-poi text, .m-sel text { font: 600 10.5px/1 system-ui, sans-serif; paint-order: stroke; stroke: var(--m-land); stroke-width: 3px; stroke-linejoin: round; }
+  .m-poi text { fill: var(--m-slabel); }
+  .m-sel .pin { fill: var(--m-pin); }
+  .m-sel .glyph { fill: none; stroke: var(--m-on-pin); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .m-sel text { fill: var(--label); font-size: 12px; font-weight: 700; }
+  .m-me .halo { fill: var(--accent); opacity: 0.16; }
+  .m-me .ring { fill: #fff; }
+  .m-me .dot { fill: var(--accent); }
+
+  .hint {
+    position: absolute; top: 62px; left: 50%; translate: -50% 0; z-index: 1;
+    padding: 7px 14px; border-radius: 999px; white-space: nowrap;
+    font: 500 13px/18px system-ui, sans-serif; color: var(--label);
+    background: var(--glass); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), inset 0 0 0 0.5px var(--glass-edge);
+    -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%);
+  }
+
+  /* map buttons ride on the sheet: they sit in the scroll track right above it and fade by half height */
+  .float {
+    position: absolute; right: 12px; top: calc(var(--ss-H, 844px) - var(--ss-P, 156px) - 104px);
+    display: flex; flex-direction: column; width: 44px; border-radius: 14px; overflow: hidden;
+    background: var(--glass); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), inset 0 0 0 0.5px var(--glass-edge);
+    -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%);
+    opacity: calc(1 - var(--ss-k, 0) * 2.2); pointer-events: auto;
+  }
+  .float button { width: 44px; height: 44px; border: 0; padding: 0; background: none; display: grid; place-items: center; cursor: pointer; }
+  .float button + button { box-shadow: inset 0 0.5px 0 var(--sep); }
+  .float button:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; border-radius: 12px; }
+
+  /* ---------- the place card ---------- */
+  .place { display: flex; gap: 12px; padding: 0 16px 12px 20px; cursor: default; }
+  .place__text { flex: 1; min-width: 0; }
+  .place__title { margin: 2px 0 0; font: 700 24px/30px system-ui, sans-serif; letter-spacing: 0.005em; }
+  .place__sub { margin: 1px 0 0; font: 400 15px/20px system-ui, sans-serif; color: var(--label-2); }
+  .place__meta { margin: 3px 0 0; font: 400 13px/18px system-ui, sans-serif; color: var(--label-2); display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+  .place__meta .open { color: var(--green); font-weight: 600; }
+  .star { width: 12px; height: 12px; fill: currentColor; }
+  .place__btns { display: flex; gap: 8px; padding-top: 2px; }
+  .round { width: 32px; height: 32px; border: 0; padding: 0; border-radius: 50%; background: var(--fill); color: var(--label-2); display: grid; place-items: center; cursor: pointer; }
+  .round svg.i { width: 16px; height: 16px; stroke-width: 2.2; }
+  .round:focus-visible, .act:focus-visible, .chip:focus-visible, .link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .ss__content { padding: 0 16px 40px; box-sizing: border-box; }
+  .actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .act { height: 56px; border: 0; border-radius: 14px; background: var(--fill); color: var(--accent-text); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font: 600 12px/14px system-ui, sans-serif; cursor: pointer; }
+  .act--primary { background: var(--accent); color: #fff; }
+  .act svg.i { width: 20px; height: 20px; }
+
+  .photos { display: flex; gap: 8px; margin: 16px -16px 0; padding: 0 16px; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x mandatory; scroll-padding: 0 16px; overscroll-behavior-x: contain; }
+  .photos::-webkit-scrollbar { display: none; }
+  .photos svg { flex: none; width: 150px; height: 112px; border-radius: 12px; scroll-snap-align: start; }
+
+  .group { margin: 20px 0 0; padding: 0 0 0 14px; border-radius: 14px; background: var(--fill); }
+  .group > div { display: flex; flex-direction: column; justify-content: center; min-height: 56px; padding: 8px 14px 8px 0; box-sizing: border-box; box-shadow: inset 0 -0.5px 0 var(--sep); }
+  .group > div:last-child { box-shadow: none; }
+  .group dt { font: 400 13px/17px system-ui, sans-serif; color: var(--label-2); }
+  .group dd { margin: 1px 0 0; font: 400 16px/21px system-ui, sans-serif; }
+  .group dd .open { color: var(--green); font-weight: 600; }
+  .link { color: var(--accent-text); text-decoration: none; }
+
+  .h3 { margin: 24px 0 10px; font: 700 19px/24px system-ui, sans-serif; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { padding: 6px 12px; border-radius: 999px; background: var(--fill); font: 500 13px/18px system-ui, sans-serif; }
+  .score { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; font: 400 13px/18px system-ui, sans-serif; color: var(--label-2); }
+  .score b { font: 700 34px/1 system-ui, sans-serif; color: var(--label); }
+  .review { padding: 12px 14px; border-radius: 14px; background: var(--fill); }
+  .review + .review { margin-top: 8px; }
+  .review header { display: flex; align-items: center; gap: 6px; font: 600 14px/19px system-ui, sans-serif; }
+  .review header span { margin-left: auto; font-weight: 400; font-size: 12px; color: var(--label-2); }
+  .review .stars { display: flex; gap: 1px; color: #e89b20; margin: 2px 0 4px; }
+  .review p { margin: 0; font: 400 14px/20px system-ui, sans-serif; }
+  .about { margin: 0; font: 400 15px/22px system-ui, sans-serif; color: var(--label); }
+  .foot { margin: 24px 0 0; font: 400 13px/18px system-ui, sans-serif; color: var(--label-2); }
+</style>
+</head>
+<body>
+<div class="device">
+  <div class="status" aria-hidden="true">
+    <span>9:41</span>
+    <span class="status__icons">
+      <svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+      <svg viewBox="0 0 16 12"><path d="M8 11.6 5.6 9.1a3.4 3.4 0 0 1 4.8 0zM3.5 7a6.4 6.4 0 0 1 9 0l1.5-1.6a8.6 8.6 0 0 0-12 0zM.9 4.3a10.2 10.2 0 0 1 14.2 0L16 3.3A11.6 11.6 0 0 0 0 3.3z"/></svg>
+      <svg viewBox="0 0 27 12"><rect x="0.5" y="0.5" width="23" height="11" rx="3.2" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="17" height="8" rx="2"/><path d="M25 4v4a2 2 0 0 0 0-4z" opacity=".45"/></svg>
+    </span>
+  </div>
+
+  <main class="map ss-behind" aria-label="Map of the neighbourhood">
+    <svg id="map" viewBox="0 0 390 844" preserveAspectRatio="xMidYMin slice" role="img" aria-label="Map: Tuin Coffee on Tuingracht, four minutes from you"></svg>
+    <p class="hint">Drag the card. It rests at three heights.</p>
+  </main>
+
+  <div class="ss" data-detent="peek">
+    <div class="ss__scroller">
+      <div class="ss__track">
+        <i class="ss__snap" data-snap="peek"></i>
+        <i class="ss__snap" data-snap="half"></i>
+        <i class="ss__snap" data-snap="full"></i>
+        <div class="float">
+          <button type="button" aria-label="Map style"><svg class="i" viewBox="0 0 24 24"><path d="m3.5 7 5.5-2.5 6 2.5 5.5-2.5v12.5L15 19.5 9 17l-5.5 2.5z M9 4.5V17M15 7v12.5"/></svg></button>
+          <button type="button" aria-label="Show my location"><svg class="i" viewBox="0 0 24 24"><path d="M19.5 4.5 4.5 11l6.4 2.1L13 19.5z"/></svg></button>
+        </div>
+        <section class="ss__sheet" aria-labelledby="place-title">
+          <div class="ss__card">
+            <div class="ss__head">
+              <button class="ss__grabber" type="button"></button>
+              <div class="place">
+                <div class="place__text">
+                  <h2 class="place__title" id="place-title">Tuin Coffee</h2>
+                  <p class="place__sub">Coffee shop · Jordaan</p>
+                  <p class="place__meta"><span class="open">Open</span> until 18:00 · 4.7 <svg class="star" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.5 6.6 19.5l1.2-6-4.5-4.2 6.1-.7z"/></svg> (212) · €€</p>
+                </div>
+                <div class="place__btns">
+                  <button class="round" type="button" aria-label="Share"><svg class="i" viewBox="0 0 24 24"><path d="M12 14.5V3.5M8 7.2l4-3.7 4 3.7M7 11H5.5v9.5h13V11H17"/></svg></button>
+                  <button class="round" type="button" aria-label="Close"><svg class="i" viewBox="0 0 24 24"><path d="m6.5 6.5 11 11M17.5 6.5l-11 11"/></svg></button>
+                </div>
+              </div>
+            </div>
+            <div class="ss__body">
+              <div class="ss__content">
+                <div class="actions">
+                  <button class="act act--primary" type="button"><svg class="i" viewBox="0 0 24 24"><circle cx="13" cy="4.6" r="1.8"/><path d="m9 21 2.4-6.4L14 17v4M11.4 14.6 12.6 9l-3.4 1.6L8 13.5M12.6 9l2 3.4 3 1.1"/></svg><span>4 min</span></button>
+                  <button class="act" type="button"><svg class="i" viewBox="0 0 24 24"><path d="M6.6 3.5h2.6l1.4 4.1-2 1.5a11 11 0 0 0 6.3 6.3l1.5-2 4.1 1.4v2.6a1.6 1.6 0 0 1-1.7 1.6A15.6 15.6 0 0 1 5 5.2a1.6 1.6 0 0 1 1.6-1.7z"/></svg><span>Call</span></button>
+                  <button class="act" type="button"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.3 3.5 5.2 3.5 8.5s-1.1 6.2-3.5 8.5c-2.4-2.3-3.5-5.2-3.5-8.5S9.6 5.8 12 3.5z"/></svg><span>Website</span></button>
+                  <button class="act" type="button"><svg class="i" viewBox="0 0 24 24"><path d="M6.5 4.5h11v15.5L12 16l-5.5 4z"/></svg><span>Save</span></button>
+                </div>
+                <div class="photos" role="list" aria-label="Photos" id="photos"></div>
+                <dl class="group">
+                  <div><dt>Hours</dt><dd><span class="open">Open</span> · 08:00 to 18:00 today</dd></div>
+                  <div><dt>Address</dt><dd>Tuingracht 41, 1015 Amsterdam</dd></div>
+                  <div><dt>Phone</dt><dd><a class="link" href="#">+31 20 555 0142</a></dd></div>
+                  <div><dt>Website</dt><dd><a class="link" href="#">tuincoffee.example</a></dd></div>
+                </dl>
+                <h3 class="h3">Good to know</h3>
+                <div class="chips"><span class="chip">Oat milk</span><span class="chip">Wi-Fi</span><span class="chip">Dogs welcome</span><span class="chip">Canal-side terrace</span><span class="chip">Cards only</span></div>
+                <h3 class="h3">Ratings &amp; Reviews</h3>
+                <div class="score"><b>4.7</b>out of 5 · 212 ratings</div>
+                <div id="reviews"></div>
+                <h3 class="h3">About</h3>
+                <p class="about">A small roastery in a former flower shop on the canal. Beans are roasted on Tuesdays in the back room; the window seat gets the morning sun until about eleven.</p>
+                <p class="foot">Added to Maps in 2023 · <a class="link" href="#">Report an issue</a></p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+/* Native View Morph — a card on one page becomes the hero of the next page, across a real page load.
+   Both pages include this file. The browser snapshots the old page, loads the new one and animates between the two;
+   morph.js only decides which elements share a name (morph-bg, morph-media, morph-title) and animates the corners.
+   Browsers without cross-document view transitions simply navigate. */
+
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+}
+
+:root {
+  --morph-duration: 480ms;
+  --morph-ease: cubic-bezier(0.32, 0.72, 0, 1); /* no overshoot, a long soft tail */
+}
+
+/* The named parts carry no radius of their own (their parent clips them), so the snapshots are square
+   and the group's own animated corner does the rounding. Set --morph-radius to the corner the part shows. */
+[data-morph] { --morph-radius: 0px; }
+
+::view-transition-group(*) {
+  animation-duration: var(--morph-duration);
+  animation-timing-function: var(--morph-ease);
+}
+::view-transition-group(morph-bg),
+::view-transition-group(morph-media) { overflow: clip; }
+
+/* a flat colour stretches without harm; a picture keeps its proportions and is cropped by the group */
+::view-transition-old(morph-bg),
+::view-transition-new(morph-bg) { width: 100%; height: 100%; }
+::view-transition-old(morph-media),
+::view-transition-new(morph-media) { width: 100%; height: 100%; object-fit: cover; }
+
+/* A snapshot is a picture: the smaller one goes soft when scaled up. The larger (sharper) one leads — opening, the
+   new hero is shown at once and the card fades out under it; closing, the hero stays and the card fades in at the end.
+   Between two heroes (morph-next) both simply cross-fade. */
+html:active-view-transition-type(morph-open)::view-transition-new(morph-title),
+html:active-view-transition-type(morph-open)::view-transition-new(morph-media) { animation: none; }
+html:active-view-transition-type(morph-open)::view-transition-old(morph-title),
+html:active-view-transition-type(morph-open)::view-transition-old(morph-media) { animation: 160ms var(--morph-ease) both morph-out; }
+html:active-view-transition-type(morph-close)::view-transition-old(morph-title),
+html:active-view-transition-type(morph-close)::view-transition-old(morph-media) { animation: none; }
+html:active-view-transition-type(morph-close)::view-transition-new(morph-title),
+html:active-view-transition-type(morph-close)::view-transition-new(morph-media) { animation: var(--morph-duration) linear both morph-in-late; }
+
+/* everything that isn't shared: the old page leaves quickly, the new one settles in a beat later */
+::view-transition-old(root) { animation: 200ms var(--morph-ease) both morph-out; }
+::view-transition-new(root) { animation: 360ms 100ms var(--morph-ease) both morph-in; }
+html:active-view-transition-type(morph-open)::view-transition-new(root) { animation-name: morph-rise; }
+
+@keyframes morph-out { to { opacity: 0; } }
+@keyframes morph-in { from { opacity: 0; } }
+@keyframes morph-in-late { 0%, 55% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes morph-rise { from { opacity: 0; translate: 0 16px; } }

@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Spec Lens</title>
+<link rel="stylesheet" href="../variants/html/spec-lens.css">
+<style>
+  html, body { height: 100%; margin: 0; background: transparent; }
+  body {
+    display: grid; place-items: center; box-sizing: border-box; padding: 20px;
+    font: 14px/20px system-ui, -apple-system, "Segoe UI", sans-serif; color: #1d1d1f;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { width: min(1060px, 100%); display: grid; gap: 12px; }
+  .hint { margin: 0; padding: 0 6px; font-size: 13px; color: #6e6e73; display: flex; gap: 6px 16px; flex-wrap: wrap; }
+  .hint kbd { font: inherit; padding: 0 5px; border-radius: 5px; box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.25); color: #1d1d1f; }
+  .touch-only { display: none; }
+  @media (hover: none) { .touch-only { display: inline; } .mouse-only { display: none; } }
+
+  /* ---- the live screen: a checkout ---- */
+  .co {
+    --surface-page: #f5f5f7; --surface-card: #ffffff; --text-primary: #1d1d1f; --text-secondary: #6e6e73;
+    --border-field: #d2d2d7; --accent: #0073e6; --accent-soft: #e6f0fc; --on-accent: #ffffff;
+    border-radius: 18px; overflow: hidden; background: var(--surface-page); color: var(--text-primary);
+    box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.1), 0 30px 60px -34px rgba(0, 0, 0, 0.3);
+    padding: 24px 32px 32px; display: flex; flex-direction: column; gap: 24px;
+  }
+  .co-top { display: flex; align-items: center; gap: 24px; }
+  .co-brand { font-size: 17px; line-height: 22px; font-weight: 700; letter-spacing: -0.01em; }
+  .co-steps { display: flex; gap: 8px; margin-left: auto; font-size: 13px; line-height: 18px; color: var(--text-secondary); }
+  .co-steps b { font-weight: 600; color: var(--text-primary); }
+  .co-secure { display: flex; align-items: center; gap: 6px; font-size: 13px; line-height: 18px; color: var(--text-secondary); }
+  .co-secure svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+
+  .co-main { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 24px; align-items: start; }
+  .co-form { grid-column: span 7; display: flex; flex-direction: column; gap: 20px; }
+  .co-side { grid-column: span 5; }
+  .co-sec { display: flex; flex-direction: column; gap: 10px; }
+  .co-sec h2, .co-sum h2 { margin: 0; font-size: 15px; line-height: 20px; font-weight: 600; }
+  .co-row { display: flex; gap: 10px; }
+  .co-row > * { flex: 1; min-width: 0; }
+  .co input {
+    box-sizing: border-box; width: 100%; height: 40px; padding: 10px 12px; border: 1px solid var(--border-field); border-radius: 10px;
+    background: var(--surface-card); color: var(--text-primary); font: 400 14px/20px system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .co input::placeholder { color: var(--text-secondary); }
+  .co input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-color: transparent; }
+  .co-ship { display: flex; gap: 10px; }
+  .co-opt {
+    flex: 1; display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border-radius: 12px; cursor: pointer;
+    background: var(--surface-card); border: 1px solid var(--border-field); font: inherit; color: inherit; text-align: left;
+  }
+  .co-opt[aria-checked="true"] { background: var(--accent-soft); border-color: var(--accent); }
+  .co-opt:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .co-opt b { font-size: 14px; line-height: 20px; font-weight: 600; }
+  .co-opt small { font-size: 12px; line-height: 16px; color: var(--text-secondary); }
+  .co-pay {
+    height: 48px; border: 0; border-radius: 12px; padding: 14px 24px; background: var(--accent); color: var(--on-accent);
+    font: 600 15px/20px system-ui, -apple-system, "Segoe UI", sans-serif; cursor: pointer;
+  }
+  .co-pay:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  .co-sum { background: var(--surface-card); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+  .co-item { display: flex; align-items: center; gap: 12px; }
+  .co-thumb { flex: none; width: 52px; height: 52px; border-radius: 10px; background: #e9e4dc; position: relative; }
+  .co-thumb::after { content: ""; position: absolute; left: 14px; right: 14px; top: 14px; bottom: 10px; border-radius: 4px 4px 9px 9px; background: #b9aa98; }
+  .co-thumb.sand { background: #efe6d6; }
+  .co-thumb.sand::after { left: 12px; right: 12px; top: 12px; bottom: 16px; border-radius: 3px 3px 14px 14px; background: #cdb48f; }
+  .co-item div { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .co-item span { font-size: 14px; line-height: 20px; font-weight: 500; }
+  .co-item small { font-size: 12px; line-height: 16px; color: var(--text-secondary); }
+  .co-item em { font-style: normal; font-size: 14px; line-height: 20px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .co-code { display: flex; gap: 8px; }
+  .co-apply { flex: none; height: 40px; padding: 10px 16px; border: 0; border-radius: 10px; background: var(--surface-page); color: var(--text-primary); font: 600 14px/20px system-ui, -apple-system, "Segoe UI", sans-serif; cursor: pointer; }
+  .co-lines { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--border-field); padding-top: 16px; }
+  .co-line { display: flex; justify-content: space-between; font-size: 14px; line-height: 20px; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+  .co-total { display: flex; justify-content: space-between; font-size: 17px; line-height: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .co-note { margin: 0; font-size: 12px; line-height: 16px; color: var(--text-secondary); }
+
+  @media (prefers-color-scheme: dark) {
+    body { color: #f5f5f7; }
+    .hint { color: #a1a1a6; }
+    .hint kbd { color: #f5f5f7; box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.3); }
+    .co {
+      --surface-page: #111113; --surface-card: #1c1c1e; --text-primary: #f5f5f7; --text-secondary: #a1a1a6;
+      --border-field: #3a3a3e; --accent: #0a84ff; --accent-soft: #0f2a47;
+      box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.1), 0 30px 60px -34px rgba(0, 0, 0, 0.6);
+    }
+    .co-thumb { background: #3a3530; } .co-thumb::after { background: #8d7f70; }
+    .co-thumb.sand { background: #3f372b; } .co-thumb.sand::after { background: #b39a74; }
+  }
+
+  @media (max-width: 720px) {
+    body { padding: 12px; }
+    .co { padding: 16px; gap: 16px; }
+    .co-steps, .co-secure span { display: none; }
+    .co-secure { margin-left: auto; }
+    .co-main { grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: 16px; row-gap: 16px; }
+    .co-form, .co-side { grid-column: span 4; }
+    .co-side { order: -1; }
+    .co-form { gap: 16px; }
+    .co-sum { padding: 14px 16px; gap: 12px; }
+    .co-item + .co-item, .co-code, .co-lines, .co-note, .hide-sm { display: none; }
+    .co-sum-total { display: flex !important; }
+    .co-opt { padding: 10px 12px; }
+  }
+  .co-sum-total { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <main class="co" data-spec-lens data-lens-radius="160"
+        data-spec-tokens="--surface-page --surface-card --text-primary --text-secondary --border-field --accent --accent-soft --on-accent"
+        aria-label="Checkout screen with a spec lens. Arrow keys move the lens, plus and minus resize it, L pins it.">
+    <header class="co-top">
+      <span class="co-brand" data-spec-name="Brand">Kiln &amp; Co.</span>
+      <nav class="co-steps" aria-label="Checkout steps"><span>Cart</span><span>›</span><b>Details</b><span>›</span><span>Payment</span></nav>
+      <span class="co-secure"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg><span>Secure checkout</span></span>
+    </header>
+
+    <div class="co-main" data-spec-grid data-spec-name="Layout grid">
+      <form class="co-form" onsubmit="return false" data-spec-name="Form">
+        <section class="co-sec">
+          <h2>Contact</h2>
+          <input type="email" value="mira.kowalski@fastmail.com" aria-label="Email" data-spec-name="Email field">
+        </section>
+        <section class="co-sec">
+          <h2>Delivery</h2>
+          <div class="co-row hide-sm"><input value="Mira" aria-label="First name"><input value="Kowalski" aria-label="Last name"></div>
+          <input value="Prinsengracht 412" aria-label="Street and number" data-spec-name="Address field">
+          <div class="co-row"><input value="Amsterdam" aria-label="City"><input value="1016 HX" aria-label="Postcode"></div>
+        </section>
+        <section class="co-sec">
+          <h2>Shipping</h2>
+          <div class="co-ship" role="radiogroup" aria-label="Shipping method">
+            <button type="button" class="co-opt" role="radio" aria-checked="true" data-price="4.90" data-spec-name="Shipping option · selected"><b>Standard</b><small>3–5 days · €4.90</small></button>
+            <button type="button" class="co-opt" role="radio" aria-checked="false" data-price="12.00" data-spec-name="Shipping option"><b>Express</b><small>Next day · €12.00</small></button>
+          </div>
+        </section>
+        <section class="co-sec hide-sm">
+          <h2>Payment</h2>
+          <input value="4242 4242 4242 4242" aria-label="Card number" inputmode="numeric" data-spec-name="Card field">
+          <div class="co-row"><input value="08 / 29" aria-label="Expiry"><input placeholder="CVC" aria-label="CVC"></div>
+        </section>
+        <button type="submit" class="co-pay" data-spec-name="Pay button">Pay €90.90</button>
+      </form>
+
+      <aside class="co-side">
+        <div class="co-sum" data-spec-name="Order summary">
+          <h2>Order summary</h2>
+          <div class="co-item"><span class="co-thumb" aria-hidden="true"></span><div><span>Stoneware mug, Fog</span><small>2 × €24.00</small></div><em>€48.00</em></div>
+          <div class="co-item"><span class="co-thumb sand" aria-hidden="true"></span><div><span>Pour-over dripper, Sand</span><small>1 × €38.00</small></div><em>€38.00</em></div>
+          <div class="co-code"><input placeholder="Discount code" aria-label="Discount code"><button type="button" class="co-apply" data-spec-name="Secondary button">Apply</button></div>
+          <div class="co-lines">
+            <div class="co-line"><span>Subtotal</span><span>€86.00</span></div>
+            <div class="co-line"><span>Shipping</span><span class="ship">€4.90</span></div>
+            <div class="co-total"><span>Total</span><span class="total">€90.90</span></div>
+          </div>
+          <div class="co-total co-sum-total"><span>Total</span><span class="total">€90.90</span></div>
+          <p class="co-note">Free returns within 30 days. We ship in recycled paper.</p>
+        </div>
+      </aside>
+    </div>
+  </main>
+  <p class="hint">
+    <span class="mouse-only">Move over the screen to see its spec. <kbd>Wheel</kbd> resizes the lens, <kbd>L</kbd> pins it.</span>
+    <span class="touch-only">Drag over the screen: the lens floats above your finger. Pinch to resize.</span>
+  </p>
+</div>
+
+<script src="../variants/html/spec-lens.js"></script>
+<script>
+(() => {
+  const co = document.querySelector('.co');
+  // the screen is live: switching shipping changes totals, and the spec follows
+  co.querySelectorAll('.co-opt').forEach((opt) => opt.addEventListener('click', () => {
+    co.querySelectorAll('.co-opt').forEach((o) => {
+      const on = o === opt;
+      o.setAttribute('aria-checked', String(on));
+      o.dataset.specName = on ? 'Shipping option · selected' : 'Shipping option';
+    });
+    const ship = parseFloat(opt.dataset.price), total = (86 + ship).toFixed(2);
+    co.querySelector('.ship').textContent = `€${ship.toFixed(2)}`;
+    co.querySelectorAll('.total').forEach((t) => { t.textContent = `€${total}`; });
+    co.querySelector('.co-pay').textContent = `Pay €${total}`;
+  }));
+
+  // ?shot=1: the lens pinned where the form meets the order summary
+  if (new URLSearchParams(location.search).has('shot')) {
+    const lens = co.specLens;
+    const run = () => {
+      const c = co.getBoundingClientRect();
+      const small = matchMedia('(max-width: 720px)').matches;
+      const a = co.querySelectorAll('.co-opt')[1].getBoundingClientRect();
+      const x = a.left - c.left + 7;
+      const y = a.top - c.top + a.height * 0.5;
+      lens.pinAt(x, y, small ? 130 : 205);
+    };
+    document.fonts ? document.fonts.ready.then(() => setTimeout(run, 120)) : run();
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Tone Pad</title>
+<link rel="stylesheet" href="../variants/html/tone-pad.css">
+<style>
+  html, body { min-height: 100%; margin: 0; background: transparent; }
+  body {
+    display: grid; grid-template-columns: minmax(0, 860px); justify-content: center; align-content: center;
+    min-height: 100vh; box-sizing: border-box; padding: 40px 16px;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .hint { margin: 22px 0 0; font-size: 13px; color: #86868b; }
+  @media (prefers-color-scheme: dark) { .hint { color: #8e8e93; } }
+  @media (min-width: 900px) { .tp-text { font-size: 17px; } }
+  @media (min-width: 1100px) and (min-height: 800px) { body { grid-template-columns: minmax(0, 960px); } .tp { grid-template-columns: 340px minmax(0, 1fr); gap: 36px; } .tp-text { font-size: 18px; } }
+</style>
+</head>
+<body>
+<main>
+  <div id="pad"></div>
+  <p class="hint">Drag the dot: left is formal, right is casual, up adds detail. Double-click the pad to go back to the original.</p>
+</main>
+<script src="../variants/html/tone-pad.js"></script>
+<script>
+  // One reply, written four ways per sentence. x: where a sentence turns casual; y: where it gets long or appears.
+  var draft = {
+    meta: '<b>Draft reply</b> · to Anna Hartley · Re: Lumen handoff',
+    original: { x: 0.3, y: 0.58 },
+    slots: [
+      { block: 'hello', x: 0.5,
+        fs: 'Dear Ms. Hartley,', fl: 'Dear Ms. Hartley,', cs: 'Hi Anna,', cl: 'Hi Anna,' },
+      { block: 'body', x: 0.42, y: 0.45,
+        fs: 'The Lumen design handoff moves from June 12 to June 19.',
+        fl: 'I am writing to let you know that the design handoff for the Lumen app will move from Thursday, June 12 to Thursday, June 19.',
+        cs: 'Quick heads-up: the Lumen handoff moves to June 19.',
+        cl: 'Quick heads-up: we’re pushing the Lumen handoff back a week, from Thursday the 12th to Thursday the 19th.' },
+      { block: 'body', x: 0.58, y: 0.3,
+        fl: 'Usability testing of the checkout flow revealed two issues that we would like to resolve before development begins.',
+        cl: 'Testing the checkout turned up two snags, and we’d rather fix them now than after the developers start.' },
+      { block: 'body', x: 0.36, y: 0.55,
+        fl: 'The launch date of July 8 is not affected, as the development estimate already included a buffer.',
+        cl: 'Launch on July 8 is still safe; there was slack in the dev estimate anyway.' },
+      { block: 'body', x: 0.64, y: 0.78,
+        fl: 'Should it be helpful, I would be glad to walk you through the revised flows on Monday.',
+        cl: 'Happy to walk you through the new flows on Monday if that helps.' },
+      { block: 'body', x: 0.47, y: 0.66,
+        fs: 'Thank you for your understanding.',
+        fl: 'Please accept my apologies for the change, and thank you for your understanding.',
+        cs: 'Thanks for bearing with us.',
+        cl: 'Sorry for the shuffle, and thanks for bearing with us.' },
+      { block: 'bye', x: 0.55, y: 0.85,
+        fs: 'Kind regards,\nSam Keller', fl: 'Kind regards,\nSam Keller\nDesign Lead, Fieldnote Studio',
+        cs: 'Cheers,\nSam', cl: 'Cheers,\nSam' }
+    ]
+  };
+
+  var q = new URLSearchParams(location.search);
+  var options = {};
+  // ?model=1 — plug in a stand-in for a model: it answers after 0.9 s with the blend for that spot
+  if (q.get('model') === '1') {
+    options.generate = function (ctx) {
+      return new Promise(function (resolve, reject) {
+        var t = setTimeout(function () { resolve(ctx.text); }, 900);
+        ctx.signal.addEventListener('abort', function () { clearTimeout(t); reject(new DOMException('Aborted', 'AbortError')); });
+      });
+    };
+  }
+  var pad = TonePad.create(document.getElementById('pad'), draft, options);
+
+  // ?shot=1 — the poster: two saved spots, the dot between formal and casual, one sentence just turned casual
+  if (q.get('shot') === '1') {
+    document.querySelector('.hint').style.visibility = 'hidden';
+    pad.moveTo(0.16, 0.24, true); pad.save();
+    pad.moveTo(0.84, 0.88, true); pad.save();
+    pad.moveTo(0.4, 0.7, true);
+    setTimeout(function () {
+      pad.moveTo(0.45, 0.7);
+      setTimeout(function () {
+        // hold the "just changed" tint for the still
+        document.querySelectorAll('.tp-s[data-flash]').forEach(function (el) {
+          el.style.animation = 'none';
+          el.style.backgroundColor = 'var(--tp-accent-tint)';
+        });
+      }, 400);
+    }, 200);
+  }
+</script>
+</body>
+</html>

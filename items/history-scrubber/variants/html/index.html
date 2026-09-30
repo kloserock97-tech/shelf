@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>History Scrubber</title>
+<link rel="stylesheet" href="history.css">
+</head>
+<body>
+<div id="board" style="max-width: 640px"></div>
+
+<script src="history.js"></script>
+<script>
+  // Every move becomes a node on the timeline. `history` is optional: a saved session to start from.
+  // { card, col, index } moves a card; add `from: n` to branch off node n (0 is the start).
+  const board = HistoryBoard.create(document.getElementById('board'), {
+    title: 'Launch checklist',
+    columns: ['Later', 'This week', 'Shipped'],
+    cards: [
+      { id: 'copy', text: 'Pricing page copy' },
+      { id: 'og', text: 'Social preview images' },
+      { id: 'mail', text: 'Launch email' },
+      { id: 'faq', text: 'FAQ update' }
+    ],
+    start: [['copy', 'og', 'mail', 'faq'], [], []],
+    history: [
+      { card: 'copy', col: 1, index: 0 },
+      { card: 'mail', col: 1, index: 1 }
+    ]
+  }, {
+    onChange: ({ state, step }) => console.log(step, state)   // save it, sync it, or ignore it
+  });
+
+  // board.undo(), board.redo(), board.scrubTo(1.5), board.compare(0), board.getState()
+</script>
+</body>
+</html>

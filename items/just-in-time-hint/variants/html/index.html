@@ -1,0 +1,47 @@
+<!-- The fast controls. aria-keyshortcuts names the key the hint will teach. -->
+<div role="toolbar" aria-label="Message actions">
+  <button type="button" id="btn-archive" aria-label="Archive" aria-keyshortcuts="E">…</button>
+  <button type="button" id="btn-more" aria-label="More actions" aria-haspopup="menu" popovertarget="more-menu">⋯</button>
+</div>
+
+<!-- The slow path: a menu. -->
+<div id="more-menu" popover role="menu" aria-label="More actions">
+  <button type="button" role="menuitem" data-cmd="archive">Archive</button>
+</div>
+
+<!-- The hint: a manual popover, so clicking elsewhere does not close it. -->
+<div class="jit-pop" id="hint" popover="manual" role="group" aria-labelledby="hint-title">
+  <div class="jit-pop__row">
+    <kbd class="jit-pop__key"></kbd>
+    <div><strong class="jit-pop__title" id="hint-title"></strong><span class="jit-pop__body"></span></div>
+  </div>
+  <div class="jit-pop__actions"><button class="jit-pop__close" type="button">Got it</button></div>
+  <div class="jit-pop__done">That’s the fast way.</div>
+</div>
+
+<link rel="stylesheet" href="jit-hint.css">
+<script type="module">
+  import { justInTimeHints } from './jit-hint.js';
+
+  const hints = justInTimeHints({
+    pop: document.querySelector('#hint'),
+    threshold: 3,
+    hints: {
+      archive: { target: '#btn-archive', key: 'E', title: 'Archive in one step', body: 'Press E, or use this button.' }
+    }
+  });
+
+  const archive = () => { /* archive the selected message */ };
+
+  // the long way counts towards the hint…
+  document.querySelector('#more-menu [data-cmd="archive"]').addEventListener('click', () => {
+    document.querySelector('#more-menu').hidePopover();
+    archive();
+    hints.slow('archive');
+  });
+  // …the short way closes it for good
+  document.querySelector('#btn-archive').addEventListener('click', () => { archive(); hints.fast('archive'); });
+  addEventListener('keydown', (e) => {
+    if (e.key.toLowerCase() === 'e' && !e.metaKey && !e.ctrlKey) { archive(); hints.fast('archive'); }
+  });
+</script>

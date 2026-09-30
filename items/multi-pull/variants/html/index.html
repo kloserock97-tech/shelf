@@ -1,0 +1,36 @@
+<!-- Multi Pull. The list is the scroller; the row of actions sits behind it. -->
+<div class="mp" style="height: 100dvh;">
+  <div class="mp__menu" aria-hidden="true">
+    <div class="mp__row">
+      <span class="mp__hl"></span>
+      <span class="mp__item" data-action="refresh" style="--i: 0">
+        <span class="mp__icon"><svg viewBox="0 0 24 24"><path d="M19 12a7 7 0 1 1-2.05-4.95M19 4.5V9h-4.5"/></svg></span>
+        <span class="mp__label">Refresh</span>
+      </span>
+      <span class="mp__item" data-action="new" style="--i: 1">
+        <span class="mp__icon"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
+        <span class="mp__label">New</span>
+      </span>
+      <span class="mp__item" data-action="search" style="--i: 2">
+        <span class="mp__icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="m15.5 15.5 4 4"/></svg></span>
+        <span class="mp__label">Search</span>
+      </span>
+    </div>
+  </div>
+
+  <div class="mp__scroller" tabindex="0" aria-label="Inbox" aria-describedby="mp-help">
+    <!-- your list -->
+  </div>
+
+  <p class="mp__sr" id="mp-help">At the top of the list, press the up arrow for Refresh, New and Search.</p>
+  <p class="mp__sr mp__live" aria-live="polite"></p>
+</div>
+
+<link rel="stylesheet" href="multi-pull.css">
+<script type="module">
+  import { multiPull } from './multi-pull.js';
+  const pull = multiPull(document.querySelector('.mp'), {
+    sound: true,
+    onAction: (name) => name === 'refresh' ? new Promise((done) => setTimeout(done, 1200)) : console.log(name)
+  });
+</script>

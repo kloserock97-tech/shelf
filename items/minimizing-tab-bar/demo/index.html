@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Minimizing Tab Bar</title>
+<link rel="stylesheet" href="../variants/html/tab-bar.css">
+<style>
+  :root {
+    --app-bg: #ffffff;
+    --label: #1d1d1f;
+    --label-2: #636366;
+    --label-3: #86868b;
+    --fill: rgba(118, 118, 128, 0.12);
+    --sep: rgba(60, 60, 67, 0.16);
+    --accent: #0073e6;
+    --accent-text: #0066cc;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --app-bg: #000000;
+      --label: #f5f5f7;
+      --label-2: #aaaaaf;
+      --label-3: #6e6e73;
+      --fill: rgba(118, 118, 128, 0.24);
+      --sep: rgba(84, 84, 88, 0.55);
+      --accent: #0a84ff;
+      --accent-text: #2997ff;
+    }
+  }
+  html, body { height: 100%; margin: 0; background: transparent; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: var(--label);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* the phone screen: full bleed on a phone, a phone-sized screen on a wide stage */
+  .device {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    background: var(--app-bg);
+    contain: layout paint;
+  }
+  @media (min-width: 600px) and (min-height: 600px) {
+    .device {
+      margin: auto;
+      width: 390px;
+      height: min(844px, calc(100% - 40px));
+      border-radius: 48px;
+      box-shadow: 0 0 0 0.5px var(--sep), 0 30px 80px rgba(0, 0, 0, 0.12);
+    }
+  }
+
+  .status {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 54px;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 28px 0 44px;
+    box-sizing: border-box;
+    font: 600 16px/1 system-ui, -apple-system, "Segoe UI", sans-serif;
+    pointer-events: none;
+  }
+  .status svg { display: block; height: 12px; fill: currentColor; }
+  .status__icons { display: flex; gap: 6px; align-items: center; }
+
+  /* one scroller per tab keeps each tab's place */
+  .panel {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 54px 0 200px;
+    box-sizing: border-box;
+    scrollbar-width: none;
+    outline: none;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 34px, #000 60px);
+    mask-image: linear-gradient(to bottom, transparent 34px, #000 60px);
+    transition: opacity 0.16s ease, visibility 0s linear 0.16s;
+  }
+  .panel::-webkit-scrollbar { display: none; }
+  .panel:not(.is-active) { opacity: 0; visibility: hidden; }
+  .panel.is-active { transition: opacity 0.16s ease; }
+
+  a { color: inherit; text-decoration: none; -webkit-tap-highlight-color: transparent; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 14px; }
+  .title { margin: 8px 20px 4px; font: 700 34px/41px system-ui, -apple-system, "Segoe UI", sans-serif; letter-spacing: 0.005em; }
+  .hint { margin: 0 20px 10px; font: 400 13px/18px system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--label-2); max-width: 40ch; text-wrap: pretty; }
+  .sec { margin: 26px 20px 10px; font: 700 21px/26px system-ui, -apple-system, "Segoe UI", sans-serif; display: flex; align-items: center; gap: 4px; }
+  .sec svg { width: 16px; height: 16px; fill: none; stroke: var(--label-3); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+  .art {
+    position: relative;
+    display: block;
+    aspect-ratio: 1;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--fill);
+  }
+  .art::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.1); }
+  .art svg { display: block; width: 100%; height: 100%; }
+
+  .hrow {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 0 20px;
+    scroll-padding: 0 20px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  .hrow::-webkit-scrollbar { display: none; }
+  .hrow > * { flex: none; scroll-snap-align: start; }
+
+  .pick { width: 270px; }
+  .pick .art { border-radius: 16px; }
+  .pick small { display: block; margin: 10px 0 1px; font: 400 12px/16px system-ui, sans-serif; color: var(--label-2); }
+  .pick b { display: block; font: 600 16px/21px system-ui, sans-serif; }
+  .pick span { display: block; font: 400 13px/18px system-ui, sans-serif; color: var(--label-2); }
+
+  .tile { width: 150px; }
+  .tile b, .tile span, .cell b, .cell span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tile b, .cell b { margin-top: 7px; font: 500 13px/17px system-ui, sans-serif; }
+  .tile span, .cell span { font: 400 13px/17px system-ui, sans-serif; color: var(--label-2); }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 12px; padding: 0 20px; }
+  .cell { min-width: 0; }
+
+  .rows { margin: 0; padding: 0 0 0 20px; list-style: none; }
+  .rows li { display: flex; align-items: center; gap: 12px; min-height: 56px; padding-right: 20px; box-shadow: inset 0 -0.5px 0 var(--sep); }
+  .rows li:last-child { box-shadow: none; }
+  .rows .art { width: 44px; flex: none; border-radius: 8px; }
+  .rows .txt { flex: 1; min-width: 0; }
+  .rows .txt b { display: block; font: 400 17px/22px system-ui, sans-serif; }
+  .rows .txt span { display: block; font: 400 13px/17px system-ui, sans-serif; color: var(--label-2); }
+  .rows .chev { width: 14px; height: 14px; fill: none; stroke: var(--label-3); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .live { display: inline-block; margin-right: 6px; padding: 1px 6px; border-radius: 4px; background: var(--fill); font: 600 11px/16px system-ui, sans-serif; color: var(--label); }
+
+  .field {
+    display: flex; align-items: center; gap: 8px;
+    margin: 6px 20px 0; height: 40px; padding: 0 12px;
+    border-radius: 12px; background: var(--fill); color: var(--label-2);
+  }
+  .field svg { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+  .field input { flex: 1; min-width: 0; border: 0; background: none; color: var(--label); font: 400 17px/22px system-ui, sans-serif; outline: none; }
+  .field:focus-within { box-shadow: 0 0 0 2px var(--accent); }
+  .cats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 20px; }
+  .cat { height: 96px; border-radius: 12px; padding: 10px 12px; box-sizing: border-box; display: flex; align-items: flex-end; color: #fff; font: 600 16px/20px system-ui, sans-serif; }
+</style>
+</head>
+<body>
+<div class="device">
+  <div class="status" aria-hidden="true">
+    <span>9:41</span>
+    <span class="status__icons">
+      <svg viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+      <svg viewBox="0 0 16 12"><path d="M8 11.6 5.6 9.1a3.4 3.4 0 0 1 4.8 0zM3.5 7a6.4 6.4 0 0 1 9 0l1.5-1.6a8.6 8.6 0 0 0-12 0zM.9 4.3a10.2 10.2 0 0 1 14.2 0L16 3.3A11.6 11.6 0 0 0 0 3.3z"/></svg>
+      <svg viewBox="0 0 27 12"><rect x="0.5" y="0.5" width="23" height="11" rx="3.2" fill="none" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="17" height="8" rx="2"/><path d="M25 4v4a2 2 0 0 0 0-4z" opacity=".45"/></svg>
+    </span>
+  </div>
+
+  <main id="panels"></main>
+
+  <nav class="mtb" aria-label="Main" data-state="expanded">
+    <div class="mtb__accessory">
+      <button class="now" type="button" aria-label="Now playing: Tidewater by Hollow Coast">
+        <span class="now__art" aria-hidden="true" data-art="tidewater"></span>
+        <span class="now__text"><b>Tidewater</b><small>Hollow Coast</small></span>
+      </button>
+      <button class="now__btn" type="button" aria-label="Pause" data-play>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 6v12M15.5 6v12"/></svg>
+      </button>
+      <button class="now__btn" type="button" aria-label="Next track">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="solid" d="M4.5 7.2v9.6L11 12zM12.5 7.2v9.6L19 12z"/></svg>
+      </button>
+    </div>
+
+    <div class="mtb__bar">
+      <div class="mtb__thumb" aria-hidden="true"></div>
+      <div class="mtb__tabs" role="tablist" aria-label="Sections">
+        <button class="mtb__tab" type="button" role="tab" id="tab-home" aria-controls="panel-home" aria-selected="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 10.2 12 4l7.5 6.2V19a1 1 0 0 1-1 1H15v-5.2H9V20H5.5a1 1 0 0 1-1-1z"/></svg>
+          <span>Home</span>
+        </button>
+        <button class="mtb__tab" type="button" role="tab" id="tab-new" aria-controls="panel-new" aria-selected="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="4.5" width="6.2" height="6.2" rx="1.6"/><rect x="13.3" y="4.5" width="6.2" height="6.2" rx="1.6"/><rect x="4.5" y="13.3" width="6.2" height="6.2" rx="1.6"/><rect x="13.3" y="13.3" width="6.2" height="6.2" rx="1.6"/></svg>
+          <span>New</span>
+        </button>
+        <button class="mtb__tab" type="button" role="tab" id="tab-radio" aria-controls="panel-radio" aria-selected="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="1.8"/><path d="M8.4 15.6a5.1 5.1 0 0 1 0-7.2M15.6 8.4a5.1 5.1 0 0 1 0 7.2M5.6 18.4a9 9 0 0 1 0-12.8M18.4 5.6a9 9 0 0 1 0 12.8"/></svg>
+          <span>Radio</span>
+        </button>
+        <button class="mtb__tab" type="button" role="tab" id="tab-library" aria-controls="panel-library" aria-selected="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 4.5v15M10 4.5v15M14.2 5.2l4.4 14"/></svg>
+          <span>Library</span>
+        </button>
+        <button class="mtb__tab" type="button" role="tab" id="tab-search" aria-controls="panel-search" aria-selected="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.2"/><path d="m15.6 15.6 4 4"/></svg>
+          <span>Search</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+</div>
+<script type="module" src="app.js"></script>
+</body>
+</html>

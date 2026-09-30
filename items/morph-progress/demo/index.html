@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Morph Progress</title>
+<link rel="stylesheet" href="../variants/html/morph-progress.css">
+<style>
+  :root {
+    --label: #1d1d1f; --label-2: #636366; --label-3: #86868b;
+    --fill: rgb(118 118 128 / .12); --fill-hover: rgb(118 118 128 / .2);
+    --accent: #0073e6; --accent-hover: #0068d1; --red: #ff3b30;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --label: #f5f5f7; --label-2: #aaaaaf; --label-3: #6e6e73;
+      --fill: rgb(118 118 128 / .24); --fill-hover: rgb(118 118 128 / .34);
+      --accent: #0a84ff; --accent-hover: #0077ed; --red: #ff453a;
+    }
+  }
+  html, body { height: 100%; margin: 0; background: transparent; }
+  body {
+    display: grid; place-items: center;
+    font: 15px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--label);
+    -webkit-font-smoothing: antialiased;
+  }
+  .up { width: min(100% - 32px, 380px); display: grid; justify-items: center; gap: 22px; padding: 24px 0; text-align: center; }
+  .up__loader { width: 168px; height: 168px; }
+  .up__loader svg { width: 100%; height: 100%; }
+  .up__text { display: grid; gap: 4px; min-height: 64px; align-content: start; }
+  .up__stage { margin: 0; font-size: 20px; line-height: 1.25; font-weight: 650; letter-spacing: -.01em; }
+  .up__detail { margin: 0; font-size: 13.5px; color: var(--label-2); font-variant-numeric: tabular-nums; min-height: 2.8em; }
+  .is-error .up__stage { color: var(--red); }
+
+  .eta { width: 100%; max-width: 300px; display: grid; gap: 8px; transition: opacity 240ms cubic-bezier(.25, .1, .25, 1); }
+  .eta__row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+  .eta__text { font-weight: 600; }
+  .eta__range { color: var(--label-2); font-size: 12.5px; transition: opacity 240ms; }
+  .eta__bar { position: relative; height: 6px; border-radius: 3px; background: var(--fill); }
+  .eta__band, .eta__tick { position: absolute; top: 0; height: 6px; transition: left 260ms cubic-bezier(.23, 1, .32, 1), width 260ms cubic-bezier(.23, 1, .32, 1), opacity 240ms; }
+  .eta__band { border-radius: 3px; background: color-mix(in srgb, var(--accent) 28%, transparent); }
+  .eta__tick { width: 3px; margin-left: -1.5px; top: -3px; height: 12px; border-radius: 2px; background: var(--accent); }
+  .eta__axis { display: flex; justify-content: space-between; font-size: 11px; color: var(--label-3); font-variant-numeric: tabular-nums; margin-top: -3px; }
+  .eta.is-off .eta__band, .eta.is-off .eta__tick { opacity: 0; }
+  .eta.is-off .eta__text { font-weight: 400; color: var(--label-2); }
+  .eta.is-off .eta__axis { visibility: hidden; }
+  .eta.is-gone { visibility: hidden; }
+
+  .steps { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; list-style: none; margin: 0; padding: 0; font-size: 12.5px; color: var(--label-2); }
+  .steps li { display: inline-flex; align-items: center; gap: 6px; }
+  .steps svg { width: 14px; height: 14px; overflow: visible; color: var(--label-3); }
+  .steps .g-fill { fill: currentColor; }
+  .steps .g-line { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
+  .steps .g-track { fill: none; stroke: currentColor; stroke-width: 2.4; opacity: .35; }
+  .steps .g-check { fill: none; stroke: var(--on-glyph, #fff); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .steps li.is-now { color: var(--label); font-weight: 600; }
+  .steps li.is-now svg { color: var(--accent); }
+  .steps li.is-past svg { color: var(--label-2); }
+  .steps li.is-error { color: var(--red); }
+  .steps li.is-error svg { color: var(--red); }
+  @media (prefers-color-scheme: dark) { .steps { --on-glyph: #000; } }
+
+  .controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  .controls button {
+    height: 34px; padding: 0 16px; border: 0; border-radius: 999px; background: var(--fill); color: var(--label);
+    font: 500 14px/34px system-ui, -apple-system, "Segoe UI", sans-serif; cursor: pointer;
+    transition: background-color 160ms cubic-bezier(.25, .1, .25, 1), opacity 160ms, transform 100ms cubic-bezier(.23, 1, .32, 1);
+  }
+  .controls button:hover:not(:disabled) { background: var(--fill-hover); }
+  .controls button.primary { background: var(--accent); color: #fff; }
+  .controls button.primary:hover:not(:disabled) { background: var(--accent-hover); }
+  .controls button:active:not(:disabled) { transform: scale(.97); }
+  .controls button:disabled { opacity: .4; cursor: default; }
+  .controls button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+  @media (min-width: 900px) and (min-height: 760px) { .up { zoom: 1.2; } }
+  @media (max-width: 420px) {
+    .up { gap: 18px; }
+    .up__loader { width: 132px; height: 132px; }
+  }
+</style>
+</head>
+<body>
+<main class="up" id="up">
+  <div class="up__loader"><svg id="loader" aria-labelledby="stage"></svg></div>
+  <div class="up__text">
+    <h1 class="up__stage" id="stage">Ready to upload</h1>
+    <p class="up__detail" id="detail">3 files, 48.0 MB</p>
+  </div>
+  <div class="eta is-off" id="eta">
+    <div class="eta__row"><span class="eta__text" id="etaText">No estimate yet</span><span class="eta__range" id="etaRange"></span></div>
+    <div class="eta__bar" aria-hidden="true"><span class="eta__band" id="band"></span><span class="eta__tick" id="tick"></span></div>
+    <div class="eta__axis" aria-hidden="true"><span>now</span><span id="axis"></span></div>
+  </div>
+  <ol class="steps" id="steps" aria-label="Stages">
+    <li data-step="prepare"><svg viewBox="-8 -8 16 16" aria-hidden="true"><path class="g-fill" data-shape="burst"/></svg>Prepare</li>
+    <li data-step="upload"><svg viewBox="-8 -8 16 16" aria-hidden="true"><circle class="g-track" r="5.6"/><circle class="g-line" r="5.6" pathLength="100" stroke-dasharray="38 100" transform="rotate(-90)"/></svg>Upload</li>
+    <li data-step="process"><svg viewBox="-8 -8 16 16" aria-hidden="true"><path class="g-fill" data-shape="clover"/></svg>Process</li>
+    <li data-step="done"><svg viewBox="-8 -8 16 16" aria-hidden="true"><circle class="g-fill" r="7"/><path class="g-check" d="M-3.2 .2-.9 2.6 3.4-2"/></svg>Done</li>
+  </ol>
+  <div class="controls">
+    <button type="button" class="primary" id="start">Start upload</button>
+    <button type="button" id="fail" disabled>Simulate failure</button>
+    <button type="button" id="retry" disabled>Retry</button>
+  </div>
+  <p class="sr" aria-live="polite" id="live"></p>
+</main>
+<script src="../variants/html/morph-progress.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const loader = new MorphProgress.Loader($('loader'), { label: 'Upload' });
+  const eta = new MorphProgress.Eta({ tau: 2.5 });
+  for (const p of document.querySelectorAll('[data-shape]')) p.setAttribute('d', MorphProgress.shapePath(p.dataset.shape, 7.4));
+
+  const FILES = [
+    { name: 'Brand guidelines.pdf', mb: 12.4 },
+    { name: 'Launch film.mp4', mb: 31.2 },
+    { name: 'Icon set.zip', mb: 4.4 }
+  ];
+  const TOTAL = FILES.reduce((s, f) => s + f.mb, 0);
+  const RUNNING = ['prepare', 'upload', 'process', 'reconnect'];
+  const STEP_OF = { prepare: 'prepare', upload: 'upload', reconnect: 'upload', process: 'process', done: 'done' };
+  const sim = { stage: 'idle', t: 0, at: 0, sent: 0, rate: 3.8, drift: 3.8, failed: null, began: 0 };
+  let timer = 0, shown = null, axisMax = 60;
+
+  const mb = (v) => v.toFixed(1);
+  function fileIndex(sent) { let acc = 0; for (let i = 0; i < FILES.length; i++) { acc += FILES[i].mb; if (sent < acc) return i + 1; } return FILES.length; }
+
+  function say(text) { $('live').textContent = text; }
+
+  function setStage(stage) {
+    sim.stage = stage; sim.at = sim.t;
+    $('up').classList.toggle('is-error', stage === 'error');
+    const step = stage === 'error' ? STEP_OF[sim.failed] : STEP_OF[stage];
+    const order = ['prepare', 'upload', 'process', 'done'];
+    for (const li of $('steps').children) {
+      const i = order.indexOf(li.dataset.step), cur = order.indexOf(step);
+      li.classList.toggle('is-now', li.dataset.step === step && stage !== 'error');
+      li.classList.toggle('is-error', li.dataset.step === step && stage === 'error');
+      li.classList.toggle('is-past', cur > i || stage === 'done');
+      if (li.dataset.step === step) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
+    }
+    const running = RUNNING.includes(stage);
+    $('start').disabled = running;
+    $('start').textContent = stage === 'done' ? 'Upload again' : stage === 'error' ? 'Start over' : 'Start upload';
+    $('fail').disabled = !running;
+    $('retry').disabled = stage !== 'error';
+    if (stage === 'prepare') { loader.indeterminate(); title('Preparing 3 files'); say('Preparing 3 files'); }
+    if (stage === 'reconnect') { loader.indeterminate(); title('Reconnecting'); say('Reconnecting'); }
+    if (stage === 'process') { loader.indeterminate(); title('Processing'); say('Upload finished, processing'); }
+    if (stage === 'done') { loader.done(); title('Uploaded'); say('Upload complete'); }
+    if (stage === 'error') { loader.fail(); title('Upload failed'); }
+    if (stage === 'upload') { eta.reset(); shown = null; }
+    if (stage !== 'upload') showEta(null);
+    detail();
+  }
+  const title = (t) => { $('stage').textContent = t; };
+
+  function detail() {
+    const s = sim.stage;
+    let d = '';
+    if (s === 'idle') d = '3 files, 48.0 MB';
+    else if (s === 'prepare') d = 'Reading and compressing. The total size is not known yet.';
+    else if (s === 'reconnect') d = `Picking up from ${mb(sim.sent)} MB`;
+    else if (s === 'upload') d = `${mb(sim.sent)} of ${mb(TOTAL)} MB · ${sim.rate.toFixed(1)} MB/s`;
+    else if (s === 'process') d = 'Making previews on the server';
+    else if (s === 'done') d = `3 files, ${mb(TOTAL)} MB, in ${Math.round(sim.t - sim.began)} s`;
+    else if (s === 'error') d = sim.failed === 'upload' || sim.failed === 'reconnect'
+      ? `Connection lost at ${Math.round(sim.sent / TOTAL * 100)}%. Retry continues from ${mb(sim.sent)} MB.`
+      : 'Connection lost. Retry starts this step again.';
+    $('detail').textContent = d;
+  }
+
+  function showEta(e) {
+    const box = $('eta');
+    if (!e) {
+      box.classList.add('is-off');
+      box.classList.toggle('is-gone', sim.stage === 'done');
+      $('etaText').textContent = sim.stage === 'done' ? 'Done' : sim.stage === 'error' ? 'Stopped' : sim.stage === 'process' ? 'No estimate for this step' : 'No estimate yet';
+      $('etaRange').textContent = '';
+      $('axis').textContent = '';
+      return;
+    }
+    box.classList.remove('is-off', 'is-gone');
+    // the axis steps to a round number and only shrinks once the band fits in well under half of it
+    const NICE = [10, 15, 20, 30, 45, 60, 90, 120, 180, 300];
+    const want = NICE.find((n) => n >= e.hi * 1.08) || 300;
+    if (want > axisMax || want < axisMax * 0.5) axisMax = want;
+    const pct = (s) => `${Math.min(100, s / axisMax * 100).toFixed(2)}%`;
+    $('band').style.left = pct(e.lo);
+    $('band').style.width = `calc(${pct(e.hi)} - ${pct(e.lo)} + 3px)`;
+    $('tick').style.left = pct(e.est);
+    $('axis').textContent = `${axisMax} s`;
+    $('etaText').textContent = MorphProgress.formatEta(e);
+    $('etaRange').textContent = e.rel > 0.2 ? `${Math.round(e.lo)}–${Math.round(e.hi)} s` : '';
+  }
+
+  function tick() {
+    const dt = 0.2;
+    sim.t += dt;
+    const age = sim.t - sim.at;
+    if (sim.stage === 'prepare' && age > 2.2) setStage('upload');
+    else if (sim.stage === 'reconnect' && age > 1.3) setStage('upload');
+    else if (sim.stage === 'process' && age > 2.6) { setStage('done'); stop(); return; }
+    else if (sim.stage === 'upload') {
+      // a network with moods: the typical speed wanders, samples jitter around it, one slow patch mid-way
+      sim.drift += (3.4 - sim.drift) * 0.05 + (Math.random() - 0.5) * 0.5;
+      const slow = sim.sent > 17 && sim.sent < 21 ? 0.3 : 1;
+      const target = Math.max(0.3, sim.drift * slow * (0.7 + Math.random() * 0.6));
+      sim.rate += (target - sim.rate) * 0.5;
+      sim.sent = Math.min(TOTAL, sim.sent + sim.rate * dt);
+      const e = eta.sample(sim.t, sim.sent, TOTAL);
+      if (e) {
+        // ease the shown numbers: time runs down between samples, new samples pull it gently
+        if (!shown) shown = { ...e };
+        else {
+          for (const k of ['est', 'lo', 'hi']) { const run = Math.max(0, shown[k] - dt); shown[k] = run + (e[k] - run) * 0.35; }
+          shown.rel += (e.rel - shown.rel) * 0.35;
+        }
+        showEta(shown);
+      }
+      const pct = sim.sent / TOTAL;
+      loader.progress(pct, `${Math.round(pct * 100)}%${shown ? ', ' + MorphProgress.formatEta(shown).toLowerCase() : ''}`);
+      title(`Uploading ${fileIndex(sim.sent)} of 3 files`);
+      if (sim.sent >= TOTAL) setStage('process');
+    }
+    detail();
+  }
+
+  function run() { if (!timer) timer = setInterval(tick, 200); }
+  function stop() { clearInterval(timer); timer = 0; }
+
+  $('start').addEventListener('click', () => {
+    Object.assign(sim, { sent: 0, rate: 3.4, drift: 3.4, failed: null, began: sim.t });
+    setStage('prepare');
+    run();
+  });
+  $('fail').addEventListener('click', () => {
+    sim.failed = sim.stage;
+    stop();
+    setStage('error');
+    say(`Upload failed. ${$('detail').textContent}`);
+    $('retry').focus();
+  });
+  $('retry').addEventListener('click', () => {
+    const from = sim.failed;
+    setStage(from === 'upload' || from === 'reconnect' ? 'reconnect' : from);
+    run();
+  });
+
+  // ?shot=1 uploading with a wide estimate, ?shot=2 preparing (mid-morph), ?shot=3 failed
+  const shot = new URLSearchParams(location.search).get('shot');
+  if (shot) {
+    const steps = $('steps').children;
+    const mark = (now, past) => { [...steps].forEach((li, i) => { li.classList.toggle('is-now', i === now); li.classList.toggle('is-past', i < now || past); }); };
+    if (shot === '2') {
+      sim.stage = 'prepare'; mark(0);
+      loader.pose('blob', 0.7, 'clover', 'burst');
+      title('Preparing 3 files'); detail(); showEta(null);
+    } else if (shot === '3') {
+      sim.stage = 'error'; sim.failed = 'upload'; sim.sent = 29.8; mark(-1);
+      steps[1].classList.add('is-error');
+      $('up').classList.add('is-error');
+      loader.svg.classList.add('mp--error');
+      loader.pose('blob', 1, 'cross', 'cross');
+      loader.angle.x = 0; loader.scale.x = 0.84; loader.draw();
+      title('Upload failed'); detail(); showEta(null);
+      $('start').textContent = 'Start over'; $('retry').disabled = false;
+    } else {
+      sim.stage = 'upload'; sim.sent = 18.2; sim.rate = 3.8; mark(1);
+      loader.pose('ring', 18.2 / TOTAL);
+      title('Uploading 2 of 3 files'); detail();
+      axisMax = 45;
+      showEta({ est: 21, lo: 15, hi: 33, rel: 0.34 });
+      $('start').disabled = true; $('fail').disabled = false;
+    }
+  }
+</script>
+</body>
+</html>

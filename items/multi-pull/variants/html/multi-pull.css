@@ -1,0 +1,154 @@
+/* Multi Pull
+   Pull-to-refresh that keeps going: past the first mark it offers Refresh, past the second New, past the third
+   Search. Sideways drift moves the choice along the row, letting go runs it, easing back above the first mark
+   cancels. The list itself slides down; the row of actions waits behind it. */
+
+.mp {
+  --mp-accent: #0073e6;
+  --mp-label: #1d1d1f;
+  --mp-label-2: #636366;
+  --mp-fill: rgba(118, 118, 128, 0.12);
+  --mp-bg: #ffffff;
+  --mp-well: #f2f2f7;          /* what shows behind the list while pulling */
+  --mp-step: 84px;             /* distance between actions in the row */
+  --mp-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --mp-spring: linear(0, 0.129, 0.374, 0.611, 0.792, 0.91, 0.977, 1.008, 1.019, 1.019, 1.015, 1.01, 1.006, 1.003, 1.001, 1, 1);
+
+  position: relative;
+  overflow: hidden;
+  background: var(--mp-well);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  .mp {
+    --mp-accent: #0a84ff;
+    --mp-label: #f5f5f7;
+    --mp-label-2: #aaaaaf;
+    --mp-fill: rgba(118, 118, 128, 0.24);
+    --mp-bg: #000000;
+    --mp-well: #161618;
+  }
+}
+
+/* ---------- the row of actions behind the list ---------- */
+.mp__menu {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 300px;
+  pointer-events: none;
+}
+.mp__row {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 0;
+  height: 72px;
+  translate: 0 -72px;           /* moved by the script: centred in the gap the list leaves */
+}
+.mp__item,
+.mp__hl {
+  position: absolute;
+  top: 0;
+  left: -24px;
+  width: 48px;
+  translate: calc((var(--i) - 1) * var(--mp-step)) 0;
+}
+.mp__hl {
+  --i: 0;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--mp-accent);
+  opacity: 0;
+  scale: 0.7;
+  transition: translate 0.22s var(--mp-spring), opacity 0.14s ease, scale 0.22s var(--mp-spring);
+}
+.mp[data-index="0"] .mp__hl { --i: 0; }
+.mp[data-index="1"] .mp__hl { --i: 1; }
+.mp[data-index="2"] .mp__hl { --i: 2; }
+.mp:not([data-index="-1"]) .mp__hl { opacity: 1; scale: 1; }
+
+.mp__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  color: var(--mp-label);
+  opacity: 0;
+  scale: 0.86;
+  transition: opacity 0.16s ease, scale 0.22s var(--mp-spring), color 0.12s ease;
+}
+.mp__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--mp-fill);
+  transition: background-color 0.12s ease;
+}
+.mp__icon svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.mp__label {
+  width: 80px;
+  text-align: center;
+  font: 600 12px/15px system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--mp-label-2);
+  transition: color 0.12s ease;
+}
+/* ghosts show what is coming as soon as the pull starts, and light up one by one */
+.mp[data-state="pulling"] .mp__item,
+.mp[data-state="keys"] .mp__item { opacity: 0.3; }
+.mp .mp__item.is-open { opacity: 1; scale: 1; }
+.mp .mp__item.is-on { color: #ffffff; }
+.mp .mp__item.is-on .mp__icon { background: transparent; }
+.mp .mp__item.is-on .mp__label { color: var(--mp-label); }
+.mp .mp__item.is-pop { animation: mp-pop 0.24s var(--mp-spring); }
+@keyframes mp-pop { 40% { scale: 1.1; } }
+/* before the first mark the refresh arrow winds up with the pull */
+.mp__item[data-action="refresh"] svg { rotate: var(--mp-wind, 0deg); }
+.mp[data-state="busy"] .mp__item[data-action="refresh"] svg { animation: mp-spin 0.8s linear infinite; }
+@keyframes mp-spin { to { rotate: 360deg; } }
+
+/* ---------- the list ---------- */
+.mp__scroller {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;   /* no browser pull-to-refresh on top of ours */
+  background: var(--mp-bg);
+  outline: none;
+  translate: 0 0;
+}
+.mp[data-state="settling"] .mp__scroller,
+.mp[data-state="busy"] .mp__scroller,
+.mp[data-state="settling"] .mp__row,
+.mp[data-state="busy"] .mp__row { transition: translate 0.44s var(--mp-drawer); }
+.mp[data-state="pulling"] .mp__scroller { user-select: none; -webkit-user-select: none; }
+.mp__scroller:focus-visible { box-shadow: inset 0 0 0 2px var(--mp-accent); }
+
+.mp__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mp__hl,
+  .mp__item { transition: opacity 0.12s ease, color 0.12s ease; }
+  .mp .mp__item.is-pop { animation: none; }
+  .mp[data-state="settling"] .mp__scroller,
+  .mp[data-state="busy"] .mp__scroller,
+  .mp[data-state="settling"] .mp__row,
+  .mp[data-state="busy"] .mp__row { transition: none; }
+  .mp[data-state="busy"] .mp__item[data-action="refresh"] svg { animation-duration: 2.4s; }
+}

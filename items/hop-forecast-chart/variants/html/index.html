@@ -1,0 +1,40 @@
+<figure class="hop" aria-labelledby="hop-title" data-mode="bands">
+  <header class="hop__head">
+    <div>
+      <h2 class="hop__title" id="hop-title">Weekly sign-ups</h2>
+      <p class="hop__sub">12 weeks forecast from 400 simulated futures</p>
+    </div>
+    <p class="hop__readout" id="hop-readout"></p>
+  </header>
+  <div class="hop__plot" tabindex="0" role="group" aria-roledescription="forecast chart" aria-labelledby="hop-title" aria-describedby="hop-readout"></div>
+  <div class="hop__controls">
+    <span class="hop__switch">
+      <button class="hop__toggle" type="button" role="switch" aria-checked="false" aria-labelledby="hop-futures"></button>
+      <span id="hop-futures">Play possible futures</span>
+    </span>
+    <label class="hop__trails">Trails <input type="range" min="0" max="20" value="8"> <output>8</output></label>
+    <button class="hop__play" type="button" disabled>Pause</button>
+  </div>
+  <p class="hop__live" role="status"></p>
+</figure>
+
+<link rel="stylesheet" href="hop-chart.css">
+<script type="module">
+  import { hopForecast } from './hop-chart.js';
+
+  // history: actual values; draws: simulated futures from your model, each F steps long;
+  // dates: one per history point and forecast step.
+  const history = [/* 812, 790, … */];
+  const draws = [/* [1004, 1031, …], … */];
+  const dates = [/* new Date(2026, 5, 15), … */];
+
+  const num = new Intl.NumberFormat('en-US');
+  const chart = hopForecast(document.querySelector('.hop'), {
+    history, dates, draws,
+    events: [{ step: 7, label: 'Store feature?' }],
+    format: (v) => num.format(Math.round(v)),
+    formatDate: (d, mode) => d.toLocaleDateString('en-US', mode === 'month' ? { month: 'short' } : { month: 'long', day: 'numeric' })
+  });
+  const { low80, high80, median } = chart.summary;
+  document.querySelector('#hop-readout').textContent = `80%: ${num.format(low80)}–${num.format(high80)}, median ${num.format(median)}`;
+</script>

@@ -1,0 +1,30 @@
+<!-- Filters combine with AND. data-filter names a tag, data-miss says why a row would go. -->
+<section class="sfc" data-noun="home" aria-label="Homes to rent">
+  <div class="sfc__chips" role="group" aria-label="Filters">
+    <button class="sfc-chip" data-filter="budget" data-miss="Over €2,000">Under €2,000</button>
+    <button class="sfc-chip" data-filter="balcony" data-miss="No balcony">Balcony</button>
+    <button class="sfc-chip" data-filter="pets" data-miss="No pets">Pets allowed</button>
+  </div>
+  <p class="sfc__status">
+    <span class="sfc__count" role="status"></span>
+    <span class="sfc__preview" aria-hidden="true"></span>
+    <button class="sfc__clear" type="button" hidden>Clear</button>
+  </p>
+  <ul class="sfc__list">
+    <li class="sfc-row" data-tags="budget balcony pets">
+      <div class="sfc-row__body">
+        <div><div class="sfc-row__title">Javastraat 41</div><div class="sfc-row__meta">Indische Buurt · 2 bd · 72 m²</div></div>
+        <div class="sfc-row__price">€1,850<small>per month</small></div>
+      </div>
+    </li>
+    <li class="sfc-row" data-tags="balcony">
+      <div class="sfc-row__body">
+        <div><div class="sfc-row__title">KNSM-laan 60</div><div class="sfc-row__meta">Eastern Docklands · 3 bd · 110 m²</div></div>
+        <div class="sfc-row__price">€2,900<small>per month</small></div>
+      </div>
+    </li>
+  </ul>
+</section>
+
+<link rel="stylesheet" href="scented-chips.css">
+<script src="scented-chips.js" defer></script>

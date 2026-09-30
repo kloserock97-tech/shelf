@@ -1,0 +1,21 @@
+/* Thumb-Aware Layout — how the layout reads the script's output.
+   The root gets data-hand="left|right" and --hand / --hand-sign; primary actions follow the thumb. */
+
+/* the row of primary actions sits on the thumb's side */
+.ta-thumb-row { display: flex; align-items: center; }
+[data-hand="left"] .ta-thumb-row { flex-direction: row-reverse; }
+
+/* the floating button lives in the thumb's corner */
+.ta-fab { position: absolute; right: var(--ta-fab-inset, 20px); }
+[data-hand="left"] .ta-fab { right: auto; left: var(--ta-fab-inset, 20px); }
+
+/* anything placed by arithmetic can use the sign: translate: calc(var(--hand-sign) * 12px) 0; */
+
+/* reachability: the surface slides down by --reach-offset (the script sets it to 40% of the height) */
+.ta-surface { transition: translate 0.4s cubic-bezier(0.32, 0.72, 0, 1); }
+.ta-surface.is-reach-dragging { transition: none; }
+.ta-surface.is-reached { translate: 0 var(--reach-offset, 40%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ta-surface { transition: none; }
+}

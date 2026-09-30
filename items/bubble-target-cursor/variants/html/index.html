@@ -1,0 +1,19 @@
+<!-- Any region with data-bubble-cursor: buttons, links, [role="button"] and [data-bubble-target] inside it become targets.
+     data-reach — how far (px) the pointer reaches for the nearest one. Mark things to skip with data-bubble-ignore. -->
+<div class="toolbar" data-bubble-cursor data-reach="120">
+  <button aria-label="Bold">B</button>
+  <button aria-label="Italic">I</button>
+  <button aria-label="Link">Link</button>
+</div>
+
+<link rel="stylesheet" href="bubble-cursor.css">
+<script src="bubble-cursor.js" defer></script>
+<script>
+  addEventListener('DOMContentLoaded', () => {
+    const bar = document.querySelector('.toolbar');
+    // which control owns the pointer and how far it is (-1 when none)
+    bar.addEventListener('bubbletarget', (e) => console.log(e.detail.target, e.detail.distance));
+    // draw each control's hit area while tuning data-reach
+    // bar.bubbleCursor.showAreas(true);
+  });
+</script>

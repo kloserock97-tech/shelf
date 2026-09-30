@@ -1,0 +1,50 @@
+<!-- The empty list and the slot where the first result lands. -->
+<div id="day-body" data-gh-list data-dragging="false" data-over="false">
+  <ol id="plan" aria-label="Saturday plan"></ol>
+  <div class="gh-slot" id="slot" data-state="idle" aria-hidden="true">
+    <div class="gh-slot__ghost"></div>
+    <div class="gh-slot__turn"><b>Your turn</b><span>Drag an idea here, or tap +</span></div>
+  </div>
+  <p>Nothing planned for Saturday yet.</p>
+</div>
+
+<!-- Things to add. Each has its own Add button for keyboard and screen reader users. -->
+<ul>
+  <li class="idea" id="idea-tram" data-gh-item>
+    <b>Tram 28 through Alfama</b>
+    <button type="button" aria-label="Add Tram 28 through Alfama to Saturday">+</button>
+  </li>
+  <li class="idea" id="idea-pasteis" data-gh-item>
+    <b>Pastéis de Belém</b>
+    <button type="button" aria-label="Add Pastéis de Belém to Saturday">+</button>
+  </li>
+</ul>
+
+<link rel="stylesheet" href="ghost-hand.css">
+<script type="module">
+  import { ghostHand, dragToList } from './ghost-hand.js';
+
+  const slot = document.querySelector('#slot');
+  // Keyframes over element anchors: { el, x, y } is a point in that element's box.
+  const loops = [
+    [
+      { do: 'enter', at: { el: '#idea-tram', x: 0.3 }, dur: 380 },
+      { do: 'wait', dur: 320 },
+      { do: 'press', grab: '#idea-tram', dur: 240 },
+      { do: 'move', to: { el: slot, x: 0.3 }, dur: 1150 },
+      { do: 'release', dur: 320 },
+      { do: 'wait', dur: 700 },
+      { do: 'leave', dur: 300 },
+      { do: 'clear', dur: 380 }
+    ],
+    [
+      { do: 'enter', at: { el: '#idea-pasteis button' }, dur: 380 },
+      { do: 'tap', ghost: '#idea-pasteis', dur: 820 },
+      { do: 'wait', dur: 600 },
+      { do: 'leave', dur: 300 }
+    ]
+  ];
+
+  ghostHand({ slot, loops }).play();
+  dragToList({ list: '#day-body', onDrop: (item) => { /* add it for real */ } });
+</script>

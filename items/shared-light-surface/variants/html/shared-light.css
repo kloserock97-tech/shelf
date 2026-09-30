@@ -1,0 +1,118 @@
+/* Shared Light Surface. The root is the floor; .ls-card elements are raised above it by --ls-e px.
+   Root variables (from the script): --ls-lx, --ls-ly lamp position, --ls-h lamp height, --ls-i pool strength.
+   Card variables: --ls-x0/--ls-y0 its top-left, --ls-a angle to the lamp, --ls-rim, --ls-sx/--ls-sy/--ls-sb/--ls-so shadow. */
+[data-shared-light] {
+  --ls-light: 255 248 234;        /* the lamp's colour, as RGB channels */
+  --ls-floor: #c4c4c9;
+  --ls-card: #d7d7db;
+  --ls-floor-k: 0.85;              /* how much of the pool the floor reflects */
+  --ls-card-k: 1;
+  --ls-rim-k: 1;
+  --ls-edge-k: 0.16;               /* darker edge on the side away from the lamp */
+  --ls-sheen-k: 0.5;
+  --ls-shadow: 0.4;
+  --ls-lx: 30%; --ls-ly: 28%; --ls-h: 260px; --ls-i: 0.85;
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at var(--ls-lx) var(--ls-ly),
+      rgb(var(--ls-light) / calc(var(--ls-i) * var(--ls-floor-k))) 0,
+      rgb(var(--ls-light) / calc(var(--ls-i) * var(--ls-floor-k) * 0.72)) calc(var(--ls-h) * 0.5),
+      rgb(var(--ls-light) / calc(var(--ls-i) * var(--ls-floor-k) * 0.35)) var(--ls-h),
+      rgb(var(--ls-light) / calc(var(--ls-i) * var(--ls-floor-k) * 0.17)) calc(var(--ls-h) * 1.5),
+      rgb(var(--ls-light) / calc(var(--ls-i) * var(--ls-floor-k) * 0.07)) calc(var(--ls-h) * 2.2),
+      rgb(var(--ls-light) / 0) calc(var(--ls-h) * 3)),
+    var(--ls-floor);
+}
+@media (prefers-color-scheme: dark) {
+  [data-shared-light] {
+    --ls-light: 255 244 226;
+    --ls-floor: #111113;
+    --ls-card: #1b1b1e;
+    --ls-floor-k: 0.16;
+    --ls-card-k: 0.22;
+    --ls-rim-k: 0.55;
+    --ls-edge-k: 0.5;
+    --ls-sheen-k: 0.08;
+    --ls-shadow: 0.7;
+  }
+}
+[data-shared-light]:focus-visible { outline: 2px solid #0073e6; outline-offset: 3px; }
+
+.ls-card {
+  --ls-e: 18;                      /* height above the floor, px (unitless) */
+  --ls-x0: 0px; --ls-y0: 0px; --ls-a: 135deg; --ls-rim: 0; --ls-sx: 0px; --ls-sy: 0px; --ls-sb: 12px; --ls-so: 0.5;
+  position: relative;
+  background:
+    /* sheen: a soft band just inside the edge that faces the lamp */
+    linear-gradient(var(--ls-a), transparent 55%, rgb(var(--ls-light) / calc(var(--ls-rim) * var(--ls-sheen-k))) 86%, transparent 99%),
+    /* the same pool as the floor, centred on the lamp in this card's coordinates */
+    radial-gradient(circle at calc(var(--ls-lx) - var(--ls-x0)) calc(var(--ls-ly) - var(--ls-y0)),
+      rgb(var(--ls-light) / calc(var(--ls-i) * var(--ls-card-k))) 0,
+      rgb(var(--ls-light) / calc(var(--ls-i) * var(--ls-card-k) * 0.72)) calc(var(--ls-h) * 0.5),
+      rgb(var(--ls-light) / calc(var(--ls-i) * var(--ls-card-k) * 0.35)) var(--ls-h),
+      rgb(var(--ls-light) / calc(var(--ls-i) * var(--ls-card-k) * 0.17)) calc(var(--ls-h) * 1.5),
+      rgb(var(--ls-light) / calc(var(--ls-i) * var(--ls-card-k) * 0.07)) calc(var(--ls-h) * 2.2),
+      rgb(var(--ls-light) / 0) calc(var(--ls-h) * 3)),
+    var(--ls-card);
+  box-shadow:
+    /* umbra: short and fairly sharp, right at the card */
+    calc(var(--ls-sx) * 0.35) calc(var(--ls-sy) * 0.35) calc(var(--ls-sb) * 0.3) 0 rgb(0 0 0 / calc(var(--ls-so) * var(--ls-shadow) * 0.55)),
+    /* penumbra: the full cast shadow, longer and softer further from the lamp */
+    var(--ls-sx) var(--ls-sy) var(--ls-sb) calc(var(--ls-sb) * -0.3) rgb(0 0 0 / calc(var(--ls-so) * var(--ls-shadow))),
+    0 1px 2px rgb(0 0 0 / calc(var(--ls-shadow) * 0.35));
+}
+/* rim: a 1px edge, lit on the lamp side and a touch darker on the far side */
+.ls-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(var(--ls-a),
+    rgb(0 0 0 / calc(var(--ls-rim) * var(--ls-edge-k))) 0%, transparent 35%, transparent 55%,
+    rgb(var(--ls-light) / calc(var(--ls-rim) * var(--ls-rim-k))) 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+
+/* the lamp, seen from above: a small bulb that trails the pointer */
+.ls-lamp {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 5;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.ls-lamp::before {
+  content: "";
+  position: absolute;
+  left: -9px;
+  top: -9px;
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  /* a shade seen from above with the bulb inside */
+  background: radial-gradient(circle, rgb(var(--ls-light)) 0 4px, #2c2c2e 4.5px);
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.5), 0 6px 12px -4px rgb(0 0 0 / 0.45);
+}
+.ls-lamp-label {
+  position: absolute;
+  left: 14px;
+  top: 10px;
+  white-space: nowrap;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font: 500 12px/16px system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  background: rgb(29 29 31 / 0.86);
+  opacity: 0;
+  transition: opacity 160ms cubic-bezier(.25, .1, .25, 1);
+}
+.ls-talk .ls-lamp-label { opacity: 1; }

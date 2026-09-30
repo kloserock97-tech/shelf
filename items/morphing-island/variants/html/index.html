@@ -1,0 +1,32 @@
+<!-- One island, many views. Each view is a child of the pill with data-view and its own padding;
+     the pill springs to the size of whichever view is on stage. data-expanded marks an opened view,
+     data-radius its corner. A second activity lives in the bubble. -->
+<link rel="stylesheet" href="morphing-island.css">
+
+<div class="mi" id="island" role="region" aria-label="Activity">
+  <div class="mi__pill">
+    <button type="button" class="mi__hit" aria-expanded="false" aria-label="Nothing running"></button>
+    <div class="mi__view" data-view="idle" data-label="Nothing running" style="width: 44px; height: 24px"></div>
+    <div class="mi__view" data-view="timer" data-label="Focus timer" style="height: 36px; padding: 0 15px">Focus 25:00</div>
+    <div class="mi__view" data-view="toast" data-label="Message" style="height: 40px; padding: 0 18px">Invoice sent</div>
+    <div class="mi__view" data-view="timer-x" data-expanded data-radius="30" style="width: 340px; padding: 16px 20px">
+      <strong>Focus session</strong> <button type="button">Pause</button>
+    </div>
+  </div>
+  <button type="button" class="mi__bubble" hidden aria-hidden="true" tabindex="-1">
+    <span class="mi__bview" data-view="upload">62%</span>
+  </button>
+</div>
+
+<script src="morphing-island.js"></script>
+<script>
+  const root = document.getElementById('island');
+  const island = new MorphingIsland(root);
+  island.show('idle');
+
+  root.addEventListener('island:press', () => island.show('timer-x'));   // tap, Enter, Space
+  root.addEventListener('island:hold', () => island.show('timer-x'));    // long-press
+  root.addEventListener('island:escape', () => island.show('timer'));    // Esc or a press outside
+  root.addEventListener('island:dismiss', () => island.show('idle'));    // swipe sideways or up, Delete
+  // two activities at once: island.show('timer'); island.bubble('upload'); island.bubble(null) to hide it
+</script>

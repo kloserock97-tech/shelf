@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Case study</title>
+<link rel="stylesheet" href="../variants/html/morph.css">
+<link rel="stylesheet" href="demo.css">
+<script src="../variants/html/morph.js"></script>
+<script src="projects.js"></script>
+<!-- no first paint until the hero is built: the morph needs its end state in the very first frame -->
+<link rel="expect" href="#case-end" blocking="render">
+<style>
+  .top { box-sizing: border-box; max-width: 1080px; margin: 0 auto; padding: 16px 24px 12px; display: flex; align-items: center; justify-content: space-between; }
+  .back {
+    display: inline-flex; align-items: center; gap: 2px; height: 40px; padding: 0 14px 0 8px; border-radius: 20px;
+    color: var(--accent-text); text-decoration: none; font-size: 15px; font-weight: 500;
+  }
+  .back svg { width: 20px; height: 20px; }
+  @media (hover: hover) and (pointer: fine) { .back:hover { background: var(--fill); } }
+  .top small { font-size: 13px; color: var(--label-2); }
+
+  .hero {
+    position: relative; isolation: isolate; box-sizing: border-box; max-width: 1032px; margin: 0 auto;
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 36px; align-items: center;
+    padding: 40px; border-radius: 28px; overflow: clip;
+  }
+  .hero-bg { position: absolute; inset: 0; z-index: -1; background: var(--tint); --morph-radius: 28px; }
+  .eyebrow { margin: 0 0 6px; font-size: 13px; font-weight: 600; color: var(--label-2); }
+  .hero-title { width: fit-content; margin: 0; font-size: clamp(36px, 5.2vw, 54px); line-height: 1.1; font-weight: 700; letter-spacing: -0.02em; }
+  .lede { margin: 14px 0 0; font-size: 17px; line-height: 1.5; color: var(--label); max-width: 34ch; }
+  .hero-clip { aspect-ratio: 16 / 10; border-radius: 18px; overflow: clip; box-shadow: 0 0 0 0.5px var(--hair); }
+  .hero-media { display: block; width: 100%; height: 100%; --morph-radius: 18px; }
+
+  .body { box-sizing: border-box; max-width: 1032px; margin: 0 auto; padding: 28px 40px 56px; }
+  .facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 0; padding: 0 0 24px; border-bottom: 0.5px solid var(--hair); }
+  .facts dt { font-size: 13px; color: var(--label-2); }
+  .facts dd { margin: 2px 0 0; font-size: 15px; font-weight: 500; }
+  .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 24px 0 8px; }
+  .stat { padding: 16px 18px; border-radius: 16px; background: var(--fill); }
+  .stat b { display: block; font-size: 28px; line-height: 1.1; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .stat span { display: block; margin-top: 4px; font-size: 14px; line-height: 1.4; color: var(--label-2); }
+  .body h2 { margin: 28px 0 6px; font-size: 20px; font-weight: 650; letter-spacing: -0.01em; }
+  .body p { margin: 0; max-width: 62ch; font-size: 16px; line-height: 1.6; }
+  .next {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 36px; padding: 16px 20px;
+    border-radius: 16px; background: var(--fill); text-decoration: none;
+  }
+  .next span { font-size: 13px; color: var(--label-2); }
+  .next b { display: block; font-size: 17px; font-weight: 600; color: var(--label); }
+  .next svg { width: 20px; height: 20px; color: var(--accent-text); }
+  @media (hover: hover) and (pointer: fine) { .next:hover { background: light-dark(rgb(118 118 128 / 0.2), rgb(118 118 128 / 0.34)); } }
+
+  @media (max-width: 760px) {
+    .top { padding: 10px 12px 8px; }
+    .hero { grid-template-columns: 1fr; gap: 18px; margin: 0 12px; padding: 12px 12px 22px; border-radius: 24px; }
+    .hero-bg { --morph-radius: 24px; }
+    .hero-clip { order: -1; border-radius: 14px; }
+    .hero-media { --morph-radius: 14px; }
+    .hero-text { padding: 0 6px; }
+    .lede { font-size: 16px; }
+    .body { padding: 22px 18px 44px; }
+    .facts, .stats { grid-template-columns: 1fr; gap: 10px; }
+    .stats { gap: 8px; }
+  }
+  /* the poster freezes the morph over the capture's ground */
+  html.shot { background: light-dark(#f5f5f7, #161618); }
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="back" href="index.html" id="back">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.5 4.5 7 10l5.5 5.5"/></svg>
+    All work
+  </a>
+  <small>Esc goes back too</small>
+</header>
+<section class="hero" id="hero" data-morph-hero aria-labelledby="case-title">
+  <div class="hero-bg" data-morph="bg"></div>
+  <div class="hero-text">
+    <p class="eyebrow" id="case-eyebrow"></p>
+    <h1 class="hero-title" id="case-title" data-morph="title"></h1>
+    <p class="lede" id="case-lede"></p>
+  </div>
+  <div class="hero-clip" id="case-art"></div>
+</section>
+<main class="body" id="case-body"></main>
+<script>
+  (() => {
+    const q = new URLSearchParams(location.search);
+    const i = Math.max(0, PROJECTS.findIndex((x) => x.id === q.get('p')));
+    const p = PROJECTS[i], next = PROJECTS[(i + 1) % PROJECTS.length];
+    document.title = `${p.title} — case study`;
+    document.getElementById('hero').classList.add(`p-${p.id}`);
+    document.getElementById('case-eyebrow').textContent = `Case study · ${p.year}`;
+    document.getElementById('case-title').textContent = p.title;
+    document.getElementById('case-lede').textContent = p.lede;
+    document.getElementById('case-art').innerHTML = projectArt(p.id, `${p.title}: ${p.kicker}`, 'class="art hero-media" data-morph="media"');
+    document.getElementById('case-body').innerHTML = `
+      <dl class="facts"><div><dt>Role</dt><dd>${p.role}</dd></div><div><dt>Team</dt><dd>${p.team}</dd></div><div><dt>Timeline</dt><dd>${p.time}</dd></div></dl>
+      <div class="stats">${p.stats.map(([b, s]) => `<div class="stat"><b>${b}</b><span>${s}</span></div>`).join('')}</div>
+      ${p.sections.map(([h, t]) => `<h2>${h}</h2><p>${t}</p>`).join('')}
+      <a class="next" href="case.html?p=${next.id}"><div><span>Next case</span><b>${next.title}</b></div>
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.5 4.5 13 10l-5.5 5.5"/></svg></a>`;
+
+    // Back: step back in history when we came from the list (the browser then restores it and plays the morph in
+    // reverse); otherwise open the list, which morphs just the same.
+    const back = document.getElementById('back');
+    const fromList = () => {
+      try { return document.referrer && new URL(document.referrer).pathname === new URL(back.href).pathname && history.length > 1; }
+      catch { return false; }
+    };
+    const goBack = () => { if (fromList()) history.back(); else location.href = back.href; };
+    back.addEventListener('click', (e) => { if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return; e.preventDefault(); goBack(); });
+    addEventListener('keydown', (e) => { if (e.key === 'Escape') goBack(); });
+
+    // ?shot=1 — freeze the morph at 16% of its time (the card is about half-way: the easing is front-loaded);
+    // &t=0.3 picks another moment
+    if (q.has('shot')) {
+      const at = (Number(q.get('t')) || 0.16) * (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--morph-duration')) || 480);
+      document.documentElement.classList.add('shot');
+      addEventListener('pagereveal', (e) => {
+        e.viewTransition?.ready.then(() => setTimeout(() => {
+          for (const a of document.getAnimations()) {
+            const d = a.effect?.getTiming().duration;
+            if (typeof d !== 'number') continue;
+            a.pause();
+            a.currentTime = Math.min(d + (a.effect.getTiming().delay || 0), at);
+          }
+        }));
+      });
+    }
+  })();
+</script>
+<span id="case-end" hidden></span>
+</body>
+</html>

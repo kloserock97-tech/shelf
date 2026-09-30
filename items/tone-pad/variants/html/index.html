@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Tone Pad</title>
+<link rel="stylesheet" href="tone-pad.css">
+</head>
+<body>
+<div id="pad" style="max-width: 860px"></div>
+
+<script src="tone-pad.js"></script>
+<script>
+  // Four wordings per sentence: fs formal-short, fl formal-long, cs casual-short, cl casual-long.
+  // Leave a corner empty to drop the sentence there. x / y are optional per-sentence thresholds.
+  const draft = {
+    meta: '<b>Out of office</b> · auto-reply',
+    original: { x: 0.35, y: 0.4 },
+    slots: [
+      { block: 'body', x: 0.45, y: 0.5,
+        fs: 'I am away until 14 October.', fl: 'I am out of the office until Monday, 14 October, with limited access to email.',
+        cs: 'Off until the 14th.', cl: 'I’m off until Monday the 14th and barely checking email.' },
+      { block: 'body', x: 0.55, y: 0.35,
+        fl: 'For urgent matters, please contact Priya Shah at priya@example.com.',
+        cl: 'If it can’t wait, Priya (priya@example.com) has my back.' }
+    ]
+  };
+
+  TonePad.create(document.getElementById('pad'), draft, {
+    // optional: once the puck rests, let a model rewrite the local blend for that exact spot
+    generate: async ({ x, y, text, signal }) => {
+      const res = await fetch('/api/tone', { method: 'POST', body: JSON.stringify({ casual: x, detail: y, text }), signal });
+      return res.text();
+    },
+    onChange: ({ x, y, text }) => console.log(x.toFixed(2), y.toFixed(2), text)
+  });
+</script>
+</body>
+</html>

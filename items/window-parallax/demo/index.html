@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Window Parallax</title>
+<link rel="stylesheet" href="../variants/html/window-parallax.css">
+<style>
+  :root {
+    --ink: #1d1d1f; --muted: #6e6e73; --accent: #0073e6;
+    --wall: #eeebe6; --wall-side: #e2ded7; --wall-far: #d8d3cb; --ceil: #f3f1ed; --floor-a: #cfcbc4; --floor-b: #e6e2db;
+    --seam: rgb(0 0 0 / 0.06); --sky: #ffffff; --plinth-f: #f6f4f0; --plinth-t: #ffffff; --plinth-s: #e4e0d9; --plinth-d: #d6d1c9;
+    --bench-f: #2f2f31; --bench-t: #3d3d40; --bench-s: #252527; --shadow: rgb(40 30 20 / 0.3); --patch: rgb(255 255 255 / 0.55);
+    --spot: rgb(255 244 222 / 0); --frame: #1d1d1f; --mat: #fbfaf7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #f5f5f7; --muted: #a1a1a6; --accent: #0a84ff;
+      --wall: #2b2a2e; --wall-side: #252427; --wall-far: #1f1e21; --ceil: #232226; --floor-a: #161618; --floor-b: #1f1f22;
+      --seam: rgb(255 255 255 / 0.04); --sky: #1b2940; --plinth-f: #3a393d; --plinth-t: #48474b; --plinth-s: #2f2e32; --plinth-d: #29282b;
+      --bench-f: #121213; --bench-t: #1a1a1c; --bench-s: #0e0e0f; --shadow: rgb(0 0 0 / 0.55); --patch: rgb(120 150 200 / 0.1);
+      --spot: rgb(255 238 205 / 0.2); --frame: #0c0c0d; --mat: #ecebe7;
+    }
+  }
+  html, body { height: 100%; margin: 0; background: transparent; }
+  body {
+    display: grid; place-items: center; box-sizing: border-box; padding: 20px;
+    font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  .piece { width: min(980px, 100%); margin: 0; display: grid; gap: 14px; }
+  .wp-window { aspect-ratio: 16 / 10; background: var(--wall); box-shadow: 0 30px 60px -34px rgb(0 0 0 / 0.35); }
+
+  /* ---- the room ---- */
+  .wp-back { background: radial-gradient(ellipse 60% 55% at 45% 40%, var(--spot), transparent 70%), linear-gradient(var(--wall) 0 70%, var(--wall-side)); }
+  .wp-left { background: linear-gradient(90deg, var(--wall-side), var(--wall-far)); }
+  .wp-right { background: linear-gradient(90deg, var(--wall-far), var(--wall)); }
+  .wp-ceil { background: linear-gradient(var(--ceil), var(--wall-side)); }
+  .wp-floor {
+    background:
+      repeating-linear-gradient(90deg, var(--seam) 0 1px, transparent 1px calc(var(--wp-w) / 6)),
+      repeating-linear-gradient(0deg, var(--seam) 0 1px, transparent 1px calc(var(--wp-w) / 6)),
+      linear-gradient(var(--floor-a), var(--floor-b));
+  }
+  .skylight {
+    position: absolute; left: 32%; right: 32%; top: 30%; bottom: 36%; background: var(--sky);
+    box-shadow: 0 0 0 0.6cqw var(--wall-side), inset 0 0 0 0.3cqw rgb(0 0 0 / 0.05);
+  }
+  .skylight::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent calc(50% - 0.15cqw), var(--wall-side) 0 calc(50% + 0.15cqw), transparent 0); }
+
+  .art {
+    position: absolute; left: 25%; top: 17%; width: 34%; height: 46%; box-sizing: border-box; padding: 2.6cqw; background: var(--mat);
+    box-shadow: 0 0 0 0.55cqw var(--frame), 0 1.6cqw 2.4cqw -0.8cqw rgb(0 0 0 / 0.4);
+  }
+  .art i {
+    display: block; width: 100%; height: 100%;
+    background:
+      linear-gradient(transparent 63%, #1b2230 63%),
+      radial-gradient(circle at 64% 63%, #ffe3a8 0 8%, rgb(255 227 168 / 0) 8.4%),
+      linear-gradient(#08255c, #0a4eb0 42%, #5b97d8 58%, #c8d9ea 63%);
+  }
+  .label { position: absolute; left: 64%; top: 52%; width: 12%; font-size: 0.85cqw; line-height: 1.35; color: var(--muted); }
+  .label b { display: block; color: var(--ink); font-weight: 600; }
+  .print {
+    position: absolute; left: 44%; top: 24%; width: 24%; height: 36%; box-sizing: border-box; padding: 1.6cqw; background: var(--mat);
+    box-shadow: 0 0 0 0.45cqw var(--frame);
+  }
+  .print i {
+    display: block; width: 100%; height: 100%;
+    background:
+      radial-gradient(circle at 38% 36%, #d4643e 0 22%, transparent 22.5%),
+      radial-gradient(circle at 62% 66%, #e9b27a 0 18%, transparent 18.5%),
+      #f2e6d6;
+  }
+  .title { position: absolute; left: 22%; top: 26%; width: 70%; color: var(--ink); }
+  .title b { display: block; font-size: 6cqw; line-height: 1; font-weight: 300; letter-spacing: -0.03em; }
+  .title span { display: block; margin-top: 1.4cqw; font-size: 1.3cqw; color: var(--muted); }
+
+  .pedestal { --bx: calc(var(--wp-w) * 0.7); --bz: calc(var(--wp-d) * -0.5); --bw: calc(var(--wp-w) * 0.14); --bd: calc(var(--wp-w) * 0.14); --bh: calc(var(--wp-h) * 0.3); }
+  .pedestal .f { background: var(--plinth-f); } .pedestal .t { background: var(--plinth-t); }
+  .pedestal .l { background: var(--plinth-s); } .pedestal .r { background: var(--plinth-d); }
+  .sphere {
+    --cx: calc(var(--wp-w) * 0.7); --cz: calc(var(--wp-d) * -0.5); --cw: calc(var(--wp-w) * 0.095); --ch: var(--cw);
+    --cy: calc(var(--wp-h) * 0.7 - var(--cw) + 1px);
+    border-radius: 50%;
+    background: radial-gradient(circle at 34% 30%, #e8f1ff 0, #6fa5e6 16%, #0a4eb0 48%, #062a63 82%, #04173a);
+  }
+  .bench { --bx: calc(var(--wp-w) * 0.34); --bz: calc(var(--wp-d) * -0.2); --bw: calc(var(--wp-w) * 0.3); --bd: calc(var(--wp-w) * 0.085); --bh: calc(var(--wp-h) * 0.08); }
+  .bench .f { background: var(--bench-f); } .bench .t { background: var(--bench-t); }
+  .bench .l, .bench .r { background: var(--bench-s); }
+  .cord { --cx: calc(var(--wp-w) * 0.28); --cz: calc(var(--wp-d) * -0.66); --cw: 1.5px; --ch: calc(var(--wp-h) * 0.2); --cy: 0px; background: var(--frame); }
+  .shade {
+    --cx: calc(var(--wp-w) * 0.28); --cz: calc(var(--wp-d) * -0.66); --cw: calc(var(--wp-w) * 0.08); --ch: calc(var(--wp-w) * 0.04);
+    --cy: calc(var(--wp-h) * 0.2); border-radius: 50% 50% 8% 8% / 100% 100% 8% 8%; background: var(--frame);
+    box-shadow: inset 0 -0.4cqw 0 #f7d58a;
+  }
+  .shadow { background: radial-gradient(closest-side, var(--shadow), transparent); }
+  .patch { background: radial-gradient(closest-side, var(--patch), transparent); }
+
+  /* ---- caption ---- */
+  .piece figcaption { display: flex; align-items: center; gap: 10px 18px; flex-wrap: wrap; padding: 0 4px; }
+  .piece figcaption b { font-weight: 600; }
+  .piece figcaption .hint { color: var(--muted); font-size: 13px; }
+  .piece figcaption .grow { flex: 1; }
+  .motion {
+    display: none; height: 32px; padding: 0 14px; border: 0; border-radius: 999px; font: 500 14px/1 system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: #fff; background: var(--accent); cursor: pointer; -webkit-tap-highlight-color: transparent;
+  }
+  .motion[aria-pressed="true"] { color: var(--ink); background: rgb(118 118 128 / 0.16); }
+  .motion:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .touch-only { display: none; }
+  @media (hover: none) and (pointer: coarse) { .motion, .touch-only { display: inline-flex; align-items: center; } .mouse-only { display: none; } }
+  @media (prefers-reduced-motion: reduce) { .motion { display: none !important; } }
+  @media (max-width: 640px) {
+    body { padding: 16px; }
+    .wp-window { aspect-ratio: 3 / 4; }
+    .label { font-size: 1.5cqw; width: 18%; left: 62%; }
+    .title span { font-size: 2.2cqw; }
+    .piece figcaption .grow { display: none; }
+  }
+</style>
+</head>
+<body>
+<figure class="piece">
+  <div class="wp-window" data-window-parallax data-eye-rest="-0.1 -0.06" tabindex="0" role="group"
+       aria-label="A gallery room seen through a window: a blue painting on the far wall, a sphere on a plinth, a bench. Arrow keys move your viewpoint.">
+    <div class="wp-view" aria-hidden="true">
+      <div class="wp-room">
+        <div class="wp-back">
+          <div class="art"><i></i></div>
+          <p class="label"><b>Blue Hour</b>2026, acrylic on linen</p>
+        </div>
+        <div class="wp-left"><div class="print"><i></i></div></div>
+        <div class="wp-right"><div class="title"><b>Afterimage</b><span>Works on paper and linen, 2019–2026</span></div></div>
+        <div class="wp-ceil"><div class="skylight"></div></div>
+        <div class="wp-floor">
+          <span class="wp-spot patch" style="--sx: calc(var(--wp-w) * 0.5); --sz: calc(var(--wp-d) * -0.52); --sw: calc(var(--wp-w) * 0.55); --sd: calc(var(--wp-d) * 0.5)"></span>
+          <span class="wp-spot shadow" style="--sx: calc(var(--wp-w) * 0.7); --sz: calc(var(--wp-d) * -0.5); --sw: calc(var(--wp-w) * 0.24); --sd: calc(var(--wp-w) * 0.24)"></span>
+          <span class="wp-spot shadow" style="--sx: calc(var(--wp-w) * 0.34); --sz: calc(var(--wp-d) * -0.2); --sw: calc(var(--wp-w) * 0.38); --sd: calc(var(--wp-w) * 0.16)"></span>
+        </div>
+        <div class="wp-card cord"></div>
+        <div class="wp-card shade"></div>
+        <div class="wp-box pedestal"><i class="f"></i><i class="t"></i><i class="l"></i><i class="r"></i></div>
+        <div class="wp-card sphere"></div>
+        <div class="wp-box bench"><i class="f"></i><i class="t"></i><i class="l"></i><i class="r"></i></div>
+      </div>
+    </div>
+    <div class="wp-glass"></div>
+  </div>
+  <figcaption>
+    <span><b>Gallery 3</b> · Afterimage</span>
+    <span class="grow"></span>
+    <span class="hint mouse-only">Move the pointer: the frame stays put, the room shifts as if you moved your head.</span>
+    <span class="hint touch-only">Drag across the window, or tilt the phone.</span>
+    <button class="motion" type="button" aria-pressed="false">Use motion</button>
+  </figcaption>
+</figure>
+
+<script src="../variants/html/window-parallax.js"></script>
+<script>
+(() => {
+  const win = document.querySelector('.wp-window');
+  const wp = win.windowParallax;
+  const btn = document.querySelector('.motion');
+  btn.addEventListener('click', async () => {
+    if (btn.getAttribute('aria-pressed') === 'true') {
+      wp.disableMotion();
+      btn.setAttribute('aria-pressed', 'false');
+      btn.textContent = 'Use motion';
+      return;
+    }
+    const state = await wp.enableMotion();
+    if (state === 'granted') { btn.setAttribute('aria-pressed', 'true'); btn.textContent = 'Motion on'; }
+    else btn.textContent = state === 'unsupported' ? 'No motion sensor' : 'Motion not allowed';
+  });
+  // ?shot=1: the eye up and to the right, so the left wall, the floor and the depth are all on show
+  if (new URLSearchParams(location.search).has('shot')) wp.lookFrom(0.36, -0.22);
+})();
+</script>
+</body>
+</html>

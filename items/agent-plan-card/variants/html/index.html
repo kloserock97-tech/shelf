@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Agent Plan Card</title>
+<link rel="stylesheet" href="agent-plan.css">
+</head>
+<body>
+<article id="plan"></article>
+
+<script src="agent-plan.js"></script>
+<script>
+  // run() executes one step and resolves { ok, note }. Abort on ctx.signal: it fires on Pause, Rewind and Start over.
+  async function run(step, ctx) {
+    const res = await fetch('/agent/step', {
+      method: 'POST',
+      body: JSON.stringify({ id: step.id, text: step.text }),
+      signal: ctx.signal
+    });
+    const out = await res.json();              // e.g. { ok: true, note: '38 posts updated' }
+    return { ok: res.ok && out.ok, note: out.note };
+  }
+
+  const plan = AgentPlan.create(document.getElementById('plan'), {
+    title: 'Clean up the staging database',
+    subtitle: 'Touches staging only · about 2 min',
+    steps: [
+      { id: 'snapshot', text: 'Take a snapshot of staging' },
+      { id: 'orphans', text: 'Delete orphaned upload records' },
+      { id: 'vacuum', text: 'Vacuum the three largest tables' },
+      { id: 'report', text: 'Post a summary to #eng-staging' }
+    ]
+  }, {
+    run,
+    // the card only shows the rewind; restore your checkpoint here
+    onRewind: (step, rolledBack) => fetch('/agent/rewind', { method: 'POST', body: JSON.stringify({ to: step.id, undo: rolledBack }) }),
+    onChange: (state) => console.log(state.mode, state.steps)
+  });
+</script>
+</body>
+</html>

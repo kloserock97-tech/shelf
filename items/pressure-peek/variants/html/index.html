@@ -1,0 +1,24 @@
+<!-- A card names its destination with data-peek. Press and hold: the card lifts, its destination
+     opens as a blurred preview and grows with depth; full depth opens it, an early release puts it back.
+     A tap or Enter opens it straight away. -->
+<link rel="stylesheet" href="pressure-peek.css">
+
+<a class="card" href="/inbox/offsite-venue" data-peek="#peek-venue" draggable="false">
+  <strong>Maya Chen</strong>
+  <span>Offsite venue: two options left</span>
+</a>
+
+<template id="peek-venue">
+  <article>
+    <h2>Offsite venue: two options left</h2>
+    <p>Both places have a terrace and room for forty…</p>
+  </article>
+</template>
+
+<script src="pressure-peek.js"></script>
+<script>
+  PressurePeek.init({ selector: '[data-peek]', closeLabel: 'Done' });
+  document.addEventListener('peekcommit', (e) => {
+    // the press went all the way: mark it read, or navigate to e.target.href
+  });
+</script>

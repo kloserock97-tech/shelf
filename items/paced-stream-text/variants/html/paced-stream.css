@@ -1,0 +1,57 @@
+/* Paced Stream Text */
+.ps-grow {
+  overflow: hidden;
+  /* the block follows its content on a short transition, so a new line slides in instead of jumping */
+  transition: height 200ms cubic-bezier(.23, 1, .32, 1);
+}
+.ps-grow.ps-raw { transition: none; }
+.ps-body { display: flow-root; }
+.ps-w { animation: ps-settle 340ms cubic-bezier(.23, 1, .32, 1) both; }
+@keyframes ps-settle {
+  from { opacity: 0; filter: blur(5px); }
+  to { opacity: 1; filter: blur(0); }
+}
+
+/* "Jump to latest": shown only when the reader has scrolled away from a growing answer */
+.ps-pill {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.82);
+  -webkit-backdrop-filter: blur(20px) saturate(1.6);
+  backdrop-filter: blur(20px) saturate(1.6);
+  box-shadow: 0 0 0 0.5px rgb(0 0 0 / 0.1), 0 6px 20px rgb(0 0 0 / 0.1);
+  color: #1d1d1f;
+  font: 500 13px/32px system-ui, -apple-system, "Segoe UI", sans-serif;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 8px);
+  transition: opacity 160ms cubic-bezier(.25, .1, .25, 1), transform 240ms cubic-bezier(.23, 1, .32, 1);
+}
+.ps-pill svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.ps-pill--on { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
+.ps-pill:active { transform: translate(-50%, 0) scale(0.97); }
+.ps-pill:focus-visible { outline: 2px solid #0073e6; outline-offset: 2px; }
+@media (prefers-color-scheme: dark) {
+  .ps-pill {
+    background: rgb(44 44 46 / 0.78);
+    box-shadow: 0 0 0 0.5px rgb(255 255 255 / 0.1), 0 6px 20px rgb(0 0 0 / 0.3);
+    color: #f5f5f7;
+  }
+  .ps-pill:focus-visible { outline-color: #0a84ff; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ps-w { animation: ps-fade 160ms linear both; }
+  @keyframes ps-fade { from { opacity: 0; } to { opacity: 1; } }
+  .ps-grow { transition: none; }
+  .ps-pill { transform: translate(-50%, 0); transition: opacity 160ms linear; }
+}

@@ -1,0 +1,197 @@
+/* Confidence Underline — generated text that shows, phrase by phrase, how sure the model was. */
+
+@property --cu-d { syntax: '<number>'; inherits: false; initial-value: 0; }
+@property --cu-h { syntax: '<number>'; inherits: false; initial-value: 0; }
+
+.cu {
+  --cu-label: #1d1d1f;
+  --cu-label-2: #636366;
+  --cu-label-3: #86868b;
+  --cu-fill: rgba(118, 118, 128, 0.12);
+  --cu-fill-hover: rgba(118, 118, 128, 0.2);
+  --cu-sep: rgba(0, 0, 0, 0.1);
+  --cu-raised: #fff;
+  --cu-shadow: 0 16px 48px rgba(0, 0, 0, 0.14), 0 2px 10px rgba(0, 0, 0, 0.06), 0 0 0 0.5px rgba(0, 0, 0, 0.1);
+  --cu-accent: #0073e6;
+  --cu-accent-text: #0066cc;
+  --cu-calm: #8c8c91;      /* a little unsure: sparse grey dots */
+  --cu-warn: #a04800;      /* very unsure: dense amber dots */
+  --cu-heat: #d9731a;      /* heat map tint */
+  --cu-heat-max: 34%;
+  --cu-ease: cubic-bezier(0.23, 1, 0.32, 1);
+  position: relative;
+  color: var(--cu-label);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+@media (prefers-color-scheme: dark) {
+  .cu {
+    --cu-label: #f5f5f7;
+    --cu-label-2: #aaaaaf;
+    --cu-label-3: #6e6e73;
+    --cu-fill: rgba(118, 118, 128, 0.24);
+    --cu-fill-hover: rgba(118, 118, 128, 0.34);
+    --cu-sep: rgba(255, 255, 255, 0.12);
+    --cu-raised: #2c2c2e;
+    --cu-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), 0 0 0 0.5px rgba(255, 255, 255, 0.14);
+    --cu-accent: #0a84ff;
+    --cu-accent-text: #2997ff;
+    --cu-calm: #7c7c80;
+    --cu-warn: #ff9f0a;
+    --cu-heat: #ff9f0a;
+    --cu-heat-max: 30%;
+  }
+}
+
+/* ---------- the text ---------- */
+.cu-text { margin: 0; font-size: 19px; line-height: 1.7; text-wrap: pretty; }
+
+.cu-s {
+  border-radius: 3px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  transition:
+    --cu-d 400ms var(--cu-ease),
+    --cu-h 400ms var(--cu-ease),
+    background-color 240ms var(--cu-ease) calc(var(--cu-i, 0) * 14ms),
+    color 240ms var(--cu-ease) calc(var(--cu-i, 0) * 14ms);
+}
+
+/* The dotted underline: density, dot size and tone all follow doubt (--cu-d, 0..1). */
+.cu-doubt {
+  --cu-gap: calc(7px - var(--cu-d) * 3.6px);
+  --cu-dot: calc(0.95px + var(--cu-d) * 0.55px);
+  --cu-ink: color-mix(in oklab, var(--cu-warn) calc(var(--cu-d) * 100%), var(--cu-calm));
+  padding-bottom: 0.16em;
+  background-image: radial-gradient(circle at 50% 50%, var(--cu-ink) var(--cu-dot), transparent calc(var(--cu-dot) + 0.7px));
+  background-size: var(--cu-gap) 4px;
+  background-repeat: repeat-x;
+  background-position: 0 100%;
+  cursor: help;
+  outline: none;
+}
+.cu-doubt:focus-visible { outline: 2px solid var(--cu-accent); outline-offset: 2px; }
+.cu-doubt[aria-expanded="true"] { background-color: var(--cu-fill); }
+@media (hover: hover) and (pointer: fine) {
+  .cu-doubt:hover { background-color: var(--cu-fill); }
+}
+
+/* Heat map: every span tinted by 1 − p, confident text steps back. */
+.cu[data-heat="true"] .cu-s {
+  background-image: none;
+  background-color: color-mix(in srgb, var(--cu-heat) calc(var(--cu-h) * var(--cu-heat-max)), transparent);
+}
+.cu[data-heat="true"] .cu-s[data-sure] { color: var(--cu-label-2); }
+.cu[data-heat="true"] .cu-doubt[aria-expanded="true"],
+.cu[data-heat="true"] .cu-doubt:hover { box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--cu-heat) 60%, transparent); }
+
+/* ---------- toolbar ---------- */
+.cu-bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  margin-top: 20px; padding-top: 14px;
+  border-top: 0.5px solid var(--cu-sep);
+  font-size: 13px; color: var(--cu-label-2);
+}
+.cu-switch {
+  display: inline-flex; align-items: center; gap: 9px;
+  margin: 0; padding: 4px 2px; border: 0; background: none;
+  font: inherit; font-weight: 500; color: var(--cu-label); cursor: pointer;
+}
+.cu-switch:focus-visible { outline: 2px solid var(--cu-accent); outline-offset: 3px; border-radius: 6px; }
+.cu-track {
+  position: relative; width: 36px; height: 22px; flex: none; border-radius: 11px;
+  background: var(--cu-fill-hover);
+  transition: background-color 240ms var(--cu-ease);
+}
+.cu-track::after {
+  content: ""; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18), 0 0 0 0.5px rgba(0, 0, 0, 0.06);
+  transition: transform 240ms var(--cu-ease);
+}
+.cu-switch[aria-checked="true"] .cu-track { background: var(--cu-accent); }
+.cu-switch[aria-checked="true"] .cu-track::after { transform: translateX(14px); }
+
+.cu-key { display: inline-flex; align-items: center; gap: 6px; }
+.cu-key i {
+  display: inline-block; width: 18px; height: 11px; border-radius: 3px;
+  background-image: radial-gradient(circle at 50% 50%, var(--cu-ink) var(--cu-dot), transparent calc(var(--cu-dot) + 0.7px));
+  background-size: var(--cu-gap) 4px; background-repeat: repeat-x; background-position: 0 100%;
+  --cu-gap: calc(7px - var(--cu-d) * 3.6px);
+  --cu-dot: calc(0.95px + var(--cu-d) * 0.55px);
+  --cu-ink: color-mix(in oklab, var(--cu-warn) calc(var(--cu-d) * 100%), var(--cu-calm));
+  transition: background-color 240ms var(--cu-ease);
+}
+.cu[data-heat="true"] .cu-key i {
+  background-image: none;
+  background-color: color-mix(in srgb, var(--cu-heat) calc(var(--cu-h) * var(--cu-heat-max)), transparent);
+}
+.cu-count { margin-left: auto; font-variant-numeric: tabular-nums; }
+
+/* ---------- popover ---------- */
+.cu-pop {
+  position: absolute; z-index: 5; top: 0; left: 0;
+  box-sizing: border-box; width: 320px; max-width: 100%;
+  padding: 14px 14px 10px;
+  border-radius: 14px;
+  background: var(--cu-raised);
+  box-shadow: var(--cu-shadow);
+  font-size: 14px; line-height: 1.45;
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transform: translateY(4px) scale(0.98);
+  transform-origin: 50% 0;
+  transition: opacity 160ms var(--cu-ease), transform 160ms var(--cu-ease), visibility 0s linear 160ms;
+}
+.cu-pop[data-side="top"] { transform-origin: 50% 100%; transform: translateY(-4px) scale(0.98); }
+.cu-pop[data-open] {
+  opacity: 1; visibility: visible; pointer-events: auto; transform: none;
+  transition: opacity 160ms var(--cu-ease), transform 160ms var(--cu-ease), visibility 0s;
+}
+.cu-pop[data-instant] { transition: none; }
+
+.cu-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+.cu-pct { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+.cu-pct-note { color: var(--cu-label-2); font-size: 13px; }
+.cu-meter { position: relative; height: 4px; margin-bottom: 12px; border-radius: 2px; background: var(--cu-fill); overflow: hidden; }
+.cu-meter b {
+  position: absolute; inset: 0 auto 0 0; border-radius: 2px;
+  background: color-mix(in oklab, var(--cu-warn) calc(var(--cu-d) * 100%), var(--cu-calm));
+  transition: width 400ms var(--cu-ease), --cu-d 400ms var(--cu-ease);
+}
+.cu-sec { margin: 0 0 4px; font-size: 12px; font-weight: 500; color: var(--cu-label-2); }
+
+.cu-opts { list-style: none; margin: 0 -6px 10px; padding: 0; }
+.cu-opt {
+  display: grid; grid-template-columns: 16px 1fr auto; align-items: center; gap: 8px;
+  width: 100%; min-height: 34px; padding: 6px; border: 0; border-radius: 8px;
+  background: none; color: var(--cu-label); font: inherit; text-align: left; cursor: pointer;
+}
+.cu-opt:focus-visible { outline: 2px solid var(--cu-accent); outline-offset: -2px; }
+@media (hover: hover) and (pointer: fine) { .cu-opt:hover { background: var(--cu-fill); } }
+.cu-opt:active { background: var(--cu-fill-hover); }
+.cu-opt[aria-current="true"] { cursor: default; }
+.cu-opt svg { width: 14px; height: 14px; color: var(--cu-accent-text); visibility: hidden; }
+.cu-opt[aria-current="true"] svg { visibility: visible; }
+.cu-opt-p { color: var(--cu-label-2); font-size: 13px; font-variant-numeric: tabular-nums; }
+.cu-opt-t { overflow-wrap: anywhere; }
+
+.cu-src { margin: 0 0 8px; padding: 10px 0 0; border-top: 0.5px solid var(--cu-sep); }
+.cu-src figcaption { font-size: 12px; font-weight: 500; color: var(--cu-label-2); margin-bottom: 4px; }
+.cu-src blockquote { margin: 0; padding-left: 10px; border-left: 2px solid var(--cu-fill-hover); color: var(--cu-label-2); }
+.cu-src mark { background: none; color: var(--cu-label); font-weight: 600; }
+
+.cu-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 0 -4px; }
+.cu-link {
+  min-height: 30px; padding: 4px 8px; border: 0; border-radius: 8px; background: none;
+  color: var(--cu-accent-text); font: inherit; font-size: 13px; font-weight: 500; cursor: pointer;
+}
+.cu-link:focus-visible { outline: 2px solid var(--cu-accent); outline-offset: 0; }
+@media (hover: hover) and (pointer: fine) { .cu-link:hover { background: var(--cu-fill); } }
+.cu-hint { font-size: 12px; color: var(--cu-label-3); }
+
+.cu-sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cu-s { transition: --cu-d 1ms, --cu-h 1ms, background-color 160ms linear, color 160ms linear; }
+  .cu-pop, .cu-pop[data-side="top"] { transform: none; }
+  .cu-track::after { transition: none; }
+}

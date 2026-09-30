@@ -1,0 +1,214 @@
+/* Uncertainty Slider: value along the track, confidence as the height of the peak. */
+.us {
+  --us-accent: #0073e6;
+  --us-label: #1d1d1f;
+  --us-label-2: #636366;
+  --us-label-3: #86868b;
+  --us-fill: rgba(118, 118, 128, 0.12);
+  --us-track: rgba(118, 118, 128, 0.2);
+  --us-thumb: #ffffff;
+  --us-surface: #ffffff; /* what the widget sits on: backs the guide labels */
+  --us-band90: rgba(0, 115, 230, 0.13);
+  --us-band50: rgba(0, 115, 230, 0.3);
+  --us-bar90: rgba(0, 115, 230, 0.35);
+  --us-plot-h: 168px;
+  position: relative;
+  color: var(--us-label);
+  font: 400 15px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
+}
+@media (prefers-color-scheme: dark) {
+  .us {
+    --us-accent: #0a84ff;
+    --us-label: #f5f5f7;
+    --us-label-2: #aaaaaf;
+    --us-label-3: #6e6e73;
+    --us-fill: rgba(118, 118, 128, 0.24);
+    --us-track: rgba(118, 118, 128, 0.36);
+    --us-thumb: #f5f5f7;
+    --us-surface: #1c1c1e;
+    --us-band90: rgba(10, 132, 255, 0.2);
+    --us-band50: rgba(10, 132, 255, 0.44);
+    --us-bar90: rgba(10, 132, 255, 0.45);
+  }
+}
+
+.us-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.us-readout {
+  font-size: 40px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.us-pm {
+  margin: 0 0.12em;
+  color: var(--us-label-2);
+  font-weight: 400;
+}
+.us-unit {
+  margin-left: 0.2em;
+  font-size: 0.5em;
+  font-weight: 500;
+  color: var(--us-label-2);
+  letter-spacing: 0;
+}
+.us-word {
+  flex: none;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--us-fill);
+  color: var(--us-label-2);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.us-plot {
+  position: relative;
+  height: var(--us-plot-h);
+  touch-action: none;
+  cursor: pointer;
+}
+.us.is-grabbed .us-plot { cursor: grabbing; }
+.us-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.us-area90 { fill: var(--us-band90); }
+.us-area50 { fill: var(--us-band50); }
+.us-curve { fill: none; stroke: var(--us-accent); stroke-width: 1.75; stroke-linejoin: round; }
+.us-stem { stroke: var(--us-accent); stroke-width: 1; stroke-dasharray: 2 3; opacity: 0.7; }
+.us-rail { stroke: var(--us-track); stroke-width: 4; stroke-linecap: round; }
+.us-bar90 { stroke: var(--us-bar90); stroke-width: 4; stroke-linecap: round; }
+.us-bar50 { stroke: var(--us-accent); stroke-width: 4; stroke-linecap: round; }
+
+/* the rail that says what vertical means, shown while held or focused from the keyboard */
+.us-guide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 160ms cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+.us-guide::before {
+  content: "";
+  position: absolute;
+  left: -0.25px;
+  top: 0;
+  bottom: 0;
+  border-left: 0.5px solid var(--us-label-3);
+  opacity: 0.6;
+}
+.us-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: grid;
+  gap: 1px;
+  padding: 3px 7px;
+  border-radius: 7px;
+  background: var(--us-surface);
+  color: var(--us-label-2);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 160ms cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+.us.is-grabbed :is(.us-guide, .us-tip),
+.us:not(.is-pointer):has(.us-thumb:focus-visible) :is(.us-guide, .us-tip) { opacity: 1; }
+@media (hover: hover) and (pointer: fine) {
+  .us-plot:hover :is(.us-guide, .us-tip) { opacity: 0.75; }
+  .us.is-grabbed .us-plot:hover :is(.us-guide, .us-tip) { opacity: 1; }
+}
+
+.us-thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 24px;
+  height: 24px;
+  margin: -12px 0 0 -12px;
+  border-radius: 50%;
+  background: var(--us-thumb);
+  box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.22), 0 3px 8px rgba(0, 0, 0, 0.08);
+  cursor: grab;
+  outline: none;
+  will-change: transform;
+}
+.us-thumb::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: var(--us-accent);
+  transition: transform 240ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.us.is-grabbed .us-thumb { cursor: grabbing; }
+.us.is-grabbed .us-thumb::after { transform: scale(1.35); }
+.us:not(.is-pointer) .us-thumb:focus-visible { box-shadow: 0 0 0 2px var(--us-thumb), 0 0 0 4px var(--us-accent), 0 1px 3px rgba(0, 0, 0, 0.22); }
+
+.us-axis {
+  position: relative;
+  height: 18px;
+  margin-top: 2px;
+  color: var(--us-label-3);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.us-axis span {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.us-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  margin: 12px 0 0;
+  color: var(--us-label-2);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.us-legend span { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+.us-legend b { color: var(--us-label); font-weight: 500; }
+.us-legend i {
+  width: 14px;
+  height: 8px;
+  border-radius: 2px;
+}
+.us-legend .us-sw50 { background: var(--us-band50); }
+.us-legend .us-sw90 { background: var(--us-band90); box-shadow: inset 0 0 0 0.5px var(--us-bar90); }
+
+.us-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .us-thumb::after { transition: none; }
+  .us.is-grabbed .us-thumb::after { transform: none; }
+}

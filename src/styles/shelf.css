@@ -779,6 +779,9 @@ button.sh-menu__item { appearance: none; margin: 0; border: 0; width: 100%; back
 }
 .sh-stage[data-device="tablet"] .sh-stage__viewport { width: min(820px, 100%); box-shadow: 0 0 0 1px var(--separator); }
 .sh-stage[data-device="phone"] .sh-stage__viewport { width: min(390px, 100%); box-shadow: 0 0 0 1px var(--separator); }
+/* at phone width the demo ends above the stage's control capsule, so a tab bar or a sheet at the bottom of a phone screen
+   is not covered by it */
+.sh-stage[data-device="phone"] { padding-bottom: 64px; }
 .sh-stage__poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .sh-stage__frame {
   position: absolute; inset: 0; display: block; width: 100%; height: 100%; border: 0;

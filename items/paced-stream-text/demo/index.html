@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Paced Stream Text</title>
+<link rel="stylesheet" href="../variants/html/paced-stream.css">
+<style>
+  :root {
+    --label: #1d1d1f; --label-2: #636366; --label-3: #86868b;
+    --card: #ffffff; --fill: rgb(118 118 128 / .12); --thumb: #ffffff; --hair: rgb(0 0 0 / .08);
+    --accent: #0073e6; --accent-hover: #0068d1;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --label: #f5f5f7; --label-2: #aaaaaf; --label-3: #6e6e73;
+      --card: #1c1c1e; --fill: rgb(118 118 128 / .24); --thumb: #5a5a5f; --hair: rgb(255 255 255 / .08);
+      --accent: #0a84ff; --accent-hover: #0077ed;
+    }
+  }
+  html, body { height: 100%; margin: 0; background: transparent; }
+  body {
+    display: grid; place-items: center;
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--label);
+    -webkit-font-smoothing: antialiased;
+  }
+  .chat {
+    width: min(100% - 32px, 520px); height: min(100% - 48px, 700px);
+    display: grid; grid-template-rows: auto 1fr auto; overflow: hidden;
+    border-radius: 22px; background: var(--card); box-shadow: 0 0 0 .5px var(--hair);
+  }
+  .chat__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px 12px 20px; box-shadow: 0 .5px 0 var(--hair); }
+  .chat__head h1 { margin: 0; font-size: 15px; font-weight: 600; line-height: 1.3; }
+  .chat__head p { margin: 0; font-size: 12.5px; color: var(--label-2); }
+
+  .seg { display: inline-grid; grid-auto-flow: column; padding: 2px; border-radius: 9px; background: var(--fill); }
+  .seg button {
+    height: 26px; padding: 0 12px; border: 0; border-radius: 7px; background: transparent; color: var(--label);
+    font: 500 12.5px/26px system-ui, -apple-system, "Segoe UI", sans-serif; cursor: pointer;
+  }
+  .seg button[aria-checked="true"] { background: var(--thumb); box-shadow: 0 1px 3px rgb(0 0 0 / .12), 0 0 0 .5px rgb(0 0 0 / .04); }
+  .seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .chat__stage { position: relative; min-height: 0; }
+  .chat__log { height: 100%; overflow-y: auto; overscroll-behavior: contain; padding: 18px 20px 28px; box-sizing: border-box; outline: none; }
+  .chat__log:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
+  .me {
+    margin: 0 0 18px auto; max-width: 82%; width: fit-content; padding: 9px 14px; border-radius: 18px;
+    background: var(--fill); font-size: 15px; line-height: 1.45;
+  }
+  .ai { font-size: 15px; line-height: 1.55; }
+  .ai p { margin: 0 0 10px; }
+  .ai h3 { margin: 16px 0 4px; font-size: 15px; font-weight: 650; }
+  .ai ul { margin: 0 0 10px; padding-left: 20px; }
+  .ai li { margin: 0 0 4px; }
+  .ai li::marker { color: var(--label-3); }
+  .typing { display: inline-flex; gap: 4px; padding: 6px 0; }
+  .typing i { width: 6px; height: 6px; border-radius: 50%; background: var(--label-3); opacity: .5; }
+  .typing[hidden] { display: none; }
+
+  .chat__foot { display: grid; gap: 10px; padding: 12px 16px 14px 20px; box-shadow: 0 -.5px 0 var(--hair); }
+  .rhythm { display: grid; grid-template-columns: 64px 1fr; align-items: center; row-gap: 2px; font-size: 11.5px; color: var(--label-2); }
+  .rhythm canvas { grid-column: 2; grid-row: 1 / span 2; width: 100%; height: 44px; display: block; }
+  .rhythm span { grid-column: 1; line-height: 22px; }
+  .foot__row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .readout { font-size: 12.5px; color: var(--label-2); font-variant-numeric: tabular-nums; }
+  .readout b { color: var(--label); font-weight: 600; }
+  .replay {
+    height: 30px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--fill); color: var(--label);
+    font: 500 13px/30px system-ui, -apple-system, "Segoe UI", sans-serif; cursor: pointer; flex: none;
+    transition: background-color 160ms cubic-bezier(.25, .1, .25, 1), transform 100ms cubic-bezier(.23, 1, .32, 1);
+  }
+  .replay:hover { background: rgb(118 118 128 / .2); }
+  .replay:active { transform: scale(.97); }
+  .replay:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+  @media (max-width: 440px) {
+    .chat { width: 100%; height: 100%; border-radius: 0; box-shadow: none; background: transparent; }
+    .chat__head { padding: 12px 16px 10px; }
+    .chat__head p { display: none; }
+    .chat__log { padding: 16px; }
+    .chat__foot { padding: 10px 16px 16px; }
+  }
+</style>
+</head>
+<body>
+<main class="chat">
+  <header class="chat__head">
+    <div>
+      <h1>Lisbon, three days</h1>
+      <p>Trip planner</p>
+    </div>
+    <div class="seg" role="radiogroup" aria-label="How the reply is shown">
+      <button type="button" role="radio" aria-checked="true" data-mode="paced">Paced</button>
+      <button type="button" role="radio" aria-checked="false" data-mode="raw" tabindex="-1">Raw bursts</button>
+    </div>
+  </header>
+  <div class="chat__stage">
+    <div class="chat__log" id="log" tabindex="0" role="log" aria-label="Conversation">
+      <p class="me">We land at 11:40 on Thursday and fly home Sunday evening. Plan the days for two people who like food and long walks more than museums.</p>
+      <div class="ai" id="ai" aria-busy="true">
+        <div id="reply"></div>
+        <span class="typing" id="typing" aria-hidden="true"><i></i><i></i><i></i></span>
+      </div>
+    </div>
+    <button type="button" class="ps-pill" id="pill" tabindex="-1" aria-hidden="true">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3.5 8.5 8 13l4.5-4.5"/></svg>Jump to latest
+    </button>
+  </div>
+  <footer class="chat__foot">
+    <div class="rhythm" aria-hidden="true">
+      <span>Network</span><span>On screen</span>
+      <canvas id="rhythm"></canvas>
+    </div>
+    <div class="foot__row">
+      <span class="readout" id="readout">Words arrive in bursts</span>
+      <button type="button" class="replay" id="replay">Replay</button>
+    </div>
+  </footer>
+  <p class="sr" aria-live="polite" id="live"></p>
+</main>
+<script src="../variants/html/paced-stream.js"></script>
+<script>
+  const REPLY = `Here is a plan that keeps the walking to about ten kilometres a day and puts the best food where you will be hungriest.
+
+## Thursday: arrival and Alfama
+- Drop the bags, then take tram 28 up to Graça. The queue at the first stop is long, so board two stops later after 14:00.
+- Walk down through Alfama to the river. The viewpoint at Santa Luzia is on the way, no detour needed.
+- Dinner at a small tasca near Largo do Chafariz de Dentro. Book for 20:00; after that the tables go to regulars.
+
+## Friday: along the river to Belém
+- Rent bikes at Cais do Sodré and ride the flat seven kilometre path west.
+- Get custard tarts at the bakery by the monastery before 10:00, when the line is five minutes instead of forty.
+- Take the train back and have an early dinner at the Campo de Ourique market, where every stall does one thing well.
+
+## Saturday: Sintra, if the weather holds
+- Train from Rossio at 8:41. Go straight up to Pena, then walk down through the forest to the Moorish Castle.
+- If it rains, swap it for the LX Factory and a long lunch by the water instead.
+
+Sunday is short, so keep it to a slow breakfast in Príncipe Real and a last walk through the Estrela garden. The airport is twenty-five minutes by metro from there.`;
+
+  // The network: bursts of small tokens cut anywhere (mid-word too), pauses, and now and then a big lump
+  // when a buffer flushes. Deterministic, so Paced and Raw replay the very same stream (about 14 s).
+  function schedule(text) {
+    let s = 977;
+    const rnd = () => (s = (s * 1103 + 7919) % 65521) / 65521;
+    const out = [];
+    let i = 0, t = 350;
+    const put = (n) => { out.push({ t, text: text.slice(i, i + n) }); i += n; };
+    while (i < text.length) {
+      const k = 2 + Math.floor(rnd() * 5);
+      for (let j = 0; j < k && i < text.length; j++) { t += 10 + rnd() * 30; put(2 + Math.floor(rnd() * 8)); }
+      const r = rnd();
+      if (r < 0.12) { t += 450 + rnd() * 450; put(50 + Math.floor(rnd() * 70)); }
+      else if (r < 0.6) t += 260 + rnd() * 450;
+      else t += 40 + rnd() * 90;
+    }
+    return out;
+  }
+  const CHUNKS = schedule(REPLY);
+
+  const $ = (id) => document.getElementById(id);
+  const log = $('log');
+  const shot = new URLSearchParams(location.search).has('shot');
+  const hist = { net: [], out: [] };       // [time, size] for the rhythm strip
+  let mode = 'paced', t0 = 0, timers = [], loop = 0, streaming = false, lastReadout = 0;
+
+  const stream = new PacedStream($('reply'), {
+    scroller: log, pill: $('pill'), mode, manual: shot, stamp: shot,
+    onRelease: (n, now) => hist.out.push([now == null ? performance.now() : now, n])
+  });
+
+  // ---- rhythm strip: chunks as they arrive (top), words as they reach the screen (bottom) ----
+  const cv = $('rhythm'), g = cv.getContext('2d');
+  let colors = null;
+  function readColors() {
+    const cs = getComputedStyle(document.documentElement);
+    colors = { net: cs.getPropertyValue('--label-3').trim(), out: cs.getPropertyValue('--accent').trim(), line: cs.getPropertyValue('--hair').trim() };
+  }
+  readColors();
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { readColors(); draw(lastNow); });
+  let lastNow = 0;
+  function draw(now) {
+    lastNow = now;
+    const dpr = Math.min(2, devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight;
+    if (cv.width !== Math.round(w * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.clearRect(0, 0, w, h);
+    const span = 4000, x = (t) => w - 2 - (now - t) / span * (w - 4), mid = h / 2;
+    g.fillStyle = colors.line;
+    g.fillRect(0, mid - 0.25, w, 0.5);
+    g.fillStyle = colors.net;
+    for (const [t, n] of hist.net) {
+      if (now - t > span) continue;
+      const bh = Math.min(mid - 4, 3 + Math.sqrt(n) * 3.2);
+      g.fillRect(x(t) - 1, mid - 2 - bh, 2, bh);
+    }
+    g.fillStyle = colors.out;
+    for (const [t, n] of hist.out) {
+      if (now - t > span) continue;
+      g.fillRect(x(t) - 0.75, mid + 3, 1.5, Math.min(mid - 5, 6 + n * 1.5));
+    }
+  }
+
+  function readout(now) {
+    if (now - lastReadout < 200) return;
+    lastReadout = now;
+    if (mode === 'raw') { $('readout').innerHTML = streaming ? 'Each chunk lands <b>as it arrives</b>' : 'Raw: chunks as they arrived'; return; }
+    const s = stream.stats(now);
+    $('readout').innerHTML = streaming || s.queued
+      ? `Screen is <b>${s.lag.toFixed(1)} s</b> behind · ${Math.round(s.rate)} words/s`
+      : 'Paced: steady words, lag under 1 s';
+  }
+
+  function frame(now) {
+    draw(now);
+    readout(now);
+    const s = stream.stats(now);
+    if (streaming || s.queued) loop = requestAnimationFrame(frame);
+    else { loop = 0; readout(now + 1000); }
+  }
+
+  function start() {
+    for (const id of timers) clearTimeout(id);
+    timers = [];
+    stream.setMode(mode);
+    stream.reset();
+    hist.net.length = 0; hist.out.length = 0;
+    $('ai').setAttribute('aria-busy', 'true');
+    $('typing').hidden = false;
+    $('live').textContent = '';
+    streaming = true;
+    t0 = performance.now();
+    for (const c of CHUNKS) {
+      timers.push(setTimeout(() => {
+        $('typing').hidden = true;
+        hist.net.push([performance.now(), c.text.split(/\s+/).filter(Boolean).length || 1]);
+        stream.push(c.text);
+      }, c.t));
+    }
+    timers.push(setTimeout(() => {
+      stream.end();
+      streaming = false;
+      $('ai').setAttribute('aria-busy', 'false');
+      $('live').textContent = 'Reply finished';
+    }, CHUNKS[CHUNKS.length - 1].t + 20));
+    if (!loop) loop = requestAnimationFrame(frame);
+  }
+
+  function setMode(m) {
+    mode = m;
+    for (const b of document.querySelectorAll('.seg button')) {
+      const on = b.dataset.mode === m;
+      b.setAttribute('aria-checked', String(on));
+      b.tabIndex = on ? 0 : -1;
+    }
+    start();
+  }
+  for (const b of document.querySelectorAll('.seg button')) {
+    b.addEventListener('click', () => setMode(b.dataset.mode));
+    b.addEventListener('keydown', (e) => {
+      if (!['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+      e.preventDefault();
+      const next = b.dataset.mode === 'paced' ? 'raw' : 'paced';
+      setMode(next);
+      document.querySelector(`.seg [data-mode="${next}"]`).focus();
+    });
+  }
+  $('replay').addEventListener('click', start);
+
+  if (!shot) {
+    setTimeout(start, 500);
+  } else {
+    // ?shot=1: the stream computed off the clock up to 8.2 s (or ?t=ms), then frozen mid-sentence
+    const T = Number(new URLSearchParams(location.search).get('t')) || 8200;
+    $('typing').hidden = true;
+    let k = 0;
+    for (let now = 16; now <= T; now += 16) {
+      while (k < CHUNKS.length && CHUNKS[k].t <= now) {
+        hist.net.push([CHUNKS[k].t, CHUNKS[k].text.split(/\s+/).filter(Boolean).length || 1]);
+        stream.push(CHUNKS[k].text, CHUNKS[k].t); k++;
+      }
+      stream.tick(now);
+    }
+    // freeze each word's settle where it would be at T
+    for (const w of document.querySelectorAll('.ps-w[data-t]')) {
+      w.style.animationDelay = `${-(T - Number(w.dataset.t))}ms`;
+      w.style.animationPlayState = 'paused';
+    }
+    const grow = $('reply');
+    grow.style.transition = 'none';
+    grow.style.height = grow.firstElementChild.offsetHeight + 'px';
+    log.scrollTop = log.scrollHeight;
+    streaming = true;
+    draw(T);
+    const s = stream.stats(T);
+    $('readout').innerHTML = `Screen is <b>${Math.max(0.3, s.lag).toFixed(1)} s</b> behind · ${Math.round(s.rate)} words/s`;
+  }
+</script>
+</body>
+</html>

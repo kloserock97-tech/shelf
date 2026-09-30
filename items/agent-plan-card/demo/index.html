@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Agent Plan Card</title>
+<link rel="stylesheet" href="../variants/html/agent-plan.css">
+<style>
+  html, body { min-height: 100%; margin: 0; background: transparent; }
+  body {
+    display: grid; place-items: center; min-height: 100vh; box-sizing: border-box; padding: 40px 16px;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .wrap { width: 100%; max-width: 540px; }
+  .hint { margin: 14px 4px 0; font-size: 13px; color: #86868b; text-align: center; }
+  @media (prefers-color-scheme: dark) { .hint { color: #8e8e93; } }
+  @media (min-width: 900px) and (min-height: 820px) { .wrap { transform: scale(1.1); transform-origin: 50% 50%; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <article id="plan"></article>
+  <p class="hint">Edit the plan, press Run, then rewind to any finished step.</p>
+</div>
+<script src="../variants/html/agent-plan.js"></script>
+<script>
+  // What the agent reports for each step. Step 4 fails on the first try.
+  var script = {
+    scan:    { ms: 1100, note: '212 images in 38 posts' },
+    convert: { ms: 2600, note: '212 files · 41.8 MB → 16.3 MB' },
+    keep:    { ms: 900,  note: 'Originals moved to /archive/images' },
+    paths:   { ms: 1600, note: '38 posts updated', firstFail: '2 posts are open in the editor' },
+    size:    { ms: 1200, note: 'width and height on 212 tags' },
+    links:   { ms: 1800, note: '0 broken links' },
+    pr:      { ms: 1000, note: 'PR #418 opened for review' }
+  };
+  var tries = {};
+
+  // A stand-in for the agent: waits, then reports. A real one does the work and resolves the same shape.
+  function run(step, ctx) {
+    var s = script[step.id] || { ms: 1000, note: 'Done' };
+    tries[step.id] = (tries[step.id] || 0) + 1;
+    return new Promise(function (resolve, reject) {
+      var t = setTimeout(function () {
+        if (s.firstFail && tries[step.id] === 1) resolve({ ok: false, note: s.firstFail });
+        else resolve({ ok: true, note: s.note });
+      }, s.ms);
+      ctx.signal.addEventListener('abort', function () { clearTimeout(t); reject(new DOMException('Aborted', 'AbortError')); });
+    });
+  }
+
+  var plan = AgentPlan.create(document.getElementById('plan'), {
+    title: 'Move the blog’s images to AVIF',
+    subtitle: 'Touches /content/blog and /public/images · about 10 s',
+    steps: [
+      { id: 'scan', text: 'Find JPEG and PNG images in /content/blog' },
+      { id: 'convert', text: 'Convert them to AVIF at quality 60' },
+      { id: 'keep', text: 'Keep the originals in /archive/images' },
+      { id: 'paths', text: 'Rewrite image paths in the posts' },
+      { id: 'size', text: 'Add width and height to every image tag' },
+      { id: 'links', text: 'Run the link checker' },
+      { id: 'pr', text: 'Open a pull request for review' }
+    ]
+  }, { run: run });
+
+  // ?shot=1 — the poster: three steps done, the fourth running, one skipped, rewind offered on step 2
+  if (new URLSearchParams(location.search).get('shot') === '1') {
+    document.querySelector('.hint').style.visibility = 'hidden';
+    plan.skip(5);
+    plan.mark(0, 'done', 1100, script.scan.note);
+    plan.mark(1, 'done', 2600, script.convert.note);
+    plan.mark(2, 'done', 900, script.keep.note);
+    plan.setMode('running', 4600);
+    plan.mark(3, 'run', 1300);
+    document.querySelectorAll('.ap-step')[1].dataset.show = '';
+    // freeze the clock for the still
+    plan.setMode('running', 4600);
+    document.querySelector('.ap-status').lastChild.textContent = ' · 0:05';
+    document.querySelectorAll('.ap-time')[3].textContent = '1.3 s';
+  }
+</script>
+</body>
+</html>

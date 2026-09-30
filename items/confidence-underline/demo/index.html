@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Confidence Underline</title>
+<link rel="stylesheet" href="../variants/html/confidence.css">
+<style>
+  html, body { min-height: 100%; margin: 0; background: transparent; }
+  body {
+    display: grid; place-items: center; min-height: 100vh; box-sizing: border-box;
+    padding: 40px 16px 64px;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: #1d1d1f;
+    -webkit-font-smoothing: antialiased;
+  }
+  main { width: 100%; max-width: 660px; }
+  body.shot { align-content: start; padding-top: 15vh; }
+  @media (min-width: 900px) { .cu-text { font-size: 21px; } }
+  .meta { display: flex; flex-wrap: wrap; gap: 4px 10px; margin: 0 0 6px; font-size: 13px; color: #636366; }
+  .meta b { font-weight: 500; color: #1d1d1f; }
+  h1 { margin: 0 0 18px; font-size: 26px; line-height: 1.2; font-weight: 600; letter-spacing: -0.015em; }
+  .hint { margin: 22px 0 0; font-size: 13px; color: #86868b; }
+  @media (prefers-color-scheme: dark) {
+    body { color: #f5f5f7; }
+    .meta { color: #aaaaaf; }
+    .meta b { color: #f5f5f7; }
+    .hint { color: #8e8e93; }
+  }
+  @media (max-width: 480px) {
+    h1 { font-size: 22px; }
+    .cu-text { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <p class="meta"><b>Meeting notes</b><span>Generated from the Atlas sync transcript · 42 min</span></p>
+  <h1>Atlas billing migration</h1>
+  <div id="notes"></div>
+  <p class="hint">Dotted phrases are the ones the model wasn’t sure about — the denser the dots, the less sure. Hover, tap or tab to one.</p>
+</main>
+<script src="../variants/html/confidence.js"></script>
+<script>
+  var spans = [
+    { text: 'The team agreed to move the Atlas billing launch to ', p: 0.97 },
+    { text: 'March 14', p: 0.58,
+      alts: [{ text: 'mid-March', p: 0.27 }, { text: 'March 21', p: 0.11 }],
+      source: { label: 'Transcript · 12:04', quote: 'Dana: “Let’s aim for mid-March — the 14th, if legal signs off in time.”' } },
+    { text: ', pending ', p: 0.95 },
+    { text: 'legal review of the EU pricing page', p: 0.79,
+      alts: [{ text: 'legal sign-off on EU invoices', p: 0.15 }],
+      source: { label: 'Transcript · 12:31', quote: 'Omar: “Legal still has to look at the EU pricing page, mostly the VAT line.”' } },
+    { text: '. ', p: 0.99 },
+    { text: 'Priya', p: 0.46,
+      alts: [{ text: 'Marco', p: 0.35 }, { text: 'Priya and Marco', p: 0.15 }],
+      source: { label: 'Transcript · 23:40', quote: 'Marco: “Priya, can you take the webhook retries? I’ll back you up on the Stripe side.”' } },
+    { text: ' will own the webhook migration, and the old invoices endpoint will be switched off ', p: 0.93 },
+    { text: 'two weeks after launch', p: 0.34,
+      alts: [{ text: 'a month after launch', p: 0.31 }, { text: 'after the Q2 audit', p: 0.2 }],
+      source: { label: 'Transcript · 27:15', quote: 'Omar: “Two weeks, a month — whenever finance is done with the Q2 audit.”' } },
+    { text: '. The budget stays at ', p: 0.96 },
+    { text: '€18,000', p: 0.29,
+      alts: [{ text: '€16,000', p: 0.26 }, { text: '€18,000 plus contractor hours', p: 0.18 }],
+      source: { label: 'Transcript · 31:12', quote: 'Lena: “We said eighteen last quarter. Sixteen if we drop the contractor.”' } },
+    { text: ' for the quarter, and ', p: 0.9 },
+    { text: 'no new hires are planned', p: 0.74,
+      alts: [{ text: 'one contractor may stay on', p: 0.19 }],
+      source: { label: 'Transcript · 33:02', quote: 'Lena: “No hiring this quarter. Maybe we keep Jonas on for another month.”' } },
+    { text: '.', p: 1 }
+  ];
+
+  var q = new URLSearchParams(location.search);
+  var notes = ConfidenceText.create(document.getElementById('notes'), spans, { heat: q.get('heat') === '1' });
+
+  // ?shot=1 — the poster: one phrase open with its readings and the source
+  if (q.get('shot') === '1') {
+    document.body.classList.add('shot');
+    document.querySelector('.hint').style.visibility = 'hidden';
+    requestAnimationFrame(function () { notes.open(9); });
+  }
+</script>
+</body>
+</html>

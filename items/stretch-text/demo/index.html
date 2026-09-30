@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Stretch Text</title>
+<link rel="stylesheet" href="../variants/html/stretch-text.css">
+<style>
+  :root {
+    --d-label: #1d1d1f;
+    --d-label-2: #636366;
+    --d-label-3: #86868b;
+    --d-surface: #ffffff;
+    --d-hair: rgba(0, 0, 0, 0.1);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --d-label: #f5f5f7; --d-label-2: #aaaaaf; --d-label-3: #6e6e73; --d-surface: #1c1c1e; --d-hair: rgba(255, 255, 255, 0.1); }
+  }
+  html, body { margin: 0; background: transparent; }
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: grid;
+    grid-template-columns: minmax(0, 640px);
+    justify-content: center;
+    align-content: center;
+    padding: 32px 20px;
+    box-sizing: border-box;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: var(--d-label);
+    -webkit-font-smoothing: antialiased;
+  }
+  .case { padding: 26px 28px 20px; border-radius: 20px; background: var(--d-surface); }
+  .case__meta { margin: 0; font-size: 13px; color: var(--d-label-2); }
+  .case__title { margin: 4px 0 18px; font-size: 24px; font-weight: 600; letter-spacing: -0.015em; line-height: 1.2; }
+  .case .st { padding: 16px 0 18px; }
+  .case .st + .st { box-shadow: inset 0 0.5px 0 var(--d-hair); }
+  .hint { margin: 10px 0 0; font-size: 12px; color: var(--d-label-3); }
+  .hint__touch { display: none; }
+  @media (hover: none) { .hint__fine { display: none; } .hint__touch { display: inline; } }
+  /* anchored to the top so the controls never move under the pointer while the list changes height */
+  body { align-content: start; padding-top: clamp(24px, 9vh, 88px); }
+  html.is-shot body { align-content: center; }
+  @media (max-width: 520px) {
+    body { padding: 60px 12px 16px; align-content: start; }
+    .case { padding: 20px 18px 16px; border-radius: 18px; }
+    .case__title { font-size: 21px; }
+    .case .st__text { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+<main class="case" aria-labelledby="case-title">
+  <p class="case__meta">Case study · Grocery app, 2025</p>
+  <h1 class="case__title" id="case-title">Delivery slots, moved up front</h1>
+
+  <article class="st" data-level="1">
+    <div class="st__bar">
+      <h2 class="st__label">Problem</h2>
+      <button class="st__handle" type="button"></button>
+    </div>
+    <p class="st__text">Checkout lost a third of shoppers<span data-l="2"> on mobile</span><span data-l="3"> in spring 2025</span><span data-l="2">, most of them at the delivery slot step</span><span data-l="3">, where slots loaded last and often disappeared after being picked</span>.</p>
+  </article>
+
+  <article class="st" data-level="1">
+    <div class="st__bar">
+      <h2 class="st__label">What we changed</h2>
+      <button class="st__handle" type="button"></button>
+    </div>
+    <p class="st__text">We moved the slot choice<span data-l="3"> from the last step</span> to the<span data-l="3"> top of the</span> cart<span data-l="2"> and held the picked slot for 20 minutes</span><span data-l="3">, so prices and fees were final before payment</span>.</p>
+  </article>
+
+  <article class="st" data-level="1">
+    <div class="st__bar">
+      <h2 class="st__label">Result</h2>
+      <button class="st__handle" type="button"></button>
+    </div>
+    <p class="st__text">Drop-off<span data-l="2"> at checkout</span> fell<span data-l="2"> from 34%</span> to 19%<span data-l="2"> in six weeks</span><span data-l="3">, and support tickets about vanished slots dropped by half</span>.</p>
+  </article>
+
+  <p class="hint"><span class="hint__fine">Click a handle for more, drag it sideways, press + and −, or pinch on a trackpad.</span><span class="hint__touch">Tap a handle for more, drag it sideways, or pinch the text open.</span></p>
+</main>
+<script src="../variants/html/stretch-text.js"></script>
+<script>
+  // ?shot=1: poster state. The first block reads at level 2, the second is caught stretching to level 3.
+  (() => {
+    if (!new URLSearchParams(location.search).has('shot')) return;
+    document.documentElement.classList.add('is-shot');
+    const [a, b] = document.querySelectorAll('.st');
+    a.stretch?.set(2, { instant: true });
+    b.stretch?.set(3, { freezeAt: 330 });
+  })();
+</script>
+</body>
+</html>

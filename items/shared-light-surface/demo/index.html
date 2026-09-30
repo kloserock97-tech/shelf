@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Shared Light Surface</title>
+<link rel="stylesheet" href="../variants/html/shared-light.css">
+<style>
+  :root { --ink: #1d1d1f; --muted: #66666b; --accent: #0073e6; --accent-text: #0066cc; --hair: rgba(0, 0, 0, 0.08); }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink: #f5f5f7; --muted: #9d9da3; --accent: #0a84ff; --accent-text: #2997ff; --hair: rgba(255, 255, 255, 0.08); }
+  }
+  html, body { height: 100%; margin: 0; background: transparent; }
+  body {
+    display: grid; place-items: center; box-sizing: border-box; padding: 20px;
+    font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { width: min(1080px, 100%); display: grid; gap: 12px; }
+
+  .desk { border-radius: 22px; padding: 26px; display: grid; gap: 18px; overflow: hidden; }
+  .desk header { display: flex; align-items: baseline; gap: 10px; padding: 0 4px; }
+  .desk h1 { margin: 0; font-size: 20px; line-height: 26px; font-weight: 650; letter-spacing: -0.01em; }
+  .desk header span { color: var(--muted); font-size: 14px; }
+
+  .grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 158px; gap: 18px; }
+  .ls-card { border-radius: 18px; padding: 18px 20px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .wide { grid-column: span 2; }
+  .tall { grid-row: span 2; }
+  .ls-card h2 { margin: 0; font-size: 13px; line-height: 18px; font-weight: 500; color: var(--muted); }
+  .big { font-size: 30px; line-height: 36px; font-weight: 650; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+  .mid { font-size: 22px; line-height: 28px; font-weight: 650; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+  .sub { font-size: 13px; line-height: 18px; color: var(--muted); }
+  .up { color: var(--accent-text); font-weight: 600; }
+  .row { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-top: auto; }
+  .spark { width: 56%; height: 64px; flex: none; }
+  .spark path { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .spark .area { fill: var(--accent); fill-opacity: 0.1; stroke: none; }
+  .meter { height: 6px; border-radius: 999px; background: rgba(118, 118, 128, 0.2); overflow: hidden; margin-top: auto; }
+  .meter i { display: block; height: 100%; width: 90%; border-radius: inherit; background: var(--ink); opacity: 0.8; }
+  .list { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; }
+  .list li { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; box-shadow: 0 -0.5px 0 var(--hair); font-variant-numeric: tabular-nums; }
+  .list li:first-child { box-shadow: none; }
+  .list b { font-weight: 500; }
+  .list span { color: var(--muted); }
+  .bars { display: flex; align-items: flex-end; gap: 6px; height: 52px; margin-top: auto; }
+  .bars i { flex: 1; border-radius: 4px 4px 2px 2px; background: var(--ink); opacity: 0.18; }
+  .bars i:last-child { opacity: 0.75; }
+  .cash { display: flex; align-items: flex-end; gap: 10px; height: 70px; margin-top: auto; }
+  .cash div { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; color: var(--muted); }
+  .cash i { width: 100%; max-width: 38px; border-radius: 5px; background: var(--ink); opacity: 0.2; }
+  .cash div:last-child i { background: var(--accent); opacity: 1; }
+
+  .hint { display: flex; align-items: center; gap: 10px 18px; flex-wrap: wrap; padding: 0 6px; font-size: 13px; color: var(--muted); }
+  .hint kbd { font: inherit; padding: 0 5px; border-radius: 5px; box-shadow: inset 0 0 0 0.5px var(--muted); color: var(--ink); }
+  .hint label { display: inline-flex; align-items: center; gap: 10px; margin-left: auto; color: var(--ink); }
+  .hint output { min-width: 5ch; font-variant-numeric: tabular-nums; color: var(--muted); }
+  input[type="range"] { width: 150px; accent-color: var(--accent); }
+  .touch-only { display: none; }
+  @media (hover: none) { .touch-only { display: inline; } .mouse-only { display: none; } }
+
+  @media (max-width: 760px) {
+    body { padding: 12px; }
+    .desk { padding: 16px; gap: 14px; border-radius: 20px; }
+    .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 132px; gap: 12px; }
+    .tall { grid-row: span 2; }
+    .ls-card { padding: 14px 15px; }
+    .big { font-size: 24px; line-height: 30px; }
+    .mid { font-size: 19px; line-height: 24px; }
+    .spark { width: 50%; height: 48px; }
+    .hide-sm { display: none !important; }
+    .list li { flex-direction: column; gap: 0; padding: 7px 0; }
+    .list { margin-top: 2px; }
+    .hint label { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="desk" data-shared-light data-lamp-height="260" data-lamp-rest="0.38 0.36"
+           aria-label="Northwind Studio, October. Arrow keys move the lamp, Page Up and Page Down change its height.">
+    <header><h1>Northwind Studio</h1><span>October 2026</span></header>
+    <div class="grid">
+      <article class="ls-card wide">
+        <h2>Revenue</h2>
+        <div class="row">
+          <div><div class="big">€48,210</div><div class="sub"><span class="up">+12.4%</span> vs September</div></div>
+          <svg class="spark" viewBox="0 0 200 64" preserveAspectRatio="none" aria-hidden="true">
+            <path class="area" d="M0 50 L25 46 L50 48 L75 38 L100 41 L125 30 L150 33 L175 18 L200 10 V64 H0Z"/>
+            <path d="M0 50 L25 46 L50 48 L75 38 L100 41 L125 30 L150 33 L175 18 L200 10"/>
+          </svg>
+        </div>
+      </article>
+      <article class="ls-card">
+        <h2>Invoices paid</h2>
+        <div class="mid">38 of 42</div>
+        <div class="sub">4 due this week</div>
+        <div class="meter"><i></i></div>
+      </article>
+      <article class="ls-card tall">
+        <h2>Top clients</h2>
+        <ul class="list">
+          <li><b>Harbor &amp; Pine</b><span>€12,400</span></li>
+          <li><b>Mistral Foods</b><span>€9,860</span></li>
+          <li><b>Oda Architects</b><span>€7,215</span></li>
+          <li class="hide-sm"><b>Lumen Health</b><span>€5,900</span></li>
+          <li class="hide-sm"><b>Field Office</b><span>€4,120</span></li>
+        </ul>
+      </article>
+      <article class="ls-card">
+        <h2>Outstanding</h2>
+        <div class="mid">€6,940</div>
+        <div class="sub">4 invoices, oldest 12 days</div>
+      </article>
+      <article class="ls-card">
+        <h2>Hours logged</h2>
+        <div class="mid">164 h</div>
+        <div class="bars" aria-hidden="true"><i style="height:48%"></i><i style="height:62%"></i><i style="height:55%"></i><i style="height:80%"></i><i style="height:70%"></i><i style="height:92%"></i></div>
+      </article>
+      <article class="ls-card">
+        <h2>Next payout</h2>
+        <div class="mid">€11,380</div>
+        <div class="sub">Monday, 3 November</div>
+      </article>
+      <article class="ls-card wide hide-sm">
+        <h2>Cash flow, last six months</h2>
+        <div class="cash" aria-hidden="true">
+          <div><i style="height:30px"></i>May</div><div><i style="height:38px"></i>Jun</div><div><i style="height:26px"></i>Jul</div>
+          <div><i style="height:44px"></i>Aug</div><div><i style="height:40px"></i>Sep</div><div><i style="height:52px"></i>Oct</div>
+        </div>
+      </article>
+      <article class="ls-card hide-sm">
+        <h2>Tax set aside</h2>
+        <div class="mid">€9,640</div>
+        <div class="sub">21% of revenue</div>
+      </article>
+      <article class="ls-card hide-sm">
+        <h2>Paid in</h2>
+        <div class="mid">9 days</div>
+        <div class="sub">on average, 3 faster</div>
+      </article>
+    </div>
+  </section>
+  <div class="hint">
+    <span class="mouse-only">Move the pointer: it carries the lamp. <kbd>Alt</kbd> + wheel raises and lowers it.</span>
+    <span class="touch-only">Tap anywhere to move the lamp.</span>
+    <label>Lamp height <input type="range" min="90" max="640" step="1" value="260" aria-label="Lamp height"><output>260 px</output></label>
+  </div>
+</div>
+
+<script src="../variants/html/shared-light.js"></script>
+<script>
+(() => {
+  const desk = document.querySelector('.desk');
+  const light = desk.sharedLight;
+  const range = document.querySelector('input[type="range"]');
+  const out = document.querySelector('output');
+  range.addEventListener('input', () => { light.setHeight(Number(range.value)); });
+  desk.addEventListener('lampheight', (e) => { range.value = Math.round(e.detail); out.textContent = `${Math.round(e.detail)} px`; });
+
+  // ?shot=1: a still frame for the poster, the lamp low over the left of the grid so the shadows fan out to the right
+  if (new URLSearchParams(location.search).has('shot')) {
+    const b = desk.getBoundingClientRect();
+    const small = matchMedia('(max-width: 760px)').matches;
+    light.placeLamp(b.width * (small ? 0.5 : 0.24), b.height * (small ? 0.318 : 0.39), small ? 170 : 170);
+    range.value = 170; out.textContent = `${range.value} px`;
+  }
+})();
+</script>
+</body>
+</html>

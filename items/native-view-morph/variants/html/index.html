@@ -1,0 +1,33 @@
+<!-- Both pages load the same two files; morph.js as a plain script in <head>. -->
+<link rel="stylesheet" href="morph.css">
+<script src="morph.js"></script>
+
+<!-- index.html: every card links to its page. Parts: bg (the surface), media, title. -->
+<a class="card" href="case.html?p=ledger" data-morph-card>
+  <span class="card-bg" data-morph="bg"></span>          <!-- position: absolute; inset: 0; --morph-radius: 22px -->
+  <span class="card-clip">                                <!-- border-radius: 14px; overflow: clip -->
+    <svg class="card-media" data-morph="media">…</svg>   <!-- --morph-radius: 14px -->
+  </span>
+  <span class="card-title" data-morph="title">Ledger</span> <!-- width: fit-content -->
+</a>
+
+<!-- case.html: the hero has the same parts. The card's own corner comes from its parent (overflow: clip),
+     so the snapshots are square and the morph rounds them itself. -->
+<section class="hero" data-morph-hero>                    <!-- border-radius: 28px; overflow: clip -->
+  <div class="hero-bg" data-morph="bg"></div>             <!-- --morph-radius: 28px -->
+  <h1 class="hero-title" data-morph="title">Ledger</h1>   <!-- same line-height, weight, letter-spacing in em -->
+  <div class="hero-clip">
+    <svg class="hero-media" data-morph="media">…</svg>   <!-- --morph-radius: 18px -->
+  </div>
+</section>
+
+<!-- Back that plays the morph in reverse: step back when we came from the list, otherwise open it. -->
+<script>
+  document.querySelector('.back')?.addEventListener('click', (e) => {
+    const list = new URL(e.currentTarget.href);
+    if (document.referrer && new URL(document.referrer).pathname === list.pathname) {
+      e.preventDefault();
+      history.back();
+    }
+  });
+</script>

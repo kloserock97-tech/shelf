@@ -1,0 +1,37 @@
+<!-- Each action names its kind and what it touches. The script previews it on the rows before it runs. -->
+<section class="ffa" data-noun="invoice" aria-label="Invoices">
+  <div class="ffa__actions" role="toolbar" aria-label="Invoice actions">
+    <button class="ffa-btn" data-ffa="archive" data-match="paid"
+            data-preview="Archives {n}: {names}." data-done="Archived {n}." data-noop="Nothing paid to archive.">
+      <span>Archive <span data-n>0</span> paid</span>
+    </button>
+    <button class="ffa-btn" data-ffa="sort" data-key="due"
+            data-preview="Sorts by due date, earliest first. {moves} of {total} move." data-done="Sorted by due date." data-noop="Already sorted by due date.">
+      <span>Sort by due date</span>
+    </button>
+    <button class="ffa-btn" data-ffa="style" data-match="overdue" data-class="is-flagged"
+            data-preview="Marks {n} in red: {names}." data-done="Highlighted {n}." data-noop="Overdue invoices are already marked.">
+      <span>Highlight overdue</span>
+    </button>
+  </div>
+  <p class="ffa__status"></p>
+  <div class="ffa__stage">
+    <ul class="ffa__list">
+      <li class="ffa-row" data-status="overdue" data-due="2026-09-02">
+        <span class="ffa-row__dot" aria-hidden="true"></span>
+        <span><span class="ffa-row__name">Kettle Coffee Co.</span><span class="ffa-row__meta">INV-0409 · due Sep 2</span></span>
+        <span class="ffa-row__amount">€1,150</span>
+        <span class="ffa-row__status">Overdue</span>
+      </li>
+      <li class="ffa-row" data-status="paid" data-due="2026-09-12">
+        <span class="ffa-row__dot" aria-hidden="true"></span>
+        <span><span class="ffa-row__name">Northwind Studio</span><span class="ffa-row__meta">INV-0412 · due Sep 12</span></span>
+        <span class="ffa-row__amount">€2,400</span>
+        <span class="ffa-row__status">Paid</span>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<link rel="stylesheet" href="feedforward.css">
+<script src="feedforward.js" defer></script>

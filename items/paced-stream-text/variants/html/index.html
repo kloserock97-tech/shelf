@@ -1,0 +1,30 @@
+<!-- Feed it chunks as they come off the network; it shows whole words at a steady pace.
+     The scroller follows the newest line only while the reader is at the bottom; the pill brings them back. -->
+<link rel="stylesheet" href="paced-stream.css">
+
+<div class="chat-log" style="position: relative; height: 480px; overflow-y: auto">
+  <div id="reply"></div>
+</div>
+<button type="button" class="ps-pill" id="jump" tabindex="-1" aria-hidden="true">Jump to latest</button>
+
+<script src="paced-stream.js"></script>
+<script>
+  const log = document.querySelector('.chat-log');
+  const stream = new PacedStream(document.getElementById('reply'), {
+    scroller: log,
+    pill: document.getElementById('jump'),
+    targetLag: 0.6,   // seconds behind the network the screen likes to be
+    maxLag: 1.0       // no word waits longer than this
+  });
+
+  // e.g. a fetch() body or an EventSource
+  async function show(response) {
+    const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      stream.push(value);
+    }
+    stream.end();
+  }
+</script>

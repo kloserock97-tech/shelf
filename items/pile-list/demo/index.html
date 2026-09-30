@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Pile List</title>
+<link rel="stylesheet" href="../variants/html/pile-list.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  body { min-height: 100vh; min-height: 100dvh; }
+  body { display: grid; grid-template-columns: minmax(0, 540px); justify-content: center; align-content: center; padding: 32px 20px; box-sizing: border-box; }
+  .head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 2px 14px; }
+  .head h1 { margin: 0; font-size: 19px; font-weight: 600; letter-spacing: -0.01em; }
+  .head p { margin: 2px 0 0; font-size: 13px; color: var(--pl-label-2); }
+  .pl__summary { font-size: 13px; color: var(--pl-label-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .hint { margin: 16px 2px 0; font-size: 12px; line-height: 1.5; color: var(--pl-label-3); }
+  .hint kbd { font: 600 11px/1 system-ui, -apple-system, "Segoe UI", sans-serif; padding: 2px 5px; border-radius: 5px; background: var(--pl-group); color: var(--pl-label-2); }
+  .hint__touch { display: none; }
+  @media (hover: none) { .hint__fine { display: none; } .hint__touch { display: inline; } }
+  /* anchored to the top so the controls never move under the pointer while the list changes height */
+  body { align-content: start; padding-top: clamp(24px, 9vh, 88px); }
+  html.is-shot body { align-content: center; }
+  @media (max-width: 520px) {
+    body { padding: 60px 14px 16px; align-content: start; }
+    .pl-note { min-height: 58px; }
+    .pl-note__text { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  }
+</style>
+</head>
+<body>
+<section class="pl" aria-labelledby="pl-title">
+  <div class="head">
+    <div>
+      <h1 id="pl-title">Checkout study</h1>
+      <p>Interview notes, round 2</p>
+    </div>
+    <span class="pl__summary" aria-hidden="true"></span>
+  </div>
+  <ul class="pl__list" aria-label="Interview notes">
+    <li><div class="pl-note" data-id="promo"><p class="pl-note__text">I didn't see the promo field until I'd already paid.</p><span class="pl-note__meta">P2</span></div></li>
+    <li><div class="pl-note" data-id="address"><p class="pl-note__text">Why does it ask for my address twice?</p><span class="pl-note__meta">P5</span></div></li>
+    <li><div class="pl-note" data-id="total"><p class="pl-note__text">I screenshot the total before paying, just in case.</p><span class="pl-note__meta">P1</span></div></li>
+    <li><div class="pl-note" data-id="account"><p class="pl-note__text">I gave up when it wanted me to make an account.</p><span class="pl-note__meta">P3</span></div></li>
+    <li><div class="pl-note" data-id="delivery"><p class="pl-note__text">The delivery date only shows up on the last step.</p><span class="pl-note__meta">P4</span></div></li>
+    <li><div class="pl-note" data-id="vat"><p class="pl-note__text">I wasn't sure if the price included VAT.</p><span class="pl-note__meta">P2</span></div></li>
+    <li><div class="pl-note" data-id="guest"><p class="pl-note__text">Guest checkout was hidden under the login form.</p><span class="pl-note__meta">P7</span></div></li>
+    <li><div class="pl-note" data-id="applepay"><p class="pl-note__text">Apple Pay was the only reason I finished.</p><span class="pl-note__meta">P6</span></div></li>
+  </ul>
+  <p class="pl__live pl-sr" role="status"></p>
+  <p class="hint">
+    <span class="hint__fine">Drop a note on another to pile them, between notes to reorder. Click a pile to fan it out. <kbd>Ctrl</kbd>-drag across notes sweeps them into one pile. Keys: <kbd>Space</kbd> select, <kbd>G</kbd> pile, <kbd>U</kbd> unpile.</span>
+    <span class="hint__touch">Drop a note on another to pile them, between notes to reorder. Tap a pile to fan it out. Pinch two notes together to pile everything between.</span>
+  </p>
+</section>
+<script src="../variants/html/pile-list.js"></script>
+<script>
+  // ?shot=1: poster state. One pile made, a note lifted and held over another.
+  (() => {
+    const box = document.querySelector('.pl');
+    if (!new URLSearchParams(location.search).has('shot') || !box.pileList) return;
+    document.documentElement.classList.add('is-shot');
+    box.pileList.pile(['promo', 'total', 'vat']);
+    box.pileList.hold('guest', 'account', 0.52);
+  })();
+</script>
+</body>
+</html>

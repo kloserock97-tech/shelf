@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Scented Filter Chips</title>
+<link rel="stylesheet" href="../variants/html/scented-chips.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  body { min-height: 100vh; min-height: 100dvh; }
+  body { display: grid; grid-template-columns: minmax(0, 620px); justify-content: center; align-content: center; padding: 32px 16px; box-sizing: border-box; }
+  .card {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    padding: 22px 22px 18px;
+    border-radius: 20px;
+    background: var(--sfc-surface);
+  }
+  .card__head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .card__title { margin: 0; font-size: 19px; font-weight: 600; letter-spacing: -0.01em; }
+  .card__sub { font-size: 13px; color: var(--sfc-label-2); }
+  .sfc__status { margin: 16px 0 6px; }
+  .hint { margin: 14px 0 0; font-size: 12px; color: var(--sfc-label-3); }
+  .hint__touch { display: none; }
+  @media (hover: none) { .hint__fine { display: none; } .hint__touch { display: inline; } }
+  /* anchored to the top so the controls never move under the pointer while the list changes height */
+  body { align-content: start; padding-top: clamp(24px, 9vh, 88px); }
+  html.is-shot body { align-content: center; }
+  @media (max-width: 520px) {
+    body { padding: 54px 12px 16px; align-content: start; }
+    .card { padding: 18px 16px 14px; border-radius: 18px; }
+    .sfc__chips { flex-wrap: nowrap; overflow-x: auto; margin: -4px -16px; padding: 4px 16px; scrollbar-width: none; }
+    .sfc__chips::-webkit-scrollbar { display: none; }
+  }
+</style>
+</head>
+<body>
+<section class="sfc card" data-noun="home" aria-labelledby="sfc-title">
+  <div class="card__head">
+    <h1 class="card__title" id="sfc-title">Homes to rent, Amsterdam</h1>
+    <span class="card__sub">Long stay</span>
+  </div>
+  <div class="sfc__chips" role="group" aria-label="Filters">
+    <button class="sfc-chip" data-filter="budget" data-miss="Over €2,000">Under €2,000</button>
+    <button class="sfc-chip" data-filter="twobed" data-miss="Under 2 bedrooms">2+ bedrooms</button>
+    <button class="sfc-chip" data-filter="balcony" data-miss="No balcony">Balcony</button>
+    <button class="sfc-chip" data-filter="pets" data-miss="No pets">Pets allowed</button>
+    <button class="sfc-chip" data-filter="furnished" data-miss="Unfurnished">Furnished</button>
+    <button class="sfc-chip" data-filter="metro" data-miss="No metro nearby">Near metro</button>
+    <button class="sfc-chip" data-filter="now" data-miss="Free from Dec">Available now</button>
+    <button class="sfc-chip" data-filter="parking" data-miss="No parking">Parking</button>
+  </div>
+  <p class="sfc__status">
+    <span class="sfc__count" role="status"></span>
+    <span class="sfc__preview" aria-hidden="true"></span>
+    <button class="sfc__clear" type="button" hidden>Clear</button>
+  </p>
+  <ul class="sfc__list">
+    <li class="sfc-row" data-tags="budget twobed balcony pets metro">
+      <div class="sfc-row__body">
+        <div><div class="sfc-row__title">Javastraat 41</div><div class="sfc-row__meta">Indische Buurt · 2 bd · 72 m²</div></div>
+        <div class="sfc-row__price">€1,850<small>per month</small></div>
+      </div>
+    </li>
+    <li class="sfc-row" data-tags="budget furnished metro now">
+      <div class="sfc-row__body">
+        <div><div class="sfc-row__title">Eerste Helmersstraat 88</div><div class="sfc-row__meta">Oud-West · 1 bd · 49 m²</div></div>
+        <div class="sfc-row__price">€1,690<small>per month</small></div>
+      </div>
+    </li>
+    <li class="sfc-row" data-tags="twobed balcony pets now">
+      <div class="sfc-row__body">
+        <div><div class="sfc-row__title">Czaar Peterstraat 12</div><div class="sfc-row__meta">Oostelijke Eilanden · 2 bd · 81 m²</div></div>
+        <div class="sfc-row__price">€2,200<small>per month</small></div>
+      </div>
+    </li>
+    <li class="sfc-row" data-tags="budget furnished metro now">
+      <div class="sfc-row__body">
+        <div><div class="sfc-row__title">Van Woustraat 130</div><div class="sfc-row__meta">De Pijp · Studio · 38 m²</div></div>
+        <div class="sfc-row__price">€1,450<small>per month</small></div>
+      </div>
+    </li>
+    <li class="sfc-row" data-tags="twobed balcony pets parking">
+      <div class="sfc-row__body">
+        <div><div class="sfc-row__title">Buiksloterweg 7</div><div class="sfc-row__meta">Noord · 3 bd · 96 m²</div></div>
+        <div class="sfc-row__price">€2,450<small>per month</small></div>
+      </div>
+    </li>
+    <li class="sfc-row" data-tags="budget twobed pets metro">
+      <div class="sfc-row__body">
+        <div><div class="sfc-row__title">Admiraal de Ruijterweg 302</div><div class="sfc-row__meta">Bos en Lommer · 2 bd · 68 m²</div></div>
+        <div class="sfc-row__price">€1,780<small>per month</small></div>
+      </div>
+    </li>
+    <li class="sfc-row" data-tags="budget balcony metro now">
+      <div class="sfc-row__body">
+        <div><div class="sfc-row__title">Wibautstraat 55</div><div class="sfc-row__meta">Oost · 1 bd · 52 m²</div></div>
+        <div class="sfc-row__price">€1,920<small>per month</small></div>
+      </div>
+    </li>
+    <li class="sfc-row" data-tags="furnished metro now">
+      <div class="sfc-row__body">
+        <div><div class="sfc-row__title">Herengracht 214</div><div class="sfc-row__meta">Canal Belt · 1 bd · 58 m²</div></div>
+        <div class="sfc-row__price">€2,350<small>per month</small></div>
+      </div>
+    </li>
+    <li class="sfc-row" data-tags="twobed balcony parking now">
+      <div class="sfc-row__body">
+        <div><div class="sfc-row__title">KNSM-laan 60</div><div class="sfc-row__meta">Eastern Docklands · 3 bd · 110 m²</div></div>
+        <div class="sfc-row__price">€2,900<small>per month</small></div>
+      </div>
+    </li>
+    <li class="sfc-row" data-tags="budget furnished pets now">
+      <div class="sfc-row__body">
+        <div><div class="sfc-row__title">Overtoom 410</div><div class="sfc-row__meta">Oud-West · Studio · 34 m²</div></div>
+        <div class="sfc-row__price">€1,380<small>per month</small></div>
+      </div>
+    </li>
+  </ul>
+  <p class="hint"><span class="hint__fine">Hover or tab to a filter to see what it would leave. Click to apply.</span><span class="hint__touch">Press and hold a filter to see what it would leave. Tap to apply.</span></p>
+</section>
+<script src="../variants/html/scented-chips.js"></script>
+<script>
+  // ?shot=1: poster state. One filter on, "Balcony" previewed, "Parking" already a dead end.
+  (() => {
+    const box = document.querySelector('.sfc');
+    if (!new URLSearchParams(location.search).has('shot') || !box.sfc) return;
+    document.documentElement.classList.add('is-shot');
+    box.sfc.set(['budget']);
+    box.sfc.preview('balcony');
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!-- Snap Sheet. The page and the sheet share a positioned parent; the page gets .ss-behind. -->
+<div class="screen" style="position: relative; height: 100dvh; overflow: hidden; background: #000;">
+  <main class="ss-behind" style="position: absolute; inset: 0; background: #eeebe4;">
+    <!-- the page: a map, a list, anything -->
+  </main>
+
+  <div class="ss" data-detent="peek">
+    <div class="ss__scroller">
+      <div class="ss__track">
+        <i class="ss__snap" data-snap="peek"></i>
+        <i class="ss__snap" data-snap="half"></i>
+        <i class="ss__snap" data-snap="full"></i>
+        <section class="ss__sheet" aria-labelledby="place-title">
+          <div class="ss__card">
+            <div class="ss__head">
+              <button class="ss__grabber" type="button" aria-label="Sheet: small. Expand it."></button>
+              <h2 id="place-title">Tuin Coffee</h2>
+              <p>Coffee shop · 4 min walk</p>
+            </div>
+            <div class="ss__body">
+              <div class="ss__content">
+                <!-- long content: scrolls inside only at full height -->
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="snap-sheet.css">
+<script type="module">
+  import { snapSheet } from './snap-sheet.js';
+  const sheet = snapSheet(document.querySelector('.ss'), { peek: 156, top: 62, half: 0.52 });
+  document.querySelector('.ss').addEventListener('detentchange', (e) => console.log(e.detail.detent));
+</script>

@@ -1,0 +1,86 @@
+/* Scrub KPI Sparkline */
+.kpi {
+  --kpi-label: #1d1d1f;
+  --kpi-label-2: #636366;
+  --kpi-label-3: #86868b;
+  --kpi-surface: #ffffff;
+  --kpi-fill: rgba(118, 118, 128, 0.12);
+  --kpi-thumb: #ffffff;
+  --kpi-accent: #0073e6;
+  --kpi-up: #248a3d;
+  --kpi-down: #d70015;
+  --kpi-hair: rgba(60, 60, 67, 0.36);
+  --kpi-thumb-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 0 0 0.5px rgba(0, 0, 0, 0.06);
+  display: grid; gap: 0; padding: 1.25em 1.35em 1em; border-radius: 1.4em;
+  background: var(--kpi-surface); color: var(--kpi-label);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif; line-height: 1.35;
+}
+@media (prefers-color-scheme: dark) {
+  .kpi {
+    --kpi-label: #f5f5f7;
+    --kpi-label-2: #aaaaaf;
+    --kpi-label-3: #6e6e73;
+    --kpi-surface: #1c1c1e;
+    --kpi-fill: rgba(118, 118, 128, 0.24);
+    --kpi-thumb: #5a5a5f;
+    --kpi-accent: #0a84ff;
+    --kpi-up: #30d158;
+    --kpi-down: #ff453a;
+    --kpi-hair: rgba(235, 235, 245, 0.34);
+    --kpi-thumb-shadow: none;
+  }
+}
+
+.kpi__head { display: flex; align-items: center; justify-content: space-between; gap: 0.75em; }
+.kpi__title { margin: 0; font-size: 0.93em; font-weight: 600; }
+.kpi__ranges { display: inline-flex; padding: 2px; border-radius: 999px; background: var(--kpi-fill); }
+.kpi__ranges button {
+  height: 1.85em; min-width: 2.7em; padding: 0 0.7em; border: 0; border-radius: 999px; background: transparent;
+  color: var(--kpi-label-2); font: inherit; font-size: 0.8em; font-weight: 600; font-variant-numeric: tabular-nums; cursor: pointer;
+  transition: background-color 160ms cubic-bezier(.25, .1, .25, 1), color 160ms cubic-bezier(.25, .1, .25, 1);
+}
+.kpi__ranges button[aria-pressed="true"] { background: var(--kpi-thumb); color: var(--kpi-label); box-shadow: var(--kpi-thumb-shadow); }
+.kpi__ranges button:focus-visible, .kpi__chart:focus-visible { outline: 2px solid var(--kpi-accent); outline-offset: 2px; }
+
+.kpi__date { margin: 1em 0 0; color: var(--kpi-label-2); font-size: 0.87em; font-variant-numeric: tabular-nums; }
+.kpi__value {
+  margin: 0.05em 0 0; font-size: 3.4em; font-weight: 650; letter-spacing: -0.03em; line-height: 1.08;
+  font-variant-numeric: tabular-nums;
+}
+.kpi__meta { margin: 0.2em 0 0; font-size: 0.93em; font-variant-numeric: tabular-nums; color: var(--kpi-label-2); }
+.kpi__delta { font-weight: 600; }
+.kpi__delta[data-sign="up"] { color: var(--kpi-up); }
+.kpi__delta[data-sign="down"] { color: var(--kpi-down); }
+
+/* odometer columns */
+.kpi__digits { display: inline-flex; }
+.roll {
+  display: inline-block; height: 1.08em; overflow: hidden;
+  /* soft top and bottom edges, so a rolling digit slides in rather than being cut */
+  -webkit-mask-image: linear-gradient(transparent, #000 16%, #000 84%, transparent);
+  mask-image: linear-gradient(transparent, #000 16%, #000 84%, transparent);
+}
+.roll__strip {
+  display: block; transform: translateY(calc(var(--d, 0) * -1.08em));
+  transition: transform 460ms cubic-bezier(.23, 1, .32, 1) calc(var(--i, 0) * 16ms);
+}
+.roll__strip > span { display: block; height: 1.08em; }
+.is-instant .roll__strip { transition: none; }
+.roll__sym { display: inline-block; }
+
+.kpi__chart {
+  position: relative; height: 10em; margin: 1em 0 0; border-radius: 0.5em; cursor: crosshair;
+  touch-action: pan-y; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+}
+.kpi__svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.kpi__line { fill: none; stroke: var(--kpi-accent); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.kpi__line--dim { stroke: var(--kpi-label-3); opacity: 0.45; }
+.kpi__area { fill: var(--kpi-accent); opacity: 0.08; }
+.kpi__today { stroke: var(--kpi-label-3); stroke-width: 1; stroke-dasharray: 2 4; opacity: 0; }
+.kpi__hair { stroke: var(--kpi-hair); stroke-width: 1; opacity: 0; }
+.kpi__dot { fill: var(--kpi-accent); stroke: var(--kpi-surface); stroke-width: 2.5; opacity: 0; }
+.kpi__today, .kpi__hair, .kpi__dot { transition: opacity 160ms cubic-bezier(.25, .1, .25, 1); }
+[data-scrubbing="true"] .kpi__today, [data-scrubbing="true"] .kpi__hair, [data-scrubbing="true"] .kpi__dot { opacity: 1; }
+
+.kpi__axis { display: flex; justify-content: space-between; margin-top: 0.45em; color: var(--kpi-label-2); font-size: 0.8em; font-variant-numeric: tabular-nums; }
+.kpi__sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

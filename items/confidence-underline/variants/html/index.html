@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Confidence Underline</title>
+<link rel="stylesheet" href="confidence.css">
+</head>
+<body>
+<div id="answer"></div>
+
+<script src="confidence.js"></script>
+<script>
+  // One object per phrase. p is the model's probability for that wording (0..1);
+  // alts are other readings, source is where the phrase came from.
+  var spans = [
+    { text: 'Your order ships ', p: 0.96 },
+    { text: 'on Thursday', p: 0.52,
+      alts: [{ text: 'on Friday', p: 0.31 }, { text: 'this week', p: 0.17 }],
+      source: { label: 'Warehouse feed · 09:14', quote: 'Picked, awaiting courier slot Thu/Fri.' } },
+    { text: ' from the Rotterdam warehouse.', p: 0.91 }
+  ];
+
+  var view = ConfidenceText.create(document.getElementById('answer'), spans, {
+    threshold: 0.85,          // at or above: plain text
+    onChange: function (all) { console.log(all.map(function (s) { return s.text; }).join('')); }
+  });
+
+  // Streaming or a real model: build the array from token log-probs (e.g. the mean
+  // probability of the tokens in a phrase), then call create() again or keep your own state.
+  // view.setHeat(true) switches to the heat map; view.getText() returns the current wording.
+</script>
+</body>
+</html>

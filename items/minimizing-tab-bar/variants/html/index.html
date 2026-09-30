@@ -1,0 +1,54 @@
+<!-- Minimizing Tab Bar. Place it once per screen; each tab points at a panel you show on "tabchange". -->
+<nav class="mtb" aria-label="Main" data-state="expanded">
+  <!-- optional accessory: merges into the collapsed row -->
+  <div class="mtb__accessory">
+    <button class="now" type="button" aria-label="Now playing: Tidewater by Hollow Coast">
+      <span class="now__art" aria-hidden="true"></span>
+      <span class="now__text"><b>Tidewater</b><small>Hollow Coast</small></span>
+    </button>
+    <button class="now__btn" type="button" aria-label="Pause" data-play>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 6v12M15.5 6v12"/></svg>
+    </button>
+    <button class="now__btn" type="button" aria-label="Next track">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path class="solid" d="M4.5 7.2v9.6L11 12zM12.5 7.2v9.6L19 12z"/></svg>
+    </button>
+  </div>
+
+  <div class="mtb__bar">
+    <div class="mtb__thumb" aria-hidden="true"></div>
+    <div class="mtb__tabs" role="tablist" aria-label="Sections">
+      <button class="mtb__tab" type="button" role="tab" id="tab-home" aria-controls="panel-home" aria-selected="true">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 10.2 12 4l7.5 6.2V19a1 1 0 0 1-1 1H15v-5.2H9V20H5.5a1 1 0 0 1-1-1z"/></svg>
+        <span>Home</span>
+      </button>
+      <button class="mtb__tab" type="button" role="tab" id="tab-new" aria-controls="panel-new" aria-selected="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="4.5" width="6.2" height="6.2" rx="1.6"/><rect x="13.3" y="4.5" width="6.2" height="6.2" rx="1.6"/><rect x="4.5" y="13.3" width="6.2" height="6.2" rx="1.6"/><rect x="13.3" y="13.3" width="6.2" height="6.2" rx="1.6"/></svg>
+        <span>New</span>
+      </button>
+      <button class="mtb__tab" type="button" role="tab" id="tab-radio" aria-controls="panel-radio" aria-selected="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="1.8"/><path d="M8.4 15.6a5.1 5.1 0 0 1 0-7.2M15.6 8.4a5.1 5.1 0 0 1 0 7.2M5.6 18.4a9 9 0 0 1 0-12.8M18.4 5.6a9 9 0 0 1 0 12.8"/></svg>
+        <span>Radio</span>
+      </button>
+      <button class="mtb__tab" type="button" role="tab" id="tab-library" aria-controls="panel-library" aria-selected="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 4.5v15M10 4.5v15M14.2 5.2l4.4 14"/></svg>
+        <span>Library</span>
+      </button>
+      <button class="mtb__tab" type="button" role="tab" id="tab-search" aria-controls="panel-search" aria-selected="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.2"/><path d="m15.6 15.6 4 4"/></svg>
+        <span>Search</span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<link rel="stylesheet" href="tab-bar.css">
+<script type="module">
+  import { minimizingTabBar } from './tab-bar.js';
+  const nav = document.querySelector('.mtb');
+  const bar = minimizingTabBar(nav, { scroller: document.scrollingElement });
+  nav.addEventListener('tabchange', (e) => {
+    document.querySelectorAll('[role="tabpanel"]').forEach((p) => {
+      p.hidden = p.id !== e.detail.tab.getAttribute('aria-controls');
+    });
+  });
+</script>
