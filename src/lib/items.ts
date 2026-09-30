@@ -31,6 +31,8 @@ export const demoUrl = (e: Item) => {
   return undefined;
 };
 export const isExternal = (e: Item) => Boolean(e.data.demo.url);
+// A piece made for a phone app only: its stage and Live demo open at phone width, its poster sits in a phone frame.
+export const isMobileOnly = (e: Item) => e.data.platform.includes('mobile') && !e.data.platform.includes('web');
 export const subtitle = (e: Item, lang: Lang = 'en') => [typeOne(typeOf(e.data.type), lang), ...e.data.tech.slice(0, 2)].join(' · ');
 
 // Primary file first: markup, then components, then styles, then the rest.
@@ -100,6 +102,7 @@ export function indexEntry(e: Item, lang: Lang = 'en') {
     tech: d.tech,
     tags: d.tags,
     jobs: d.jobs,
+    platform: d.platform,
     collections: d.collections,
     status: d.status,
     summary: d.summary,

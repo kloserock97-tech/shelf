@@ -631,6 +631,9 @@ button.sh-menu__item { appearance: none; margin: 0; border: 0; width: 100%; back
 .sh-grid__kind:hover { color: var(--accent-text); }
 /* a task's header says what the task is, in the quiet voice of the kind links */
 .sh-grid__about { margin: 0; font: 400 13px/24px var(--font-sans); color: var(--label-secondary); }
+/* ---------- Web / Mobile: a small segmented switch right after the list's title (Mobbin's platform tabs) ---------- */
+.sh-platform { margin-left: var(--space-3); }
+
 /* ---------- Shelves: each group a row that scrolls sideways (View → Show as Shelves) ----------
    Like the App Store's browse page: every group in sight at once, a row per group with its header, arrows and See all.
    A row holds as many cards as the grid would put in a line at this card size (--shelf-n, set by library.ts); on touch

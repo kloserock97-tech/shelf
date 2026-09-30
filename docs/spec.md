@@ -41,6 +41,10 @@ loader · webgl, shader, object, background, icon · section, sound, utility. С
 `/type/motion/` и `/type/app/` ведут на `control`, `gallery` и `webgl`.
 Статусы: stable, draft.
 
+`platform` — `web` (по умолчанию), `mobile` (паттерн телефонного приложения) или оба. Переключатель «Все / Веб / Мобайл»
+в тулбаре списка, как платформы в Mobbin: режим запоминается и переходит со списка на список; мобильные элементы
+открываются на сцене и в «Живом демо» в ширине телефона, постер снимается в рамке телефона (`capture` сам или `--phone`).
+
 Второй слой — `src/lib/curation.ts` (id повторены в `scripts/lib/items.mjs` для проверки):
 
 - `jobs` — какую задачу элемент решает для человека на странице (16: navigation, discovery, showcase, storytelling,

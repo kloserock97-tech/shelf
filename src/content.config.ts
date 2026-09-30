@@ -40,6 +40,8 @@ const items = defineCollection({
     variants: z
       .array(z.object({ id: z.string(), label: z.string(), files: z.array(z.string()).optional() }))
       .default([]),
+    // where the piece belongs: web pages, a phone app's interface, or both (the Web / Mobile switch)
+    platform: z.array(z.enum(['web', 'mobile'])).default(['web']),
     // what the piece does for the person on the page (curation.ts), the main job first
     jobs: z.array(z.enum(JOB_IDS)).default([]),
     // taste collections (curation.ts)

@@ -8,7 +8,7 @@ import { initFinder, type FinderAction, type FinderApi, type FinderIcon } from '
 import { initFace } from './face';
 
 interface Entry {
-  slug: string; title: string; type: string; typeLabel: string; tech: string[]; tags: string[]; jobs: string[]; collections: string[]; status: string;
+  slug: string; title: string; type: string; typeLabel: string; tech: string[]; tags: string[]; jobs: string[]; platform?: string[]; collections: string[]; status: string;
   summary: string; notes: string; url: string; poster: string | null; loop: string | null; demo: string | null;
   external: boolean; bg: 'auto' | 'light' | 'dark'; grid: boolean; added: string; updated: string; private: boolean;
 }
@@ -551,6 +551,8 @@ function showQuickLook(slug: string) {
   else if (e.external) stage.dataset.bg = 'dark';
   else delete stage.dataset.bg;
   if (e.grid && !e.external) stage.dataset.grid = 'on'; else delete stage.dataset.grid;
+  // a piece made for a phone app runs at phone width, as on its page
+  if (e.platform?.includes('mobile') && !e.platform.includes('web')) stage.dataset.device = 'phone'; else delete stage.dataset.device;
   const poster = $<HTMLImageElement>('#ql-poster')!;
   // A local demo is transparent and loads at once; a light poster under it would show through in dark mode.
   const showPoster = Boolean(e.poster && (e.external || !e.demo));

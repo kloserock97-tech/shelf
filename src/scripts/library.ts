@@ -7,7 +7,7 @@ import { GROUPS, TYPES, typeLabel, typeAbout, typeOf } from '../lib/taxonomy';
 import { JOBS, jobOf, nameOf, aboutOf } from '../lib/curation';
 import { itemsWord, type Key, type Lang } from '../lib/i18n';
 
-export interface LibEntry { slug: string; title: string; type: string; jobs: string[]; tech: string[]; tags: string[]; added: string; updated: string; poster: string | null }
+export interface LibEntry { slug: string; title: string; type: string; jobs: string[]; platform: string[]; tech: string[]; tags: string[]; added: string; updated: string; poster: string | null }
 export interface LibDeps {
   lang: Lang;
   tr: (k: Key, vars?: Record<string, string | number>) => string;
@@ -29,7 +29,7 @@ export interface LibApi {
 const $ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document) => root.querySelector(sel) as T | null;
 const $$ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document) => Array.from(root.querySelectorAll(sel)) as T[];
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
-const CARRY = ['job', 'stack', 'tag', 'sort']; // what follows you to another type in the sidebar
+const CARRY = ['platform', 'job', 'stack', 'tag', 'sort']; // what follows you to another type in the sidebar
 const CARRY_SORTS: SortId[] = ['updated', 'az']; // orders that mean the same on every list
 const TAG_POPULAR = 2; // a tag used this many times is listed before you search
 
@@ -50,7 +50,8 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
   const facetsOn = Boolean($('[data-filters]'));
 
   /* ---------- state and the URL ---------- */
-  type State = { q: string; type: Set<string>; job: Set<string>; stack: Set<string>; tag: Set<string>; sort: SortId; group: GroupId; view: ViewId };
+  type Platform = 'all' | 'web' | 'mobile';
+  type State = { q: string; type: Set<string>; job: Set<string>; stack: Set<string>; tag: Set<string>; sort: SortId; group: GroupId; view: ViewId; platform: Platform };
   const params = new URLSearchParams(location.search);
   const list = (k: string) => new Set((params.get(k) ?? '').split(',').map((s) => s.trim()).filter(Boolean));
   const baseSort = defaultSort(mode);
@@ -77,8 +78,12 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
     // "No groups" saved before there were shelves meant a flat grid, not "no shelves": with no view saved alongside it,
     // the page's own grouping stands. Picked now, "No groups" saves the grid view with it.
     group: groupFromParam(params.get('group')) ?? (storedGroup === 'none' && !storedView && baseView === 'shelves' ? baseGroup : storedGroup) ?? baseGroup,
-    view: viewFromParam(params.get('view')) ?? storedView ?? baseView
+    view: viewFromParam(params.get('view')) ?? storedView ?? baseView,
+    // like Mobbin, the platform is a mode that follows you from list to list: the address first, then the last pick
+    platform: (['all', 'web', 'mobile'] as const).find((x) => x === (params.get('platform') ?? d.store.get('shelf:platform'))) ?? 'all'
   };
+  const platformSwitch = $('[data-platform-switch]');
+  if (!platformSwitch) state.platform = 'all';
   // links from before the facets used ?tech=
   if (facetsOn && params.get('tech')) state.stack.add(params.get('tech')!);
   if (input && state.q) input.value = state.q;
@@ -86,7 +91,8 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
   const active = () => state.type.size + state.job.size + state.stack.size + state.tag.size;
   function writeUrl() {
     const p = new URLSearchParams(location.search);
-    ['q', 'type', 'job', 'stack', 'tag', 'view', 'group', 'sort', 'tech'].forEach((k) => p.delete(k));
+    ['q', 'platform', 'type', 'job', 'stack', 'tag', 'view', 'group', 'sort', 'tech'].forEach((k) => p.delete(k));
+    if (state.platform !== 'all') p.set('platform', state.platform);
     if (state.q.trim()) p.set('q', state.q.trim());
     for (const f of FACETS) if (state[f.id].size) p.set(f.param, [...state[f.id]].join(','));
     if (state.view !== baseView) p.set('view', VIEWS.find((x) => x.id === state.view)!.param);
@@ -99,6 +105,7 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
   // Mobbin keeps filters when you switch the content type; here the sidebar links carry Task, Stack, Tags and the sort.
   function carryToSidebar() {
     const p = new URLSearchParams();
+    if (state.platform !== 'all') p.set('platform', state.platform);
     if (state.job.size) p.set('job', [...state.job].join(','));
     if (state.stack.size) p.set('stack', [...state.stack].join(','));
     if (state.tag.size) p.set('tag', [...state.tag].join(','));
@@ -116,7 +123,8 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
   const has = (e: LibEntry, f: FacetId, v: string) =>
     f === 'type' ? e.type === v : f === 'job' ? e.jobs.includes(v) : f === 'stack' ? e.tech.includes(v) : e.tags.includes(v);
   const passes = (e: LibEntry, f: FacetId) => state[f].size === 0 || [...state[f]].some((v) => has(e, f, v));
-  const inMode = (e: LibEntry) => mode !== 'favorites' || d.favs.has(e.slug);
+  const inPlatform = (e: LibEntry) => state.platform === 'all' || (e.platform ?? ['web']).includes(state.platform);
+  const inMode = (e: LibEntry) => (mode !== 'favorites' || d.favs.has(e.slug)) && inPlatform(e);
   let queryHits: Map<string, number> | null = null;
   const refreshQuery = () => {
     const q = state.q.trim();
@@ -161,8 +169,9 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
     grid.hidden = found.length === 0;
     if (countEl) countEl.textContent = String(found.length);
     const filtered = Boolean(state.q.trim()) || active() > 0;
-    hero?.toggleAttribute('hidden', filtered);
-    rail?.toggleAttribute('hidden', filtered);
+    // the featured piece and the collections are the whole shelf's: they step aside for a filter, a search or one platform
+    hero?.toggleAttribute('hidden', filtered || state.platform !== 'all');
+    rail?.toggleAttribute('hidden', filtered || state.platform !== 'all');
     if (clearBtn) clearBtn.hidden = !filtered;
     // the words search only this page's items: the placeholder says how many (Favorites changes as you star)
     const own = entries.filter(inMode).length;
@@ -615,6 +624,34 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
     apply();
     (grid.querySelector<HTMLElement>('.sh-card:not([hidden]) .sh-card__thumb') ?? input)?.focus();
   });
+
+  /* ---------- Web / Mobile ---------- */
+  if (platformSwitch) {
+    const opts = $$<HTMLButtonElement>('.sh-seg__opt', platformSwitch);
+    const show = () => {
+      const i = Math.max(0, opts.findIndex((o) => o.dataset.value === state.platform));
+      platformSwitch.style.setProperty('--n', String(opts.length));
+      platformSwitch.style.setProperty('--i', String(i));
+      opts.forEach((o, j) => o.setAttribute('aria-pressed', String(i === j)));
+    };
+    const pick = (v: Platform) => {
+      state.platform = v;
+      d.store.set('shelf:platform', v === 'all' ? null : v);
+      show();
+      writeUrl();
+      apply();
+    };
+    opts.forEach((o) => o.addEventListener('click', () => pick(o.dataset.value as Platform)));
+    platformSwitch.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      const cur = opts.findIndex((o) => o.dataset.value === state.platform);
+      const next = opts[Math.min(opts.length - 1, Math.max(0, cur + (e.key === 'ArrowRight' ? 1 : -1)))];
+      pick(next.dataset.value as Platform);
+      next.focus();
+      e.preventDefault();
+    });
+    show();
+  }
 
   /* ---------- the collections shelf: the same kind of row as a shelf of cards ---------- */
   const railList = $('[data-rail-list]');

@@ -5,7 +5,7 @@
 // `npm run check` only validates.
 import fs from 'node:fs';
 import path from 'node:path';
-import { ROOT, TYPES, JOBS, COLLECTIONS, PROJECTS, readItems, isFile, walk } from './lib/items.mjs';
+import { ROOT, TYPES, JOBS, COLLECTIONS, PROJECTS, PLATFORMS, readItems, isFile, walk } from './lib/items.mjs';
 import { CODE, borrowedIn } from './lib/provenance.mjs';
 
 const checkOnly = process.argv.includes('--check');
@@ -34,7 +34,7 @@ for (const it of items) {
   for (const key of ['title', 'type', 'summary', 'added']) if (!d[key]) errors.push(`${where}: missing "${key}"`);
   if (d.type && !TYPES.includes(d.type)) errors.push(`${where}: unknown type "${d.type}" (one of ${TYPES.join(', ')})`);
   if (d.status && !['stable', 'draft'].includes(d.status)) errors.push(`${where}: status is stable or draft`);
-  for (const [key, known] of [['jobs', JOBS], ['collections', COLLECTIONS], ['usedIn', PROJECTS]]) {
+  for (const [key, known] of [['jobs', JOBS], ['collections', COLLECTIONS], ['usedIn', PROJECTS], ['platform', PLATFORMS]]) {
     for (const v of d[key] ?? []) if (!known.includes(v)) errors.push(`${where}: unknown ${key} "${v}" (one of ${known.join(', ')})`);
   }
   if (!(d.jobs ?? []).length) warnings.push(`${where}: no jobs yet — say what it does for the person on the page`);

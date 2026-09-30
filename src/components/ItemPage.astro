@@ -4,7 +4,7 @@ import { render } from 'astro:content';
 import App from '../layouts/App.astro';
 import Icon from './Icon.astro';
 import {
-  variantsOf, promptFor, itemUrl, collectionUrl, posterUrl, demoUrl, isExternal, isPrivate, subtitle, type Item
+  variantsOf, promptFor, itemUrl, collectionUrl, posterUrl, demoUrl, isExternal, isPrivate, isMobileOnly, subtitle, type Item
 } from '../lib/items';
 import { pairsOf, similarTo } from '../lib/similar';
 import { jobOf, collectionOf, projectOf, nameOf } from '../lib/curation';
@@ -33,6 +33,7 @@ const prompt = promptFor(item, variants);
 const demo = demoUrl(item);
 const external = isExternal(item);
 const poster = posterUrl(item);
+const device = isMobileOnly(item) ? 'phone' : 'desktop';
 const pairs = pairsOf(item, items);
 const similar = similarTo(item, items, 4);
 const lists = [
@@ -88,7 +89,7 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
         id="stage"
         data-bg={d.demo.background === 'auto' ? undefined : d.demo.background}
         data-grid={d.demo.grid ? 'on' : undefined}
-        data-device="desktop"
+        data-device={device}
       >
         <div class="sh-stage__viewport">
           {poster && (external || !demo) && <img class="sh-stage__poster" src={poster} alt="" decoding="async">}
@@ -111,9 +112,9 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
         {demo && (
           <div class="sh-stage__bar" role="toolbar" aria-label={t(lang, 'preview')}>
             <div class="sh-seg sh-seg--sm sh-seg--icons sh-seg--pill sh-seg--bare" role="group" aria-label={t(lang, 'stageWidth')} data-device-switch>
-              <button class="sh-seg__opt" type="button" data-value="desktop" aria-pressed="true" aria-label={t(lang, 'desktop')}><Icon name="Monitor" /></button>
+              <button class="sh-seg__opt" type="button" data-value="desktop" aria-pressed={device === 'desktop' ? 'true' : 'false'} aria-label={t(lang, 'desktop')}><Icon name="Monitor" /></button>
               <button class="sh-seg__opt" type="button" data-value="tablet" aria-pressed="false" aria-label={t(lang, 'tablet')}><Icon name="Tablet" /></button>
-              <button class="sh-seg__opt" type="button" data-value="phone" aria-pressed="false" aria-label={t(lang, 'phone')}><Icon name="Smartphone" /></button>
+              <button class="sh-seg__opt" type="button" data-value="phone" aria-pressed={device === 'phone' ? 'true' : 'false'} aria-label={t(lang, 'phone')}><Icon name="Smartphone" /></button>
             </div>
             {!external && (
               <>

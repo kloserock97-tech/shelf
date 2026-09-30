@@ -16,7 +16,7 @@ const loop = loopUrl(item);
 const priv = isPrivate(item);
 const live = Boolean(demoUrl(item));
 ---
-<article class="sh-card" data-slug={item.id} data-tech={d.tech.join('|')} data-status={d.status} data-added={d.added.toISOString().slice(0, 10)} data-title={d.title}>
+<article class="sh-card" data-slug={item.id} data-platform={d.platform.join(' ')} data-tech={d.tech.join('|')} data-status={d.status} data-added={d.added.toISOString().slice(0, 10)} data-title={d.title}>
   {/* The poster (and a recorded loop on hover) opens the item's page; Live demo runs the real thing over the list,
       in Quick Look, without leaving it. */}
   <div class="sh-card__frame">

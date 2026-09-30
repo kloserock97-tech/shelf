@@ -22,6 +22,8 @@ const techCount = new Map<string, number>();
 for (const it of items) for (const tech of it.data.tech) techCount.set(tech, (techCount.get(tech) ?? 0) + 1);
 const techs = [...techCount.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 8);
 const filterable = mode !== 'favorites';
+// Web / Mobile only where there is something for a phone to show
+const hasMobile = items.some((i) => i.data.platform.includes('mobile'));
 // All items opens in sections by kind group, a header over each (its name, how many, links to its kinds); library.ts
 // keeps them in step with filters and the view menu. Rendered in that order already, so nothing moves when the script
 // runs. Headers for grouping by task wait at the end of the grid until that grouping is picked.
@@ -64,6 +66,13 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
 <header class="sh-toolbar">
   <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm sh-sidebar-toggle" type="button" data-action="sidebar-toggle" aria-label={t(lang, 'showSidebar')}><Icon name="PanelLeft" /></button>
   <h1 class="sh-toolbar__title">{title} <span class="sh-toolbar__count" data-count="visible">{filterable ? items.length : ''}</span></h1>
+  {hasMobile && (
+    <div class="sh-seg sh-seg--sm sh-platform" role="group" aria-label={t(lang, 'platform')} data-platform-switch>
+      <button class="sh-seg__opt" type="button" data-value="all" aria-pressed="true">{t(lang, 'platformAll')}</button>
+      <button class="sh-seg__opt" type="button" data-value="web" aria-pressed="false">{t(lang, 'platformWeb')}</button>
+      <button class="sh-seg__opt" type="button" data-value="mobile" aria-pressed="false">{t(lang, 'platformMobile')}</button>
+    </div>
+  )}
   <div class="sh-toolbar__spacer"></div>
   <div class="sh-zoom" title={t(lang, 'gridSize')}>
     <Icon name="LayoutGrid" class="sh-i--xs" />
