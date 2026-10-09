@@ -47,15 +47,20 @@ const TABS: { id: string; icon: string; key: 'finderNew' | 'finderKinds' | 'find
   </div>
 </div>
 
+{/* Live demo (Quick Look): judge a piece without leaving the list. In the head: star (F), the prompt from
+    /prompts/<slug>.<variant>.txt (P), the demo in a tab, the page. Under the stage: the summary and ‹ 3 of 37 ›, the
+    same walk as the arrow keys, so a touch screen can page through too. app.ts fills it. */}
 <div class="sh-overlay sh-overlay--sheet" id="quicklook" hidden>
   <div class="sh-sheet" role="dialog" aria-modal="true" aria-labelledby="ql-title">
     <div class="sh-sheet__head">
-      <div>
+      <div class="sh-ql__name">
         <div class="sh-sheet__title" id="ql-title"></div>
         <div class="sh-sheet__sub" id="ql-sub"></div>
       </div>
       <div class="sh-sheet__actions">
-        <a class="sh-btn sh-btn--sm" id="ql-demo" target="_blank" rel="noopener"><Icon name="ExternalLink" /><span>{t(lang, 'openDemo')}</span></a>
+        <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm sh-fav" type="button" id="ql-fav" data-fav="" aria-pressed="false" aria-keyshortcuts="F"><Icon name="Star" /></button>
+        <button class="sh-btn sh-btn--sm sh-ql__act" type="button" id="ql-prompt" aria-keyshortcuts="P" aria-label={t(lang, 'copyPrompt')}><Icon name="MessageSquareCode" /><span class="sh-btn__label">{t(lang, 'promptShort')}</span></button>
+        <a class="sh-btn sh-btn--sm sh-ql__act" id="ql-demo" target="_blank" rel="noopener" aria-label={t(lang, 'openDemo')}><Icon name="ExternalLink" /><span>{t(lang, 'openDemo')}</span></a>
         <a class="sh-btn sh-btn--sm sh-btn--primary" id="ql-open"><span>{t(lang, 'open')}</span><Icon name="ChevronRight" /></a>
         <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-action="ql-close" aria-label={t(lang, 'close')}><Icon name="X" /></button>
       </div>
@@ -67,6 +72,14 @@ const TABS: { id: string; icon: string; key: 'finderNew' | 'finderKinds' | 'find
       <div class="sh-stage__status" id="ql-status" hidden>
         <span class="sh-spinner sh-spinner--lg" role="progressbar" aria-label={t(lang, 'loadingDemo')}><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
         {t(lang, 'loadingDemo')}
+      </div>
+    </div>
+    <div class="sh-ql__foot">
+      <p class="sh-ql__summary" id="ql-summary" lang={lang === 'ru' ? undefined : 'ru'}></p>
+      <div class="sh-ql__nav" id="ql-nav" hidden>
+        <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-action="ql-prev" aria-label={t(lang, 'prevItem')} aria-keyshortcuts="ArrowLeft"><Icon name="ChevronLeft" /></button>
+        <span class="sh-ql__pos" id="ql-pos"></span>
+        <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" type="button" data-action="ql-next" aria-label={t(lang, 'nextItem')} aria-keyshortcuts="ArrowRight"><Icon name="ChevronRight" /></button>
       </div>
     </div>
   </div>

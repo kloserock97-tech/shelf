@@ -11,7 +11,7 @@ import { JOBS, COLLECTIONS } from '../lib/curation';
 import { typeOf } from '../lib/taxonomy';
 
 interface Entry {
-  slug: string; title: string; type: string; typeLabel: string; tech: string[]; tags: string[]; jobs: string[]; platform?: string[]; collections: string[]; status: string;
+  slug: string; title: string; type: string; typeLabel: string; tech: string[]; tags: string[]; jobs: string[]; platform?: string[]; collections: string[]; variants?: string[]; status: string;
   summary: string; notes: string; url: string; poster: string | null; loop: string | null; demo: string | null;
   external: boolean; bg: 'auto' | 'light' | 'dark'; grid: boolean; added: string; updated: string; private: boolean;
 }
@@ -391,6 +391,7 @@ function toggleFav(slug: string) {
   renderFavs();
   toast(tr(on ? 'favAdded' : 'favRemoved'));
   gridApi?.apply();
+  if (ql && !ql.hidden) syncQlNav();
 }
 
 /* ---------- search ---------- */
@@ -553,6 +554,11 @@ function showQuickLook(slug: string) {
   qlSlug = slug;
   $('#ql-title')!.textContent = e.title;
   $('#ql-sub')!.textContent = [e.typeLabel, ...e.tech.slice(0, 2)].join(' · ');
+  $('#ql-summary')!.textContent = e.summary;
+  $('#ql-fav')?.setAttribute('data-fav', slug);
+  renderFavs();
+  syncQlNav();
+  void qlPrompt(slug); // fetched ahead, so the copy happens inside the click
   const open = $<HTMLAnchorElement>('#ql-open')!;
   open.href = e.url;
   const demoLink = $<HTMLAnchorElement>('#ql-demo')!;
@@ -584,7 +590,18 @@ function showQuickLook(slug: string) {
     viewport.append(frame);
   }
 }
-function stepQuickLook(dir: number) {
+// ‹ 3 of 37 › under the stage: where this piece stands in the list behind the sheet. Hidden when it is not in that list
+// (a card from "Similar" on an item page, a favourite just unstarred).
+function syncQlNav() {
+  const list = (gridApi?.visible() ?? []).map((c) => c.dataset.slug!);
+  const i = list.indexOf(qlSlug);
+  const nav = $('#ql-nav');
+  if (!nav) return;
+  nav.hidden = i < 0 || list.length < 2;
+  const pos = $('#ql-pos');
+  if (pos) pos.textContent = nav.hidden ? '' : tr('itemPos', { i: i + 1, n: list.length });
+}
+function stepQuickLook(dir: number, from?: HTMLElement) {
   const list = (gridApi?.visible() ?? []).map((c) => c.dataset.slug!);
   const i = list.indexOf(qlSlug);
   if (i < 0 || list.length < 2) return;
@@ -592,7 +609,25 @@ function stepQuickLook(dir: number) {
   showQuickLook(next);
   history.replaceState(history.state, '', `${location.pathname}${location.search}#${encodeURIComponent(next)}`);
   selectCard((gridApi?.visible() ?? []).findIndex((c) => c.dataset.slug === next));
-  $<HTMLElement>('#ql-open')?.focus();
+  // selecting the card moves focus to the grid behind the sheet: bring it back to the arrow pressed, or to Open
+  (from ?? $<HTMLElement>('#ql-open'))?.focus();
+}
+// The prompt comes from its static file (/prompts/<slug>.<variant>.txt), for the code variant you last picked on an
+// item page if this piece has it. Fetched when the sheet shows the piece, so P copies at once.
+const promptCache = new Map<string, Promise<string | null>>();
+function qlPrompt(slug: string) {
+  const e = BY_SLUG.get(slug);
+  const v = store.get('shelf:variant');
+  const file = `${slug}${v && e?.variants?.includes(v) ? `.${v}` : ''}.txt`;
+  if (!promptCache.has(file)) {
+    promptCache.set(file, fetch(`${BASE}prompts/${file}`).then((r) => (r.ok ? r.text() : null)).catch(() => null));
+  }
+  return promptCache.get(file)!;
+}
+async function copyQlPrompt() {
+  const text = await qlPrompt(qlSlug);
+  if (text) copyFrom($('#ql-prompt'), text.trimEnd(), tr('promptCopied'));
+  else toast(tr('copyFail', { keys: isMac ? '⌘C' : 'Ctrl+C' }), false);
 }
 function closeQuickLook() {
   if (!ql || ql.hidden) return;
@@ -852,6 +887,8 @@ document.addEventListener('click', (e) => {
   else if (action === 'shortcuts') openShortcuts();
   else if (action === 'shortcuts-close') closeShortcuts();
   else if (action === 'ql-close') closeQuickLook();
+  else if ((action === 'ql-prev' || action === 'ql-next') && target) stepQuickLook(action === 'ql-next' ? 1 : -1, target);
+  else if (t.closest('#ql-prompt')) void copyQlPrompt();
 });
 shortcuts?.addEventListener('click', (e) => { if (e.target === shortcuts) closeShortcuts(); });
 
@@ -936,6 +973,8 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' || (e.key === ' ' && !isTyping(e.target))) { e.preventDefault(); closeQuickLook(); }
     else if (e.key === 'ArrowRight') { e.preventDefault(); stepQuickLook(1); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); stepQuickLook(-1); }
+    else if (!mod && !e.altKey && e.key.toLowerCase() === 'f') { e.preventDefault(); toggleFav(qlSlug); }
+    else if (!mod && !e.altKey && e.key.toLowerCase() === 'p') { e.preventDefault(); void copyQlPrompt(); }
     return;
   }
   if (isTyping(e.target)) {

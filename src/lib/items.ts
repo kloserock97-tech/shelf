@@ -105,6 +105,8 @@ export function indexEntry(e: Item, lang: Lang = 'en') {
     jobs: d.jobs,
     platform: d.platform,
     collections: d.collections,
+    // code variant ids: Quick Look fetches /prompts/<slug>.<variant>.txt for the one you work in
+    variants: d.variants.map((v) => v.id),
     status: d.status,
     summary: d.summary,
     notes: notesText(e).slice(0, 1500),

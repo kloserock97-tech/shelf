@@ -71,8 +71,15 @@ const check = (ok, what) => { if (!ok) problems.push(`flow: ${what}`); return ok
   await page.waitForTimeout(400);
   check(await page.locator('#quicklook').isVisible(), 'Space does not open Quick Look');
   await page.screenshot({ path: path.join(out, 'flow-quicklook.png') });
+  check(/^1\D+\d+$/.test((await page.locator('#ql-pos').textContent()) ?? ''), 'Quick Look does not say where it stands in the list');
+  await page.locator('[data-action="ql-next"]').click();
+  await page.waitForTimeout(200);
+  check((await page.locator('#ql-pos').textContent())?.startsWith('2'), 'the arrow in Quick Look does not step to the next item');
   await page.keyboard.press('ArrowRight');
   await page.waitForTimeout(200);
+  await page.keyboard.press('p');
+  await page.waitForTimeout(300);
+  check((await page.evaluate(() => navigator.clipboard.readText().catch(() => ''))).startsWith('You are helping me reuse'), 'P in Quick Look does not copy the prompt');
   await page.keyboard.press('Escape');
   check(await page.locator('#quicklook').isHidden(), 'Esc does not close Quick Look');
   await page.locator('.sh-card__fav').first().click();
