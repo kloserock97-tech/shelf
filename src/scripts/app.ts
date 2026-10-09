@@ -749,7 +749,10 @@ function initItem(article: HTMLElement) {
     if (pane) copyFrom(btn ?? null, rawOf(pane), tr('fileCopied', { file: pane.dataset.name ?? '' }));
   };
   const copyPrompt = (btn?: HTMLElement | null) => {
-    const text = $<HTMLTemplateElement>('#prompt-text')?.content.textContent ?? '';
+    // the prompt of the variant on screen; a page without variants has one template
+    const id = variants.find((x) => !x.hidden)?.dataset.variant ?? '';
+    const tpl = $<HTMLTemplateElement>(`template[data-prompt-variant="${CSS.escape(id)}"]`) ?? $<HTMLTemplateElement>('template[data-prompt-variant]');
+    const text = tpl?.content.textContent ?? '';
     copyFrom(btn ?? null, text, tr('promptCopied'));
   };
   $$('[data-copy-code]').forEach((b) => b.addEventListener('click', () => copyCode(b)));

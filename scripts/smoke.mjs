@@ -91,7 +91,8 @@ const check = (ok, what) => { if (!ok) problems.push(`flow: ${what}`); return ok
   await page.locator('[data-copy-prompt]').click();
   await page.waitForTimeout(200);
   const prompt = await page.evaluate(() => navigator.clipboard.readText().catch(() => ''));
-  check(prompt.includes('Spring Toggle') && prompt.includes('SpringToggle.vue') === false, 'the prompt is missing or uses the wrong variant');
+  // the Vue variant is on screen, so the prompt carries the Vue code
+  check(prompt.includes('Spring Toggle') && prompt.includes('SpringToggle.vue') && !prompt.includes('--- index.html ---'), 'the prompt is missing or uses the wrong variant');
   await page.locator('[data-action="stage-bg"]').click();
   check((await page.locator('#stage').getAttribute('data-bg')) === 'light', 'the background switch does not change the stage');
   await page.screenshot({ path: path.join(out, 'flow-item.png'), fullPage: true });

@@ -61,7 +61,8 @@ export const notesText = (e: Item) =>
 
 const PROMPT_CODE_LIMIT = 24_000;
 
-export function promptFor(e: Item, variants: Variant[]) {
+// The prompt carries the code of one variant: the one on screen (`variantId`), else the first.
+export function promptFor(e: Item, variants: Variant[], variantId?: string) {
   const d = e.data;
   const lines = [
     `You are helping me reuse a piece from my UI library Shelf: "${d.title}" (${typeOf(d.type).one}).`,
@@ -75,7 +76,7 @@ export function promptFor(e: Item, variants: Variant[]) {
     e.body?.trim() ? `Notes from the author (Russian):\n${e.body.trim()}` : '',
     ''
   ];
-  const v = variants[0];
+  const v = variants.find((x) => x.id === variantId) ?? variants[0];
   if (v) {
     lines.push(`Code, ${v.label} variant:`);
     let used = 0;
@@ -86,7 +87,7 @@ export function promptFor(e: Item, variants: Variant[]) {
       lines.push('', `--- ${f.name} ---`, f.code.trimEnd());
     }
     if (skipped.length) lines.push('', `Not included to keep this short: ${skipped.join(', ')}.`);
-    if (variants.length > 1) lines.push('', `Also available as: ${variants.slice(1).map((x) => x.label).join(', ')}.`);
+    if (variants.length > 1) lines.push('', `Also available as: ${variants.filter((x) => x !== v).map((x) => x.label).join(', ')}.`);
   }
   lines.push('', 'Adapt it to my current project, keep the behaviour and the motion, and keep it accessible.');
   return lines.filter((l, i, a) => !(l === '' && a[i - 1] === '')).join('\n').trim();

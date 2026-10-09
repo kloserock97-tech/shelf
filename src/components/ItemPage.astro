@@ -29,7 +29,8 @@ const panes = await Promise.all(
     files: await Promise.all(v.files.map(async (f) => ({ ...f, html: await highlight(f.code, f.name) })))
   }))
 );
-const prompt = promptFor(item, variants);
+// One prompt per code variant: P and Copy prompt give the stack that is on screen (app.ts picks the template).
+const prompts = variants.length ? variants.map((v) => ({ id: v.id, text: promptFor(item, variants, v.id) })) : [{ id: '', text: promptFor(item, variants) }];
 const demo = demoUrl(item);
 const external = isExternal(item);
 const poster = posterUrl(item);
@@ -235,5 +236,5 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
       </div>
     </div>
   </article>
-  <template id="prompt-text">{prompt}</template>
+  {prompts.map((p) => <template data-prompt-variant={p.id}>{p.text}</template>)}
 </App>
