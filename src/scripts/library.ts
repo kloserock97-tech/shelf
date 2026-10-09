@@ -314,6 +314,7 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
     if (titleEl) titleEl.textContent = byFilters ? titleEl.dataset.emptyTitleFilters ?? '' : (titleEl.dataset.emptyTitle ?? '').replace('{q}', q);
     if (textEl) textEl.textContent = byFilters ? textEl.dataset.emptyTextFilters ?? '' : textEl.dataset.emptyText ?? '';
     if (!fixes) return;
+    if (!byFilters) { renderSuggestions(fixes, q); return; }
     // Mobbin never leaves you at zero: name each filter and how many items come back without it
     const rows: string[] = [];
     // over a copy: taking a value out and putting it back would move it to the end of the live set, forever
@@ -325,6 +326,40 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
     }
     fixes.innerHTML = rows.join('');
     fixes.hidden = rows.length === 0;
+  }
+  // Words that found nothing: as Mobbin's empty search, offer what does find something, as chips. First the words of
+  // the query that find things on their own (all of them together found nothing), then the page's most used tasks
+  // and tags. A chip puts its word in the search, or swaps the words for the filter. Favorites have no filters, so
+  // there tags go in as words.
+  function renderSuggestions(fixes: HTMLElement, q: string) {
+    const inPage = entries.filter(inMode);
+    const slugs = new Set(inPage.map((e) => e.slug));
+    const chips: { html: string; key: string }[] = [];
+    const chip = (attrs: string, label: string, count: number, aria: string, key: string) => {
+      if (count < 1 || chips.some((c) => c.key === key)) return;
+      chips.push({ key, html: `<button class="sh-chip" type="button" ${attrs} aria-label="${esc(aria)}">${esc(label)} <span class="sh-chip__count" aria-hidden="true">${count}</span></button>` });
+    };
+    const words = [...new Set(q.toLowerCase().split(/\s+/).filter((w) => w.length > 1))];
+    if (words.length > 1) for (const w of words) {
+      const count = d.find(w).filter((s) => slugs.has(s)).length;
+      chip(`data-suggest-q="${esc(w)}"`, w, count, tr('suggestWord', { v: w, n: count, items: itemsWord(lang, count) }), `q:${w}`);
+    }
+    const jobCount = new Map<string, number>();
+    for (const e of inPage) for (const j of e.jobs) jobCount.set(j, (jobCount.get(j) ?? 0) + 1);
+    const topJobs = [...jobCount.entries()].sort((a, b) => b[1] - a[1]).slice(0, 2);
+    const tagCount = new Map<string, number>();
+    for (const e of inPage) for (const t of e.tags) if (tagInLang(t, lang)) tagCount.set(t, (tagCount.get(t) ?? 0) + 1);
+    const topTags = [...tagCount.entries()].sort((a, b) => b[1] - a[1] || collator.compare(a[0], b[0])).slice(0, 4);
+    if (facetsOn) for (const [j, count] of topJobs) {
+      const label = nameOf(jobOf(j), lang);
+      chip(`data-suggest-facet="job" data-suggest-value="${esc(j)}"`, label, count, tr('suggestTask', { v: label, n: count, items: itemsWord(lang, count) }), `job:${j}`);
+    }
+    for (const [t, count] of topTags) {
+      const attrs = facetsOn ? `data-suggest-facet="tag" data-suggest-value="${esc(t)}"` : `data-suggest-q="${esc(t)}"`;
+      chip(attrs, t, count, tr('suggestTag', { v: t, n: count, items: itemsWord(lang, count) }), `tag:${t}`);
+    }
+    fixes.innerHTML = chips.slice(0, 6).map((c) => c.html).join('');
+    fixes.hidden = chips.length === 0;
   }
 
   function syncControls() {
@@ -617,7 +652,19 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
     (facetBtns[0] ?? input)?.focus();
   }));
   $('[data-empty-fixes]')?.addEventListener('click', (e) => {
-    const b = (e.target as HTMLElement).closest<HTMLElement>('[data-drop-facet]');
+    const t = e.target as HTMLElement;
+    const s = t.closest<HTMLElement>('[data-suggest-q], [data-suggest-facet]');
+    if (s) {
+      // a word replaces the words; a task or a tag takes their place as a filter
+      state.q = s.dataset.suggestQ ?? '';
+      if (input) input.value = state.q;
+      if (s.dataset.suggestFacet) state[s.dataset.suggestFacet as FacetId].add(s.dataset.suggestValue ?? '');
+      writeUrl();
+      apply();
+      (grid.querySelector<HTMLElement>('.sh-card:not([hidden]) .sh-card__thumb') ?? input)?.focus();
+      return;
+    }
+    const b = t.closest<HTMLElement>('[data-drop-facet]');
     if (!b) return;
     state[b.dataset.dropFacet as FacetId].delete(b.dataset.dropValue ?? '');
     writeUrl();

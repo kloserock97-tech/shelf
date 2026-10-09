@@ -250,7 +250,7 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
 </div>
 <div class="sh-empty" data-empty="search" hidden>
   <ShelfArt kind="search" />
-  <p class="sh-empty__title" data-empty-title={t(lang, 'noResultsTitle')} data-empty-title-filters={t(lang, 'noMatchTitle')}></p>
+  <p class="sh-empty__title" data-empty-title={t(lang, 'noResultsTitle', { q: '{q}' })} data-empty-title-filters={t(lang, 'noMatchTitle')}></p>
   <p class="sh-empty__text" data-empty-text={t(lang, 'noResultsText')} data-empty-text-filters={t(lang, 'noMatchText')}>{t(lang, 'noResultsText')}</p>
   <div class="sh-empty__fixes" data-empty-fixes></div>
   <button class="sh-btn" type="button" data-action="clear-filters">{t(lang, 'clearFilters')}</button>
