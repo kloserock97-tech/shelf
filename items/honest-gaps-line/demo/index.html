@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Honest Gaps</title>
+<link rel="stylesheet" href="../variants/html/honest-gaps.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  body {
+    min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: 20px 12px; box-sizing: border-box;
+    font: clamp(13px, 0.7vw + 7px, 16px)/1.35 system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
+  }
+  main { width: min(58em, 100%); }
+</style>
+</head>
+<body>
+<main>
+  <figure class="hg" aria-labelledby="hg-title">
+    <header class="hg__head">
+      <div>
+        <h1 class="hg__title" id="hg-title">Daily electricity use</h1>
+        <p class="hg__sub">Building B meter, kWh per day, Sep 9 – Oct 8</p>
+      </div>
+      <div class="hg__seg" role="radiogroup" aria-label="Missing days">
+        <button type="button" role="radio" data-strategy="gap">Show gaps</button>
+        <button type="button" role="radio" data-strategy="linear">Interpolate</button>
+        <button type="button" role="radio" data-strategy="carry">Carry last</button>
+      </div>
+    </header>
+    <dl class="hg__kpis">
+      <div><dt>Total</dt><dd class="hg__kpi" data-kpi="total"></dd><dd class="hg__note" data-note="total"></dd></div>
+      <div><dt>Daily average</dt><dd class="hg__kpi" data-kpi="average"></dd><dd class="hg__note" data-note="average"></dd></div>
+      <div><dt>Coverage</dt><dd class="hg__kpi" data-kpi="coverage"></dd><dd class="hg__note" data-note="coverage"></dd><dd class="hg__strip" aria-hidden="true"></dd></div>
+    </dl>
+    <div class="hg__plot" tabindex="0" role="group" aria-roledescription="line chart" aria-labelledby="hg-title"></div>
+    <div class="hg__foot">
+      <ol class="hg__gaps" aria-label="Missing days"></ol>
+      <ul class="hg__legend" aria-hidden="true">
+        <li><i class="l-known"></i>Reported</li>
+        <li><i class="l-est"></i>Estimated</li>
+        <li><i class="l-gap"></i>No reading</li>
+      </ul>
+    </div>
+    <p class="hg__live" role="status"></p>
+  </figure>
+</main>
+
+<script type="module">
+  import { honestGaps } from '../variants/html/honest-gaps.js';
+
+  // Seeded numbers: Hash Kit's mixer over a Weyl sequence.
+  function hashU(x) {
+    x ^= x >>> 16; x = Math.imul(x, 0x3f9c86cb);
+    x ^= x >>> 14; x = Math.imul(x, 0x1ae9dacf);
+    x ^= x >>> 15;
+    return x >>> 0;
+  }
+  function makeRandom(seed) {
+    let s = seed >>> 0;
+    return () => { s = (s + 0xb31c96c9) >>> 0; return hashU(s) / 4294967296; };
+  }
+  const rnd = makeRandom(918);
+
+  // 30 days of an office building: weekdays ~470 kWh, weekends lower, a heatwave around Sep 13 runs the cooling.
+  const N = 30;
+  const dates = Array.from({ length: N }, (_, i) => new Date(2026, 8, 9 + i));
+  const truth = dates.map((d, i) => {
+    const day = d.getDay();
+    const base = day === 0 ? 288 : day === 6 ? 326 : 468;
+    const heat = 0.24 * Math.exp(-(((i - 5) / 3.2) ** 2));
+    const autumn = -0.0025 * i;
+    return Math.round(base * (1 + heat + autumn) * (1 + (rnd() - 0.5) * 0.07));
+  });
+  const reasons = [
+    { from: 5, to: 8, reason: 'Meter offline' },
+    { from: 20, to: 20, reason: 'Export failed' },
+    { from: 29, to: 29, reason: 'Not reported yet' }
+  ];
+  const values = truth.map((v, i) => (reasons.some((r) => r.from <= i && r.to >= i) ? null : v));
+
+  const num = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
+  const chart = honestGaps(document.querySelector('.hg'), {
+    dates, values, reasons, unit: 'kWh',
+    format: (v) => num.format(v),
+    formatDate: (d, style) => d.toLocaleDateString('en-US',
+      style === 'long' ? { weekday: 'short', month: 'short', day: 'numeric' } : { month: 'short', day: 'numeric' })
+  });
+
+  // ?shot=1 — interpolated, read-out on an estimated day inside the first gap
+  const q = new URLSearchParams(location.search);
+  if (q.get('shot') === '1') { chart.setStrategy('linear'); requestAnimationFrame(() => chart.show(7)); }
+  else if (q.get('strategy')) chart.setStrategy(q.get('strategy'));
+</script>
+</body>
+</html>

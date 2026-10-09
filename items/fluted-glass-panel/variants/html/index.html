@@ -1,0 +1,22 @@
+<!-- A ribbed glass pane over a picture. paint() draws the picture in CSS px; the pane follows the pointer. -->
+<section class="fluted" style="height: 70vh">
+  <canvas aria-hidden="true"></canvas>
+</section>
+
+<link rel="stylesheet" href="fluted-glass.css">
+<script type="module">
+  import { createFlutedGlass } from './fluted-glass.js';
+
+  function paint(g, w, h, dark) {
+    g.fillStyle = dark ? '#131417' : '#ebe7df'; g.fillRect(0, 0, w, h);
+    g.fillStyle = dark ? '#c8694b' : '#d26f4d';
+    g.beginPath(); g.arc(w * 0.66, h * 0.45, Math.min(w, h) * 0.28, 0, Math.PI * 2); g.fill();
+    g.fillStyle = dark ? '#ece7de' : '#1c1b19';
+    g.font = `800 ${Math.min(w * 0.14, h * 0.25)}px system-ui, sans-serif`;
+    g.fillText('Morning', w * 0.06, h * 0.55);
+  }
+
+  const glass = createFlutedGlass(document.querySelector('.fluted canvas'), paint, {
+    rib: 22, refraction: 0.9, dispersion: 0.35, panel: [0.37, 0.09, 0.95, 0.91]
+  });
+</script>

@@ -1,0 +1,86 @@
+/* Magnitude Zoom */
+.mz {
+  --mz-ink: #0b0b0b;
+  --mz-ink-2: #52514e;
+  --mz-ink-3: #898781;
+  --mz-surface: #fcfcfb;
+  --mz-grid: rgba(11, 11, 11, 0.13);
+  --mz-fill: rgba(11, 11, 11, 0.05);
+  --mz-ring: rgba(11, 11, 11, 0.1);
+  --mz-accent: #2a78d6;
+  --mz-t0: #0b0b0b;
+  --mz-t1: #2a78d6;
+  --mz-t2: #1baf7a;
+  --mz-t3: #eb6834;
+  --mz-t4: #4a3aa7;
+  margin: 0; padding: 1.35em 1.4em 1.1em; border-radius: 1.4em; display: grid; gap: 1em; position: relative;
+  background: var(--mz-surface); color: var(--mz-ink); box-shadow: 0 0 0 1px var(--mz-ring), 0 18px 40px -24px rgba(0, 0, 0, 0.25);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif; line-height: 1.35;
+}
+@media (prefers-color-scheme: dark) {
+  .mz {
+    --mz-ink: #ffffff;
+    --mz-ink-2: #c3c2b7;
+    --mz-ink-3: #898781;
+    --mz-surface: #1a1a19;
+    --mz-grid: rgba(255, 255, 255, 0.14);
+    --mz-fill: rgba(255, 255, 255, 0.07);
+    --mz-ring: rgba(255, 255, 255, 0.1);
+    --mz-accent: #3987e5;
+    --mz-t0: #ffffff;
+    --mz-t1: #3987e5;
+    --mz-t2: #199e70;
+    --mz-t3: #d95926;
+    --mz-t4: #9085e9;
+  }
+}
+
+.mz__eyebrow { margin: 0 0 0.3em; color: var(--mz-ink-3); font-size: 0.75em; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+.mz__title { margin: 0; font-size: 1.32em; font-weight: 680; letter-spacing: -0.018em; line-height: 1.15; }
+
+/* the live number */
+.mz__readout { display: grid; gap: 0.15em; margin-top: 0.7em; }
+.mz__value { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 0.4em; }
+.mz__num { font-size: clamp(1.7em, 3.4vw, 2.5em); font-weight: 700; letter-spacing: -0.03em; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.mz__unit { color: var(--mz-ink-2); font-size: 1.05em; font-weight: 500; }
+.mz__say { margin: 0; color: var(--mz-ink-2); font-size: 0.95em; min-height: 1.35em; }
+.mz__say b { color: var(--mz-ink); font-weight: 650; }
+
+.mz__stage { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.9em; }
+.mz__plot { position: relative; height: clamp(300px, 52vh, 460px); border-radius: 0.8em; box-shadow: inset 0 0 0 1px var(--mz-ring); outline: none; touch-action: none; cursor: ns-resize; overflow: hidden; }
+.mz__plot:focus-visible { box-shadow: 0 0 0 2px var(--mz-accent); }
+.mz__plot canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+/* ruler of orders */
+.mz__ruler { position: relative; width: 4.6em; margin: 0.6em 0; font-size: 0.78em; font-variant-numeric: tabular-nums; touch-action: none; cursor: ns-resize; user-select: none; }
+.mz__rail { position: absolute; top: 0; bottom: 0; left: 0.55em; width: 1px; background: var(--mz-grid); }
+.mz__tick { position: absolute; left: 0.55em; width: 0.45em; height: 1px; background: var(--mz-ink-3); translate: 0 -0.5px; }
+.mz__tick--tier { width: 0.9em; background: var(--mz-ink-2); }
+.mz__tick-label { position: absolute; left: 1.8em; translate: 0 -50%; color: var(--mz-ink-3); white-space: nowrap; }
+.mz__tick-label--tier { color: var(--mz-ink); font-weight: 650; }
+.mz__thumb {
+  position: absolute; left: 0; display: flex; align-items: center; gap: 0.3em; translate: 0 -50%; pointer-events: none;
+}
+.mz__thumb::before { content: ""; width: 1.1em; height: 1.1em; border-radius: 50%; background: var(--mz-surface); box-shadow: inset 0 0 0 2.5px var(--mz-accent), 0 1px 4px rgba(0, 0, 0, 0.2); }
+
+/* tier chips */
+.mz__foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.6em 1.4em; }
+.mz__tiers { display: flex; flex-wrap: wrap; gap: 0.35em; margin: 0; padding: 0; list-style: none; }
+.mz__tiers button {
+  display: inline-flex; align-items: center; gap: 0.45em; height: 2em; padding: 0 0.8em 0 0.6em; border: 0; border-radius: 999px;
+  background: none; color: var(--mz-ink-2); font: inherit; font-size: 0.84em; font-weight: 550; cursor: pointer; transition: background-color 140ms, color 140ms;
+}
+.mz__tiers button:hover { background: var(--mz-fill); color: var(--mz-ink); }
+.mz__tiers button[aria-pressed="true"] { background: var(--mz-fill); color: var(--mz-ink); box-shadow: inset 0 0 0 1px var(--mz-ring); }
+.mz__tiers button:focus-visible { outline: 2px solid var(--mz-accent); outline-offset: 1px; }
+.mz__tiers i { width: 9px; height: 9px; border-radius: 2.5px; }
+.mz__hint { margin: 0; color: var(--mz-ink-3); font-size: 0.78em; }
+
+.mz__live { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+@media (max-width: 520px) {
+  .mz { padding: 1.1em 1em 1em; }
+  .mz__stage { gap: 0.5em; }
+  .mz__ruler { width: 3em; }
+  .mz__tick-label:not(.mz__tick-label--tier) { display: none; }
+}

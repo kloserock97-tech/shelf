@@ -1,0 +1,45 @@
+/* Wavy Progress — the filled part is a running wave whose height is how busy the work is. */
+@property --wvp-tone {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #17181b;
+}
+
+.wvp {
+  /* geometry, read by wavy-progress.js on init and resize */
+  --wvp-stroke: 4px;
+  --wvp-amp: 3.2px; /* wave height at full activity */
+  --wvp-wave: 28px; /* wavelength along the line */
+  --wvp-gap: 6px; /* between filled and empty */
+  --wvp-size: 96px; /* circular only */
+
+  --wvp-busy: #17181b;
+  --wvp-done: #1f8a5b;
+  --wvp-track: rgba(23, 24, 27, 0.14);
+  --wvp-tone: var(--wvp-busy);
+
+  display: block;
+  color: var(--wvp-tone);
+  transition: --wvp-tone 600ms ease;
+}
+@media (prefers-color-scheme: dark) {
+  .wvp {
+    --wvp-busy: #dbf266;
+    --wvp-done: #6fe0a6;
+    --wvp-track: rgba(255, 255, 255, 0.16);
+  }
+}
+.wvp[data-state="done"] { --wvp-tone: var(--wvp-done); }
+
+.wvp svg { display: block; overflow: visible; }
+.wvp__fill,
+.wvp__track {
+  fill: none;
+  stroke-width: var(--wvp-stroke);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.wvp__fill { stroke: currentColor; }
+.wvp__track { stroke: var(--wvp-track); }
+
+.wvp[data-kind="circular"] { width: var(--wvp-size); height: var(--wvp-size); }

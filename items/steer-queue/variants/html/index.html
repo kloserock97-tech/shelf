@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Steer-While-Running Queue</title>
+<link rel="stylesheet" href="steer-queue.css">
+</head>
+<body>
+<div id="run"></div>
+
+<script src="steer-queue.js"></script>
+<script>
+  // ms is how long each simulated step takes; swap the simulation for your agent's events.
+  const run = SteerQueue.create(document.getElementById('run'), {
+    title: 'Clean up the staging database',
+    steps: [
+      { id: 'snapshot', text: 'Take a snapshot of staging', ms: 1800, note: 'Snapshot saved' },
+      { id: 'orphans', text: 'Delete orphaned upload records', ms: 2600, note: '1,204 rows removed' },
+      { id: 'vacuum', text: 'Vacuum the three largest tables', ms: 3200, note: '2.1 GB freed' },
+      { id: 'report', text: 'Post a summary to the team channel', ms: 1200, note: 'Posted' }
+    ]
+  }, {
+    // a taken note reaches the agent here; return rewrites for upcoming steps if it replans
+    onTake: (note, { before }) => {
+      fetch('/agent/steer', { method: 'POST', body: JSON.stringify({ note: note.text, mode: note.mode, beforeStep: before }) });
+      return null;
+    },
+    onChange: (state) => console.log(state.mode, state.queue.length + ' queued')
+  });
+
+  // run.queue('Skip the audit log table', 'after'); run.pause(); run.resume();
+</script>
+</body>
+</html>

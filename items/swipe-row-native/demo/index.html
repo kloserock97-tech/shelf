@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Native Swipe Row</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="../variants/html/swipe-row.css">
+<style>
+  :root {
+    --ink: #1d1d1f;
+    --ink-2: #636366;
+    --ink-3: #8e8e93;
+    --card: #ffffff;
+    --fill: rgba(118, 118, 128, 0.12);
+    --accent: #0071e3;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 8px 28px rgba(0, 0, 0, 0.07);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink: #f5f5f7; --ink-2: #a1a1a6; --ink-3: #6e6e73; --card: #1c1c1e; --fill: rgba(118, 118, 128, 0.24); --accent: #2997ff; --shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.08); }
+  }
+  html, body { margin: 0; background: transparent; }
+  body { min-height: 100vh; min-height: 100dvh; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; }
+  .screen { box-sizing: border-box; max-width: 430px; margin: 0 auto; padding: 54px 12px 24px; }
+  .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding: 10px 6px 12px; }
+  .head h1 { margin: 0; font-size: 32px; line-height: 1.05; font-weight: 700; letter-spacing: -0.02em; }
+  .head p { margin: 4px 0 0; font-size: 13px; color: var(--ink-2); }
+  .mute { width: 36px; height: 36px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: var(--fill); color: var(--ink); cursor: pointer; }
+  .mute svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .mute:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .mute .off { display: none; }
+  .mute[aria-pressed="false"] .on { display: none; }
+  .mute[aria-pressed="false"] .off { display: block; }
+
+  .sr-list { --sr-inset: 68px; border-radius: 18px; overflow: hidden; background: var(--card); box-shadow: var(--shadow); }
+  .sr-list > .sr:first-child .sr__strip { border-radius: 18px 18px 0 0; }
+
+  /* the row's own content */
+  .mail { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 12px; padding: 12px 16px 12px 16px; }
+  .mail__av { position: relative; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-size: 14px; font-weight: 600; color: #fff; }
+  .mail__av::before { content: ""; position: absolute; left: -11px; top: 16px; width: 8px; height: 8px; border-radius: 50%; background: var(--sr-blue); opacity: 0; transition: opacity 0.2s; }
+  .is-unread .mail__av::before { opacity: 1; }
+  .mail__top { display: flex; align-items: baseline; gap: 8px; }
+  .mail__from { flex: 1; min-width: 0; font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mail__time { font-size: 13px; color: var(--ink-3); white-space: nowrap; padding-right: 2px; }
+  .mail__flag { width: 12px; height: 12px; fill: var(--sr-orange); display: none; align-self: center; }
+  .is-flagged .mail__flag { display: block; }
+  .mail__subj { margin-top: 1px; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mail__prev { margin-top: 2px; font-size: 13px; line-height: 1.35; color: var(--ink-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .sr:not(.is-unread) .mail__from { font-weight: 500; }
+  .hint { margin: 14px 6px 0; font-size: 12px; line-height: 1.45; color: var(--ink-3); }
+  .hint b { font-weight: 600; color: var(--ink-2); }
+  .hint__kbd { display: none; }
+  @media (hover: hover) and (pointer: fine) { .hint__kbd { display: inline; } }
+</style>
+</head>
+<body>
+<main class="screen">
+  <header class="head">
+    <div>
+      <h1>Inbox</h1>
+      <p id="count">3 unread</p>
+    </div>
+    <button class="mute" type="button" aria-pressed="true" aria-label="Sound">
+      <svg class="on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6"/><path d="M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>
+      <svg class="off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>
+    </button>
+  </header>
+
+  <ul class="sr-list" aria-label="Inbox" data-manual></ul>
+  <p class="hint">Swipe a row left: a short swipe shows actions, a long one deletes and leaves <b>Undo</b> in its place. Swipe right to mark read. <span class="hint__kbd">With a mouse, drag the row. Keyboard: arrows open actions, Delete removes.</span></p>
+</main>
+
+<template id="icons">
+  <svg data-i="mail" viewBox="0 0 24 24"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M4 7.5l8 5.5 8-5.5"/></svg>
+  <svg data-i="flag" viewBox="0 0 24 24"><path d="M5.5 21V4.5"/><path d="M5.5 5c4-2.2 7 2.2 13 0v9c-6 2.2-9-2.2-13 0"/></svg>
+  <svg data-i="archive" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="5" rx="1.5"/><path d="M5 9v9.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V9"/><path d="M10 13h4"/></svg>
+  <svg data-i="trash" viewBox="0 0 24 24"><path d="M4 6.5h16"/><path d="M9.5 6.5V4.8c0-.7.6-1.3 1.3-1.3h2.4c.7 0 1.3.6 1.3 1.3v1.7"/><path d="M6.5 6.5l.9 12.2c.1 1 .9 1.8 1.9 1.8h5.4c1 0 1.8-.8 1.9-1.8l.9-12.2"/></svg>
+</template>
+
+<script src="../variants/html/swipe-row.js"></script>
+<script>
+  const MAIL = [
+    ['Mara Lindqvist', 'ML', '#5e8cf0', '09:41', 'Thursday walkthrough', 'Moved the review to 15:30. The prototype link is in the doc, comments are open until noon.', true],
+    ['Studio Hall', 'SH', '#d9822b', '08:12', 'Your room is confirmed', 'Room 4B, Saturday 10:00–13:00. The projector is on the left wall, bring your own adapters.', true],
+    ['Teo Marchetti', 'TM', '#3fa66b', 'Yesterday', 'Re: icon set v3', 'The 20 px set reads better on the dashboard. Can we drop the filled variants for now?', false],
+    ['Aiko Brandt', 'AB', '#b45cc9', 'Yesterday', 'Receipts for October', 'Three of them are still missing the tax line. I marked them in yellow in the sheet.', true],
+    ['Noor Haddad', 'NH', '#d2554f', 'Tue', 'Sunday ride', 'Forty-two kilometres along the river, coffee at the halfway bridge. Start at 8:30 sharp.', false],
+    ['Owen Pike', 'OP', '#4c9fb0', 'Mon', 'Small favour', 'Could you look at the onboarding copy before Friday? Mostly the second screen.', false],
+    ['Lena Okafor', 'LO', '#8a7a5c', 'Sun', 'Photos from the coast', 'Uploaded the whole set, the ones from the lighthouse came out best.', false]
+  ];
+  const icon = (n) => document.querySelector('#icons').content.querySelector(`[data-i="${n}"]`).outerHTML.replace(/<svg data-i="\w+"/, '<svg aria-hidden="true"');
+  const list = document.querySelector('.sr-list');
+  list.innerHTML = MAIL.map(([from, ini, col, time, subj, prev, unread]) => `
+    <li class="sr${unread ? ' is-unread' : ''}">
+      <div class="sr__content mail" aria-label="${from}, ${subj}">
+        <div class="mail__av" style="background:${col}" aria-hidden="true">${ini}</div>
+        <div>
+          <div class="mail__top"><span class="mail__from">${from}</span><svg class="mail__flag" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="5"/></svg><span class="mail__time">${time}</span></div>
+          <div class="mail__subj">${subj}</div>
+          <div class="mail__prev">${prev}</div>
+        </div>
+      </div>
+      <div class="sr__actions" data-side="start">
+        <button type="button" data-act="read" data-tone="blue">${icon('mail')}<span>${unread ? 'Read' : 'Unread'}</span></button>
+      </div>
+      <div class="sr__actions" data-side="end">
+        <button type="button" data-act="flag" data-tone="orange">${icon('flag')}<span>Flag</span></button>
+        <button type="button" data-act="archive" data-tone="purple" data-commit="Archived">${icon('archive')}<span>Archive</span></button>
+        <button type="button" data-act="delete" data-tone="red" data-commit="Deleted" data-full>${icon('trash')}<span>Delete</span></button>
+      </div>
+    </li>`).join('');
+
+  const sr = SwipeRow.init(list);
+  const count = document.querySelector('#count');
+  const recount = () => { const n = list.querySelectorAll('.sr.is-unread:not(.is-gone)').length; count.textContent = n ? `${n} unread` : 'All read'; };
+  list.addEventListener('sr:action', (e) => {
+    const { act, row } = e.detail;
+    if (act === 'read') {
+      const unread = row.classList.toggle('is-unread');
+      const b = row.querySelector('[data-act="read"]');
+      b.querySelector('span').textContent = unread ? 'Read' : 'Unread';
+      b.dataset.say = unread ? 'Marked as unread' : 'Marked as read';
+    }
+    if (act === 'flag') {
+      const on = row.classList.toggle('is-flagged');
+      const b = row.querySelector('[data-act="flag"]');
+      b.querySelector('span').textContent = on ? 'Unflag' : 'Flag';
+      b.dataset.say = on ? 'Flagged' : 'Flag removed';
+    }
+    setTimeout(recount, 0);
+  });
+  list.addEventListener('click', (e) => { if (e.target.closest('.sr__undo')) setTimeout(recount, 0); });
+
+  const mute = document.querySelector('.mute');
+  mute.addEventListener('click', () => {
+    const on = mute.getAttribute('aria-pressed') !== 'true';
+    mute.setAttribute('aria-pressed', String(on));
+    list.dataset.sound = on ? 'on' : 'off';
+  });
+
+  // ?shot=1: one row open, one past the commit point mid-swipe, one already removed
+  if (new URLSearchParams(location.search).has('shot')) {
+    const rows = sr.rows();
+    sr.open(rows[1], 'end', true);
+    sr.hold(rows[3], 0.8);
+    sr.remove(rows[5]);
+    recount();
+  }
+</script>
+</body>
+</html>

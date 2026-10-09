@@ -1,0 +1,39 @@
+<figure class="hs" aria-labelledby="hs-title">
+  <header class="hs__head">
+    <h2 class="hs__title" id="hs-title">Ridge Loop</h2>
+    <p class="hs__sub">Elevation along the trail</p>
+  </header>
+  <div class="hs__plot" tabindex="0" role="slider" aria-labelledby="hs-title" aria-orientation="horizontal">
+    <div class="hs__bubble" aria-hidden="true">
+      <span class="hs__bubble-tag" hidden></span>
+      <span class="hs__bubble-value"></span>
+      <span class="hs__bubble-x"></span>
+    </div>
+  </div>
+  <ul class="hs__keys" aria-hidden="true">
+    <li class="hs__key" data-k="pulse"><svg viewBox="0 0 40 16"><path d="M4 8h2M14 8h2M22 8h2M28 8h2M33 8h2M37 8h1"/></svg><span><b>Pulse</b> faster as it climbs</span></li>
+    <li class="hs__key" data-k="grid"><svg viewBox="0 0 40 16"><path d="M18 2v12M22 2v12"/></svg><span><b>Click</b> on every grid line</span></li>
+    <li class="hs__key" data-k="extremum"><svg viewBox="0 0 40 16"><path d="M12 3v10M18 3v10M26 8h4"/></svg><span><b>Double</b> at a peak or valley</span></li>
+  </ul>
+  <div class="hs__controls">
+    <button class="hs__switch hs__sound" type="button" role="switch" aria-checked="true"><span class="hs__track" aria-hidden="true"></span>Sound</button>
+    <button class="hs__switch hs__vibe" type="button" role="switch" aria-checked="false"><span class="hs__track" aria-hidden="true"></span>Vibration</button>
+  </div>
+  <p class="hs__hint"></p>
+</figure>
+
+<link rel="stylesheet" href="haptic-scrub.css">
+<script type="module">
+  import { hapticScrub } from './haptic-scrub.js';
+
+  // xs: positions along the x axis, ys: values, one per position
+  const xs = [/* 0, 0.1, 0.2, … */];
+  const ys = [/* 212, 218, 231, … */];
+
+  hapticScrub(document.querySelector('.hs'), {
+    xs, ys,
+    gridStep: 100, // a click every 100 m
+    format: (v) => `${Math.round(v)} m`,
+    formatX: (x) => `${x.toFixed(1)} km`
+  });
+</script>

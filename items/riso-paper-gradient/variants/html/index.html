@@ -1,0 +1,11 @@
+<!-- A riso-printed gradient as a section background. The canvas redraws only when something changes. -->
+<section class="riso-paper" style="height: 70vh">
+  <canvas aria-hidden="true"></canvas>
+</section>
+
+<link rel="stylesheet" href="riso-paper.css">
+<script type="module">
+  import { createRisoPaper } from './riso-paper.js';
+  const riso = createRisoPaper(document.querySelector('.riso-paper canvas'), { registration: 0.5, grain: 0.5, creases: 0.4 });
+  // riso?.set({ creases: 0.8 });  riso?.reprint();
+</script>

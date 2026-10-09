@@ -1,0 +1,50 @@
+<!-- Practice rows: one example row per move (data-teach = done | star | snooze). data-store keeps progress in localStorage; drop it to keep nothing. -->
+<section class="pes" aria-labelledby="pes-title" data-store="practice-rows-demo">
+  <header class="pes__head">
+    <h2 class="pes__title" id="pes-title">Today</h2>
+    <p class="pes__meter">
+      <span class="pes-dot" data-move="done" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.6 6.2l2.2 2.2 4.6-4.8"/></svg></span>
+      <span class="pes-dot" data-move="star" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.4l2.41 5.88 6.34.48-4.85 4.11 1.51 6.17L12 16.7l-5.41 3.34 1.51-6.17-4.85-4.11 6.34-.48z"/></svg></span>
+      <span class="pes-dot" data-move="snooze" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.5 14.6A7.8 7.8 0 1 1 9.4 4.5a6.2 6.2 0 0 0 10.1 10.1z"/></svg></span>
+      <span class="pes__meter-text" aria-hidden="true">0/3</span>
+    </p>
+  </header>
+  <form class="pes__add">
+    <label class="pes-sr" for="pes-input">New task</label>
+    <input class="pes__input" id="pes-input" type="text" placeholder="Add a task…" autocomplete="off" enterkeyhint="done">
+    <button class="pes__add-btn" type="submit">Add</button>
+  </form>
+  <p class="pes__lead">Nothing here yet. Try each move on an example. They go away when you add a real task.</p>
+  <ul class="pes__list" aria-label="Tasks"></ul>
+  <ul class="pes__practice" aria-label="Examples to try">
+    <li class="pes-row pes-row--practice" data-teach="done">
+      <div class="pes-row__face">
+        <button class="pes-ctl pes-ctl--done" type="button" aria-pressed="false" aria-label="Example: finish this task"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle class="pes-fill" cx="12" cy="12" r="9"/><path class="pes-tick" d="M8 12.4l2.7 2.7L16.2 9.6"/></svg></button>
+        <span class="pes-row__text">Tap the circle to finish a task</span>
+        <span class="pes-row__tag">Example</span>
+      </div>
+    </li>
+    <li class="pes-row pes-row--practice" data-teach="star">
+      <div class="pes-row__face">
+        <span class="pes-ctl pes-ctl--ghost" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/></svg></span>
+        <span class="pes-row__text">Star a task to keep it on top</span>
+        <span class="pes-row__tag">Example</span>
+        <button class="pes-ctl pes-ctl--star" type="button" aria-pressed="false" aria-label="Example: star this task"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path class="pes-fill" d="M12 3.4l2.41 5.88 6.34.48-4.85 4.11 1.51 6.17L12 16.7l-5.41 3.34 1.51-6.17-4.85-4.11 6.34-.48z"/></svg></button>
+      </div>
+    </li>
+    <li class="pes-row pes-row--practice" data-teach="snooze">
+      <div class="pes-row__under" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M19.5 14.6A7.8 7.8 0 1 1 9.4 4.5a6.2 6.2 0 0 0 10.1 10.1z"/></svg><span>Snooze</span></div>
+      <div class="pes-row__face" data-swipe tabindex="0" aria-keyshortcuts="ArrowLeft" aria-label="Example: swipe left, or press the Left arrow key, to snooze till tomorrow">
+        <span class="pes-ctl pes-ctl--ghost" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/></svg></span>
+        <span class="pes-row__text">Swipe left to snooze till tomorrow</span>
+        <span class="pes-row__hint" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 8H3.5M7 4.5L3.5 8 7 11.5"/></svg></span>
+        <span class="pes-row__tag">Example</span>
+      </div>
+    </li>
+  </ul>
+  <p class="pes__clear" hidden>All clear for today.</p>
+  <p class="pes__status pes-sr" role="status"></p>
+</section>
+
+<link rel="stylesheet" href="practice-rows.css">
+<script src="practice-rows.js" defer></script>

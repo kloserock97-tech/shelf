@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Radiance UI Light</title>
+<link rel="stylesheet" href="radiance-light.css">
+<style>
+  .rl { min-height: 100vh; margin: -8px; padding: 48px; box-sizing: border-box; }
+  .card { max-width: 320px; margin-top: 32px; padding: 20px; border-radius: 16px; }
+  .cta { display: inline-block; margin-top: 24px; padding: 12px 18px; border-radius: 12px; background: #4fd1c5; color: #062320; --rl-glow: #4fd1c5; --rl-power: 0.35; }
+</style>
+</head>
+<body>
+<!-- data-rl-box: a card (lit face, blocks light); data-rl-text: lit text, "cast" also blocks light;
+     data-rl-emit: a coloured light (--rl-glow, --rl-power) that keeps its own look. The pointer carries the lamp. -->
+<main class="rl">
+  <canvas aria-hidden="true"></canvas>
+  <h1 data-rl-text="cast">Evening shift</h1>
+  <div class="card" data-rl-box><p data-rl-text>Cards block the light and catch it on the side that faces it.</p></div>
+  <a class="cta" href="#" data-rl-emit>Open the board</a>
+</main>
+<script type="module">
+  import { createRadianceLight } from './radiance-light.js';
+  const light = createRadianceLight(document.querySelector('.rl'), { lampColor: '#ffd7a8' });
+  // light?.setLamp('#8fe6ff') changes the lamp, light?.setLamp(null) switches it off, light?.refresh() re-reads the layout
+</script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Wavy Progress</title>
+<link rel="stylesheet" href="../variants/html/wavy-progress.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    box-sizing: border-box;
+    display: grid;
+    place-content: center;
+    grid-template-columns: minmax(0, 540px);
+    padding: 32px 16px;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: light-dark(#17181b, #ececee);
+    -webkit-font-smoothing: antialiased;
+  }
+  .card {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 22px 28px;
+    padding: 24px 24px 22px;
+    border-radius: 24px;
+    background: light-dark(#ffffff, #1b1c1f);
+    box-shadow: 0 1px 2px light-dark(rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.4));
+  }
+  .head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .title { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+  .pct { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .sub { margin: 12px 0 0; font-size: 13px; color: light-dark(#6b6d74, #8e9097); font-variant-numeric: tabular-nums; }
+  .ring { position: relative; display: grid; place-items: center; }
+  .ring__pct { position: absolute; font-size: 18px; font-weight: 650; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+  .ctrl { grid-column: 1 / -1; display: flex; gap: 8px; flex-wrap: wrap; }
+  .ctrl button {
+    height: 38px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 19px;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 560;
+    color: inherit;
+    background: light-dark(#eeece7, #2a2b2f);
+    cursor: pointer;
+    transition: background-color 140ms ease, scale 140ms ease;
+  }
+  .ctrl button:hover { background: light-dark(#e3e1db, #34363b); }
+  .ctrl button:active { scale: 0.96; }
+  .ctrl button[aria-pressed="true"] { background: light-dark(#17181b, #dbf266); color: light-dark(#f4f5ef, #15160f); }
+  .ctrl button:focus-visible { outline: 2px solid light-dark(#3a63ff, #8aa4ff); outline-offset: 2px; }
+  @media (min-width: 740px) { html.is-shot body { zoom: 1.3; min-height: calc(100dvh / 1.3); } }
+  @media (max-width: 460px) {
+    .card { grid-template-columns: 1fr; padding: 20px 18px; }
+    .ring { justify-self: center; }
+  }
+</style>
+</head>
+<body>
+<section class="card" aria-labelledby="t">
+  <div>
+    <div class="head">
+      <h1 class="title" id="t">Syncing library</h1>
+      <span class="pct" id="pct" aria-hidden="true">0%</span>
+    </div>
+    <div class="wvp" id="line" data-kind="linear" data-value="0" aria-labelledby="t"></div>
+    <p class="sub" id="sub">Ready</p>
+  </div>
+  <div class="ring">
+    <div class="wvp" id="ring" data-kind="circular" data-value="0" aria-label="Syncing library, ring" style="--wvp-size: 104px; --wvp-stroke: 6px; --wvp-amp: 2.6px; --wvp-wave: 21px; --wvp-gap: 5px;"></div>
+    <span class="ring__pct" id="ring-pct" aria-hidden="true">0</span>
+  </div>
+  <div class="ctrl" role="group" aria-label="Simulate">
+    <button type="button" data-mode="busy" aria-pressed="false">Busy</button>
+    <button type="button" data-mode="idle" aria-pressed="false">Idle</button>
+    <button type="button" data-mode="finish" aria-pressed="false">Finish</button>
+  </div>
+</section>
+
+<script src="../variants/html/wavy-progress.js"></script>
+<script>
+  // Seeded random numbers from Hash Kit: a Weyl sequence through our own 32-bit mixer.
+  const SALT = 0xb31c96c9;
+  function hashU(x) {
+    x ^= x >>> 16; x = Math.imul(x, 0x3f9c86cb);
+    x ^= x >>> 14; x = Math.imul(x, 0x1ae9dacf);
+    x ^= x >>> 15;
+    return x >>> 0;
+  }
+  function makeRandom(seed = 1) {
+    let s = seed >>> 0;
+    return () => { s = (s + SALT) >>> 0; return hashU(s) / 4294967296; };
+  }
+  const rnd = makeRandom(7);
+
+  const bars = [document.getElementById('line'), document.getElementById('ring')];
+  bars.forEach((b) => WavyProgress.init(b));
+  const pct = document.getElementById('pct');
+  const ringPct = document.getElementById('ring-pct');
+  const sub = document.getElementById('sub');
+  const buttons = [...document.querySelectorAll('.ctrl button')];
+  const TOTAL = 1284; // items in the library
+  let value = 0;
+  let mode = 'idle';
+  let timer = 0;
+
+  function paint() {
+    const p = Math.round(value * 100);
+    pct.textContent = `${p}%`;
+    ringPct.textContent = p;
+    const done = Math.round(value * TOTAL);
+    sub.textContent = mode === 'busy' ? `${done.toLocaleString('en')} of ${TOTAL.toLocaleString('en')} items` : value >= 1 ? 'Up to date' : value > 0 ? `Paused at ${done.toLocaleString('en')} items` : 'Ready';
+    buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
+  }
+  function set(v) { value = Math.min(1, v); bars.forEach((b) => b.wavy.set(value)); paint(); }
+  function tick() {
+    // uneven chunks at uneven intervals, like real work
+    set(value + 0.012 + rnd() * 0.05);
+    if (value >= 1) return setMode('finish');
+    timer = setTimeout(tick, 260 + rnd() * 520);
+  }
+  function setMode(m) {
+    clearTimeout(timer);
+    mode = m;
+    if (m === 'busy') {
+      if (value >= 1) set(0);
+      bars.forEach((b) => b.wavy.active(true));
+      timer = setTimeout(tick, 200);
+    } else if (m === 'idle') {
+      bars.forEach((b) => b.wavy.active(false));
+    } else {
+      bars.forEach((b) => b.wavy.active(false));
+      set(1);
+    }
+    paint();
+  }
+  buttons.forEach((b) => b.addEventListener('click', () => setMode(b.dataset.mode)));
+
+  // ?shot=1 — busy at 62 %, the wave at full height, no further steps
+  if (new URLSearchParams(location.search).has('shot')) {
+    document.documentElement.classList.add('is-shot');
+    mode = 'busy';
+    bars.forEach((b) => b.wavy.active(true));
+    set(0.62);
+  } else {
+    setMode('busy');
+  }
+</script>
+</body>
+</html>

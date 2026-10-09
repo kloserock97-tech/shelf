@@ -1,0 +1,47 @@
+<!-- One form, one capsule, one hint. data-check: email | phone | web; data-missing: the message for an empty required field; data-country-code: the code the phone fix adds. -->
+<form class="efc" novalidate aria-labelledby="efc-title">
+  <h1 class="efc__title" id="efc-title">Create your account</h1>
+  <p class="efc__sub">Free for 30 days. No card needed.</p>
+  <div class="efc-field">
+    <label for="efc-name">Full name</label>
+    <input class="efc-input" id="efc-name" name="name" autocomplete="name" required data-missing="Enter your full name.">
+    <span class="efc-mark" aria-hidden="true"><svg class="efc-mark__bad" viewBox="0 0 12 12" fill="currentColor"><rect x="5.1" y="2.4" width="1.8" height="4.8" rx=".9"/><circle cx="6" cy="9.1" r="1"/></svg><svg class="efc-mark__ok" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.6 6.2l2.2 2.2 4.6-4.8"/></svg></span>
+  </div>
+  <div class="efc-field">
+    <label for="efc-email">Work email</label>
+    <input class="efc-input" id="efc-email" name="email" type="email" autocomplete="email" required data-check="email" data-missing="Enter your email." value="mara.lindqvist@gmial.com">
+    <span class="efc-mark" aria-hidden="true"><svg class="efc-mark__bad" viewBox="0 0 12 12" fill="currentColor"><rect x="5.1" y="2.4" width="1.8" height="4.8" rx=".9"/><circle cx="6" cy="9.1" r="1"/></svg><svg class="efc-mark__ok" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.6 6.2l2.2 2.2 4.6-4.8"/></svg></span>
+  </div>
+  <div class="efc-field">
+    <label for="efc-phone">Phone</label>
+    <input class="efc-input" id="efc-phone" name="phone" type="tel" autocomplete="tel" required data-check="phone" data-country-code="+31" data-missing="Enter a phone number." value="06 1234 5678">
+    <span class="efc-mark" aria-hidden="true"><svg class="efc-mark__bad" viewBox="0 0 12 12" fill="currentColor"><rect x="5.1" y="2.4" width="1.8" height="4.8" rx=".9"/><circle cx="6" cy="9.1" r="1"/></svg><svg class="efc-mark__ok" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.6 6.2l2.2 2.2 4.6-4.8"/></svg></span>
+  </div>
+  <div class="efc-field">
+    <label for="efc-site">Website <small>optional</small></label>
+    <input class="efc-input" id="efc-site" name="website" inputmode="url" autocomplete="url" data-check="web" value="studio lindqvist.nl">
+    <span class="efc-mark" aria-hidden="true"><svg class="efc-mark__bad" viewBox="0 0 12 12" fill="currentColor"><rect x="5.1" y="2.4" width="1.8" height="4.8" rx=".9"/><circle cx="6" cy="9.1" r="1"/></svg><svg class="efc-mark__ok" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.6 6.2l2.2 2.2 4.6-4.8"/></svg></span>
+  </div>
+  <div class="efc-field">
+    <label for="efc-note">Anything we should know? <small>optional</small></label>
+    <textarea class="efc-input" id="efc-note" name="note" rows="1" placeholder="Team size, tools you use…"></textarea>
+  </div>
+  <div class="efc__foot">
+    <button class="efc__send" type="submit">Create account</button>
+    <div class="efc-capsule" hidden>
+      <span class="efc-capsule__dot" aria-hidden="true"></span>
+      <span class="efc-num" aria-hidden="true"></span>
+      <span class="efc-capsule__label" aria-hidden="true">fields to fix</span>
+      <button class="efc-capsule__next" type="button"><span>Next</span><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 3l4 4-4 4"/></svg></button>
+    </div>
+  </div>
+  <p class="efc__live efc-sr" aria-live="polite"></p>
+  <div class="efc-hint" popover="manual"><p class="efc-hint__msg" id="efc-hint-msg"></p><div class="efc-hint__acts"></div></div>
+</form>
+
+<link rel="stylesheet" href="fix-capsule.css">
+<script src="fix-capsule.js" defer></script>
+<script>
+  // a valid send reaches your own handler; an invalid one is stopped and opens the capsule
+  document.querySelector('form.efc').addEventListener('submit', (e) => { e.preventDefault(); /* send it */ });
+</script>

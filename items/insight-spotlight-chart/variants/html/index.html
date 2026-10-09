@@ -1,0 +1,26 @@
+<figure class="is" aria-labelledby="is-title">
+  <header class="is__head">
+    <h2 class="is__title" id="is-title">Daily orders</h2>
+    <p class="is__readout" aria-hidden="true"></p>
+  </header>
+  <div class="is__plot" tabindex="0" role="img" aria-labelledby="is-title" aria-describedby="is-desc"></div>
+  <div class="is__bar"></div>
+  <div class="is__sr" id="is-desc"></div>
+  <p class="is__live" role="status"></p>
+</figure>
+
+<link rel="stylesheet" href="insight-spotlight.css">
+<script type="module">
+  import { insightSpotlight } from './insight-spotlight.js';
+
+  // a daily series and its dates; the insights are computed from them
+  const dates = [/* new Date(2026, 3, 1), … */];
+  const values = [/* 715, 802, … */];
+
+  const num = new Intl.NumberFormat('en-US');
+  const chart = insightSpotlight(document.querySelector('.is'), {
+    values, dates, unit: 'orders',
+    format: (v) => num.format(Math.round(v))
+  });
+  // chart.insights — the steps as text; chart.stats — period, profile, changepoint, outliers, peak
+</script>

@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Glow Dots Loader</title>
+<link rel="stylesheet" href="../variants/html/glow-dots.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  body {
+    min-height: 100vh; min-height: 100dvh;
+    display: grid; place-content: center; justify-items: center; gap: 18px;
+    padding: 24px 16px; box-sizing: border-box;
+    font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: #3d3d42;
+  }
+  .gd { width: min(400px, calc(100vw - 32px)); box-shadow: 0 24px 50px -24px rgb(20 20 30 / 0.55), 0 0 0 1px rgb(0 0 0 / 0.04); }
+  .controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  .controls button {
+    font: 500 13px/1 system-ui, -apple-system, "Segoe UI", sans-serif; height: 34px; padding: 0 14px; border-radius: 999px;
+    border: 1px solid rgb(0 0 0 / 0.14); background: rgb(255 255 255 / 0.7); color: inherit; cursor: pointer;
+  }
+  .controls button:hover { background: #fff; }
+  .controls button:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+  @media (prefers-color-scheme: dark) {
+    body { color: #d8d8de; }
+    .gd { box-shadow: 0 24px 60px -20px rgb(0 0 0 / 0.8), 0 0 0 1px rgb(255 255 255 / 0.07); }
+    .controls button { border-color: rgb(255 255 255 / 0.16); background: rgb(255 255 255 / 0.06); }
+    .controls button:hover { background: rgb(255 255 255 / 0.12); }
+  }
+  .is-shot .controls { display: none; }
+  .is-shot .gd { width: 540px; }
+</style>
+</head>
+<body>
+<section class="gd" aria-labelledby="gd-title"
+  data-status-loading="Syncing your workspace" data-status-success="Workspace synced" data-status-error="Sync failed">
+  <canvas aria-hidden="true"></canvas>
+  <h2 class="gd__title" id="gd-title" data-gd-text>Syncing your workspace</h2>
+  <p class="gd__text" data-gd-text>Uploading 248 files to the team folder. You can keep working meanwhile.</p>
+  <div class="gd__dots" aria-hidden="true"><span class="gd__dot"></span><span class="gd__dot"></span><span class="gd__dot"></span></div>
+  <div class="gd__foot">
+    <span class="gd__meta" data-gd-text>112 of 248 files</span>
+    <button class="gd__btn" type="button" data-gd-box data-gd-text>Cancel</button>
+  </div>
+  <p class="gd__sr" role="status"></p>
+</section>
+<div class="controls" role="group" aria-label="Demo">
+  <button type="button" data-to="success">Success</button>
+  <button type="button" data-to="error">Fail</button>
+  <button type="button" data-to="loading">Restart</button>
+</div>
+<script type="module">
+  import { createGlowDots } from '../variants/html/glow-dots.js';
+  const q = new URLSearchParams(location.search);
+  const shot = q.get('shot');
+  if (shot !== null) document.documentElement.classList.add('is-shot');
+  const card = document.querySelector('.gd');
+  const $ = (s) => card.querySelector(s);
+  const copy = {
+    loading: ['Syncing your workspace', 'Uploading 248 files to the team folder. You can keep working meanwhile.', '112 of 248 files', 'Cancel'],
+    success: ['Workspace synced', 'All 248 files are in the team folder and up to date.', '248 of 248 files', 'Done'],
+    error: ['Sync failed', 'The connection dropped after 112 files. Nothing was lost.', '112 of 248 files', 'Retry'],
+    cancelled: ['Sync cancelled', 'Stopped after 112 files. The rest stays on this device.', '112 of 248 files', 'Resume']
+  };
+  function show(key) {
+    const state = key === 'cancelled' ? 'error' : key;
+    const [title, text, meta, btn] = copy[key];
+    $('.gd__title').textContent = title;
+    $('.gd__text').textContent = text;
+    $('.gd__meta').textContent = meta;
+    $('.gd__btn').textContent = btn;
+    card.dataset.state = state;
+    loader?.setState(state);
+  }
+  const shotState = shot === null ? null : ['success', 'error'].includes(shot) ? shot : 'loading';
+  if (shotState && shotState !== 'loading') { const [t, x, m, b] = copy[shotState]; $('.gd__title').textContent = t; $('.gd__text').textContent = x; $('.gd__meta').textContent = m; $('.gd__btn').textContent = b; }
+  const loader = createGlowDots(card, { shot: shotState });
+  document.querySelectorAll('[data-to]').forEach((b) => b.addEventListener('click', () => show(b.dataset.to)));
+  $('.gd__btn').addEventListener('click', () => {
+    const s = card.dataset.state || 'loading';
+    show(s === 'loading' ? 'cancelled' : 'loading');
+  });
+</script>
+</body>
+</html>

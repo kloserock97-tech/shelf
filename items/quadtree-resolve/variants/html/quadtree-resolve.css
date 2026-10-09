@@ -1,0 +1,4 @@
+/* The canvas fills its box. Gaps between cells are transparent: the box's background shows through them. */
+.qt-resolve { position: relative; overflow: hidden; background: #ebe6de; }
+.qt-resolve > canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: pan-y; }
+@media (prefers-color-scheme: dark) { .qt-resolve { background: #121316; } }

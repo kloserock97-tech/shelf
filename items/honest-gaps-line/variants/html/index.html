@@ -1,0 +1,46 @@
+<figure class="hg" aria-labelledby="hg-title">
+  <header class="hg__head">
+    <div>
+      <h2 class="hg__title" id="hg-title">Daily electricity use</h2>
+      <p class="hg__sub">Building B meter, kWh per day</p>
+    </div>
+    <div class="hg__seg" role="radiogroup" aria-label="Missing days">
+      <button type="button" role="radio" data-strategy="gap">Show gaps</button>
+      <button type="button" role="radio" data-strategy="linear">Interpolate</button>
+      <button type="button" role="radio" data-strategy="carry">Carry last</button>
+    </div>
+  </header>
+  <dl class="hg__kpis">
+    <div><dt>Total</dt><dd class="hg__kpi" data-kpi="total"></dd><dd class="hg__note" data-note="total"></dd></div>
+    <div><dt>Daily average</dt><dd class="hg__kpi" data-kpi="average"></dd><dd class="hg__note" data-note="average"></dd></div>
+    <div><dt>Coverage</dt><dd class="hg__kpi" data-kpi="coverage"></dd><dd class="hg__note" data-note="coverage"></dd><dd class="hg__strip" aria-hidden="true"></dd></div>
+  </dl>
+  <div class="hg__plot" tabindex="0" role="group" aria-roledescription="line chart" aria-labelledby="hg-title"></div>
+  <div class="hg__foot">
+    <ol class="hg__gaps" aria-label="Missing days"></ol>
+    <ul class="hg__legend" aria-hidden="true">
+      <li><i class="l-known"></i>Reported</li>
+      <li><i class="l-est"></i>Estimated</li>
+      <li><i class="l-gap"></i>No reading</li>
+    </ul>
+  </div>
+  <p class="hg__live" role="status"></p>
+</figure>
+
+<link rel="stylesheet" href="honest-gaps.css">
+<script type="module">
+  import { honestGaps } from './honest-gaps.js';
+
+  // values: one number per day, null where nothing was recorded; reasons: index ranges with the cause.
+  const dates = [/* new Date(2026, 8, 9), … */];
+  const values = [/* 412, 437, null, null, 455, … */];
+  const reasons = [{ from: 2, to: 3, reason: 'Meter offline' }];
+
+  const num = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
+  honestGaps(document.querySelector('.hg'), {
+    dates, values, reasons, unit: 'kWh',
+    format: (v) => num.format(v),
+    formatDate: (d, style) => d.toLocaleDateString('en-US',
+      style === 'long' ? { weekday: 'short', month: 'short', day: 'numeric' } : { month: 'short', day: 'numeric' })
+  });
+</script>

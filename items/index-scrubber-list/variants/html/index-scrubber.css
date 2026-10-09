@@ -1,0 +1,217 @@
+/* Index Scrubber List — sections with sticky headers and an A–Z rail you drag along. */
+.isl {
+  --isl-font: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --isl-bg: #ffffff;
+  --isl-glass: rgba(255, 255, 255, 0.72);
+  --isl-label: #1d1d1f;
+  --isl-label-2: #636366;
+  --isl-label-3: #8e8e93;
+  --isl-sep: rgba(60, 60, 67, 0.16);
+  --isl-fill: rgba(118, 118, 128, 0.12);
+  --isl-accent: #0071e3;
+  --isl-on-accent: #ffffff;
+  --isl-rail-w: 26px;
+  --isl-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  background: var(--isl-bg);
+  font-family: var(--isl-font);
+  color: var(--isl-label);
+  -webkit-font-smoothing: antialiased;
+}
+@media (prefers-color-scheme: dark) {
+  .isl {
+    --isl-bg: #1c1c1e;
+    --isl-glass: rgba(36, 36, 38, 0.72);
+    --isl-label: #f5f5f7;
+    --isl-label-2: #a1a1a6;
+    --isl-label-3: #6e6e73;
+    --isl-sep: rgba(84, 84, 88, 0.6);
+    --isl-fill: rgba(118, 118, 128, 0.24);
+    --isl-accent: #2997ff;
+    --isl-on-accent: #000000;
+  }
+}
+
+.isl__scroller {
+  position: relative;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+.isl__scroller::-webkit-scrollbar { display: none; }
+.isl__sec { position: relative; }
+.isl__sentinel { display: block; height: 1px; margin-bottom: -1px; pointer-events: none; }
+
+/* header: plain label in the flow, frosted bar with a count once it is stuck */
+.isl__head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  margin: 0;
+  container-type: scroll-state;
+  font: inherit;
+}
+.isl__head-in {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px calc(var(--isl-rail-w) + 14px) 6px 16px;
+  background: var(--isl-bg);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--isl-label-3);
+  transition: background-color 0.25s, box-shadow 0.25s, color 0.25s;
+}
+.isl__count {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--isl-label-3);
+  opacity: 0;
+  translate: 0 3px;
+  transition: opacity 0.25s, translate 0.25s var(--isl-ease);
+}
+@container scroll-state(stuck: top) {
+  .isl__head-in {
+    background: var(--isl-glass);
+    -webkit-backdrop-filter: blur(18px) saturate(1.6);
+    backdrop-filter: blur(18px) saturate(1.6);
+    box-shadow: 0 0.5px 0 var(--isl-sep);
+    color: var(--isl-label);
+  }
+  .isl__count { opacity: 1; translate: 0 0; }
+}
+/* the same look where the browser has no scroll-state queries (set by the script) */
+.isl__head.is-stuck .isl__head-in {
+  background: var(--isl-glass);
+  -webkit-backdrop-filter: blur(18px) saturate(1.6);
+  backdrop-filter: blur(18px) saturate(1.6);
+  box-shadow: 0 0.5px 0 var(--isl-sep);
+  color: var(--isl-label);
+}
+.isl__head.is-stuck .isl__count { opacity: 1; translate: 0 0; }
+
+.isl__rows { list-style: none; margin: 0; padding: 0; }
+
+/* the rail */
+.isl__rail {
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  right: 2px;
+  translate: 0 -50%;
+  width: var(--isl-rail-w);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 0;
+  border-radius: 13px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: ns-resize;
+  transition: background-color 0.2s;
+}
+.isl__rail.is-active { background: var(--isl-fill); }
+.isl__key {
+  --f: 0;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 15px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--isl-accent);
+  text-decoration: none;
+  translate: calc(var(--f) * -16px) 0;
+  scale: calc(1 + var(--f) * 0.55);
+  transition: translate 0.12s, scale 0.12s, color 0.15s;
+}
+.isl__key[aria-current] { color: var(--isl-label); }
+.isl__key.is-empty { height: 7px; }
+.isl__key.is-empty::before { content: ""; width: 3px; height: 3px; border-radius: 50%; background: var(--isl-label-3); opacity: 0.6; }
+.isl__key:focus-visible { outline: 2px solid var(--isl-accent); outline-offset: -1px; border-radius: 6px; }
+
+/* the bubble with the letter under the finger */
+.isl__bubble {
+  --y: 50%;
+  position: absolute;
+  z-index: 5;
+  top: var(--y);
+  right: calc(var(--isl-rail-w) + 30px);
+  width: 64px;
+  height: 64px;
+  margin-top: -32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--isl-accent);
+  color: var(--isl-on-accent);
+  font-size: 30px;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  pointer-events: none;
+  opacity: 0;
+  scale: 0.6;
+  transition: opacity 0.18s, scale 0.25s var(--isl-ease), top 0.06s linear;
+}
+.isl.is-scrubbing .isl__bubble { opacity: 1; scale: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .isl__key { translate: none; scale: none; transition: color 0.15s; }
+  .isl__bubble { scale: 1; transition: opacity 0.15s; }
+  .isl__head-in, .isl__count { transition: none; }
+  .isl__count { translate: none; }
+}
+
+/* a contact row */
+.isl-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 8px calc(var(--isl-rail-w) + 12px) 8px 16px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.isl-row::after { content: ""; position: absolute; left: 64px; right: 0; bottom: 0; border-bottom: 0.5px solid var(--isl-sep); }
+.isl__rows > li:last-child .isl-row::after { display: none; }
+@media (hover: hover) { .isl-row:hover { background: var(--isl-fill); } }
+.isl-row:focus-visible { outline: 2px solid var(--isl-accent); outline-offset: -2px; border-radius: 10px; }
+.isl-row__av {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--av, #8e8e93);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+}
+.isl-row__text { min-width: 0; }
+.isl-row__name { display: block; font-size: 16px; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.isl-row__name b { font-weight: 600; }
+.isl-row__sub { display: block; font-size: 13px; line-height: 1.3; color: var(--isl-label-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.isl__foot {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 18px calc(var(--isl-rail-w) + 12px) 24px 16px;
+  font-size: 13px;
+  color: var(--isl-label-3);
+  text-align: center;
+}

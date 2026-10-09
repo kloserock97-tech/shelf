@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Agent Context Tray</title>
+<link rel="stylesheet" href="../variants/html/context-tray.css">
+<style>
+  html, body { min-height: 100%; margin: 0; background: transparent; }
+  body {
+    display: grid; place-items: center; min-height: 100vh; box-sizing: border-box; padding: 32px 16px;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .wrap { width: 100%; max-width: 600px; }
+  .hint { margin: 14px 4px 0; font-size: 13px; color: #86868b; text-align: center; }
+  @media (prefers-color-scheme: dark) { .hint { color: #8e8e93; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="tray"></div>
+  <p class="hint">Click a chip to turn it off, drag it to another group, open ⌄ for a preview. Files from the desktop drop in too.</p>
+</div>
+<script src="../variants/html/context-tray.js"></script>
+<script>
+  var tray = ContextTray.create(document.getElementById('tray'), {
+    budget: 10000,
+    placeholder: 'Ask the agent…',
+    items: [
+      { id: 'profile', name: 'Profile', kind: 'profile', role: 'always', tokens: 420, pinned: true,
+        preview: 'Product designer on the growth team.\nPlain English, short paragraphs.\nTime zone: CET.' },
+      { id: 'rules', name: 'House rules', kind: 'rules', role: 'always', tokens: 640, pinned: true,
+        preview: '1. Nothing goes out without a review.\n2. Name the file every number comes from.\n3. Dates as 12 Oct, not 10/12.' },
+      { id: 'style', name: 'Writing style', kind: 'note', role: 'always', tokens: 310,
+        preview: 'Friendly, direct, no exclamation marks.\nOne idea per sentence.\nAvoid “simply” and “just”.' },
+      { id: 'brief', name: 'onboarding-brief.md', kind: 'file', role: 'task', tokens: 1840,
+        preview: '# Q4 onboarding refresh\nGoal: lift day-7 activation from 31% to 38%.\nAudience: teams of 3–20 who signed up\nbut never invited anyone.\nScope: welcome email, checklist, empty dashboard.' },
+      { id: 'flow', name: 'Onboarding flow v3', kind: 'link', role: 'task', tokens: 1210,
+        preview: 'Board · 14 frames\nwelcome → workspace name → invite teammates → first project → empty dashboard → checklist' },
+      { id: 'interviews', name: '@interview-notes', kind: 'note', role: 'task', tokens: 930,
+        preview: '“I didn’t know I could invite people later.” — P4\n“The checklist felt like homework.” — P7\n“I wanted to see a finished example first.” — P9' },
+      { id: 'metrics', name: 'activation-sept.csv', kind: 'sheet', role: 'task', tokens: 2380,
+        preview: 'week,signups,invites,active_d7\n36,1204,402,371\n37,1318,451,409\n38,1276,433,398\n39,1352,470,431\n… 9 more rows' },
+      { id: 'inbox', name: 'Inbox · 14 threads', kind: 'mail', role: 'background', tokens: 1120,
+        preview: 'Skimmed for: onboarding, activation, invites.\n3 threads match. Newest: “Invite email bounce rate”, from Support, 2 days ago.' },
+      { id: 'sync', name: 'Meeting notes', kind: 'note', role: 'background', tokens: 690,
+        preview: 'Growth sync, 7 Oct\nAgreed to test a shorter checklist: 3 items instead of 6.\nOwner: design.' },
+      { id: 'cal', name: 'Calendar · this week', kind: 'calendar', role: 'background', tokens: 280, on: false,
+        preview: 'Thu 14:00 Onboarding review\nFri 10:00 Copy crit' }
+    ]
+  });
+
+  // ?shot=1 — the poster: a prompt typed, the budget near its limit, the preview of the heaviest item open
+  if (new URLSearchParams(location.search).get('shot') === '1') {
+    document.querySelector('.hint').style.visibility = 'hidden';
+    // hold the pulse ring at its brightest for the still
+    var st = document.createElement('style');
+    st.textContent = '.ct-chip[data-heavy]::after { animation: none; opacity: 0.9; transform: scale(0.99); }';
+    document.head.appendChild(st);
+    tray.setText('Draft three welcome emails from the brief, using last month’s activation numbers');
+    tray.preview('metrics');
+    document.activeElement.blur();
+  }
+</script>
+</body>
+</html>

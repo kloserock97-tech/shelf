@@ -1,0 +1,13 @@
+<!-- A hero picture that resolves while the page loads. Feed setProgress from your loader (0…1). -->
+<section class="qt-resolve" style="height: 70vh">
+  <canvas role="img" aria-label="A dusk landscape resolving from coarse squares into detail"></canvas>
+</section>
+
+<link rel="stylesheet" href="quadtree-resolve.css">
+<script type="module">
+  import { createQuadtreeResolve, paintDusk } from './quadtree-resolve.js';
+  const qt = createQuadtreeResolve(document.querySelector('.qt-resolve canvas'), { paint: paintDusk });
+  // a stand-in loader: replace with real progress
+  let p = 0;
+  const tick = setInterval(() => { p = Math.min(1, p + 0.04); qt.setProgress(p); if (p >= 1) clearInterval(tick); }, 120);
+</script>

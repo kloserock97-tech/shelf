@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glow Dots Loader</title>
+<link rel="stylesheet" href="glow-dots.css">
+</head>
+<body>
+<!-- data-gd-text: text the dots light up (colour from --gd-ink); data-gd-box: a solid face (button).
+     data-status-*: what the role="status" line says in each state. Without WebGL2 the CSS dots stay. -->
+<section class="gd" style="width: 360px" aria-labelledby="t"
+  data-status-loading="Uploading" data-status-success="Uploaded" data-status-error="Upload failed">
+  <canvas aria-hidden="true"></canvas>
+  <h2 class="gd__title" id="t" data-gd-text>Uploading photos</h2>
+  <p class="gd__text" data-gd-text>36 photos, about a minute left.</p>
+  <div class="gd__dots" aria-hidden="true"><span class="gd__dot"></span><span class="gd__dot"></span><span class="gd__dot"></span></div>
+  <div class="gd__foot">
+    <span class="gd__meta" data-gd-text>12 of 36</span>
+    <button class="gd__btn" type="button" data-gd-box data-gd-text>Cancel</button>
+  </div>
+  <p class="gd__sr" role="status"></p>
+</section>
+<script type="module">
+  import { createGlowDots } from './glow-dots.js';
+  const loader = createGlowDots(document.querySelector('.gd'));
+  // when the work ends: loader?.setState('success') or loader?.setState('error'); setState('loading') starts again
+  setTimeout(() => loader?.setState('success'), 4000);
+</script>
+</body>
+</html>

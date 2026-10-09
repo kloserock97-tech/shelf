@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Magnitude Zoom</title>
+<link rel="stylesheet" href="../variants/html/magnitude-zoom.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  body {
+    min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: 20px 12px; box-sizing: border-box;
+    font: clamp(13px, 0.7vw + 7px, 16px)/1.35 system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
+  }
+  main { width: min(60em, 100%); }
+</style>
+</head>
+<body>
+<main>
+  <figure class="mz" id="mz" aria-labelledby="mz-title">
+    <header>
+      <p class="mz__eyebrow">Orders of magnitude</p>
+      <h1 class="mz__title" id="mz-title">How long is a billion seconds?</h1>
+      <div class="mz__readout">
+        <p class="mz__value"><span class="mz__num"></span><span class="mz__unit"></span></p>
+        <p class="mz__say"></p>
+      </div>
+    </header>
+    <div class="mz__stage">
+      <div class="mz__plot" tabindex="0" aria-labelledby="mz-title" aria-describedby="mz-hint"></div>
+      <div class="mz__ruler"></div>
+    </div>
+    <footer class="mz__foot">
+      <ul class="mz__tiers" aria-label="Jump to"></ul>
+      <p class="mz__hint" id="mz-hint">Scroll, drag or pinch to zoom. ↑ ↓ one order, Page Up / Page Down a tier.</p>
+    </footer>
+    <p class="mz__live" role="status"></p>
+  </figure>
+</main>
+
+<script type="module">
+  import { magnitudeZoom } from '../variants/html/magnitude-zoom.js';
+
+  // seconds → the largest unit that keeps the number readable
+  const one = (v, unit) => `${v} ${unit}${v === '1' ? '' : 's'}`;
+  function say(sec) {
+    const n = (x) => x >= 100 ? new Intl.NumberFormat('en-US', { maximumSignificantDigits: 3 }).format(x) : String(+x.toPrecision(3));
+    if (sec < 60) return `≈ ${one(n(sec), 'second')}`;
+    if (sec < 3600) return `≈ ${one(n(sec / 60), 'minute')}`;
+    if (sec < 86400 * 2) return `≈ ${one(n(sec / 3600), 'hour')}`;
+    if (sec < 86400 * 365.25) return `≈ ${one(n(sec / 86400), 'day')}`;
+    return `≈ ${one(n(sec / (86400 * 365.25)), 'year')}`;
+  }
+
+  // each tier is exactly 1,000 of the one before: 40 × 25 or 25 × 40 blocks
+  const chart = magnitudeZoom(document.querySelector('#mz'), {
+    unit: 'seconds',
+    unitOne: 'second',
+    say,
+    start: 3,
+    tiers: [
+      { name: 'One', short: '1', count: 1, cols: 1, rows: 1, note: 'One tick of the clock' },
+      { name: 'Thousand', short: '1K', count: 1e3, cols: 40, rows: 25, note: 'A coffee break' },
+      { name: 'Million', short: '1M', count: 1e6, cols: 25, rows: 40, note: 'A long holiday' },
+      { name: 'Billion', short: '1B', count: 1e9, cols: 40, rows: 25, note: 'Most of a working life' },
+      { name: 'Trillion', short: '1T', count: 1e12, cols: 25, rows: 40, note: 'Back past the coldest point of the last ice age' }
+    ]
+  });
+
+  // ?shot=1 — half a billion: the billion framed and half filled, the million a pin in its corner
+  const q = new URLSearchParams(location.search);
+  if (q.get('shot') === '1') chart.go(8.72, true);
+  else if (q.has('t')) chart.go(Number(q.get('t')), true);
+</script>
+</body>
+</html>

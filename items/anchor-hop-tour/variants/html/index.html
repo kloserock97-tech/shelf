@@ -1,0 +1,28 @@
+<!-- The tour dims `root` and walks its steps. Each target is any element inside root. -->
+<div class="app" id="app">
+  <header class="app__bar">
+    <button class="app__search" type="button">Search</button>
+    <button class="app__new" type="button">New project</button>
+    <button class="app__share" type="button">Share</button>
+  </header>
+  <main class="app__main">…</main>
+</div>
+<button id="tour-start" type="button">Take the tour</button>
+
+<link rel="stylesheet" href="anchor-tour.css">
+<style>
+  /* the frame the tour dims: relative for the anchored layers, clip keeps the dim inside, the radius is the iris shape */
+  .app { position: relative; overflow: clip; border-radius: 16px; }
+</style>
+<script src="anchor-tour.js"></script>
+<script>
+  const tour = anchorTour(document.getElementById('app'), [
+    { target: '.app__search', title: 'Find anything', text: 'Search notes, projects and people.' },
+    { target: '.app__new', title: 'Start a project', text: 'Projects keep notes, files and people together.', hint: 'Click New project to go on' },
+    { target: '.app__share', title: 'Bring your team', text: 'Share a project with a link or by email.' }
+  ], {
+    returnFocus: document.getElementById('tour-start'),
+    onEnd: (reason, step) => console.log('tour ended:', reason, 'at step', step + 1)
+  });
+  document.getElementById('tour-start').addEventListener('click', () => tour.start(0));
+</script>

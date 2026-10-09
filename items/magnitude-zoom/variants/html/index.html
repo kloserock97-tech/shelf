@@ -1,0 +1,35 @@
+<figure class="mz" aria-labelledby="mz-title">
+  <header>
+    <h2 class="mz__title" id="mz-title">How long is a billion seconds?</h2>
+    <div class="mz__readout">
+      <p class="mz__value"><span class="mz__num"></span><span class="mz__unit"></span></p>
+      <p class="mz__say"></p>
+    </div>
+  </header>
+  <div class="mz__stage">
+    <div class="mz__plot" tabindex="0" aria-labelledby="mz-title"></div>
+    <div class="mz__ruler"></div>
+  </div>
+  <ul class="mz__tiers" aria-label="Jump to"></ul>
+  <p class="mz__live" role="status"></p>
+</figure>
+
+<link rel="stylesheet" href="magnitude-zoom.css">
+<script type="module">
+  import { magnitudeZoom } from './magnitude-zoom.js';
+
+  // tier k is cols × rows blocks of tier k-1; colors come from --mz-t0…4
+  const days = (s) => s / 86400;
+  magnitudeZoom(document.querySelector('.mz'), {
+    unit: 'seconds',
+    unitOne: 'second',
+    say: (s) => s < 86400 ? `≈ ${(s / 3600).toPrecision(3)} hours` : s < 31557600 ? `≈ ${days(s).toPrecision(3)} days` : `≈ ${(s / 31557600).toPrecision(3)} years`,
+    start: 3,
+    tiers: [
+      { name: 'One', short: '1', count: 1, cols: 1, rows: 1 },
+      { name: 'Thousand', short: '1K', count: 1e3, cols: 40, rows: 25 },
+      { name: 'Million', short: '1M', count: 1e6, cols: 25, rows: 40 },
+      { name: 'Billion', short: '1B', count: 1e9, cols: 40, rows: 25 }
+    ]
+  });
+</script>

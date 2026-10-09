@@ -1,0 +1,125 @@
+/* Inline Slot Picker — a week of days, free slots in the visitor's time zone, an .ics file and a prefilled email. */
+.spk {
+  --spk-font: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --spk-label: #1d1d1f;
+  --spk-label-2: #636366;
+  --spk-label-3: #8e8e93;
+  --spk-surface: #ffffff;
+  --spk-fill: rgba(118, 118, 128, 0.1);
+  --spk-fill-hover: rgba(118, 118, 128, 0.18);
+  --spk-hair: rgba(0, 0, 0, 0.08);
+  --spk-accent: #0071e3;
+  --spk-on-accent: #ffffff;
+  --spk-accent-soft: rgba(0, 113, 227, 0.1);
+  --spk-open: #30a14e;
+  --spk-ease: cubic-bezier(0.23, 1, 0.32, 1);
+  font-family: var(--spk-font);
+  color: var(--spk-label);
+  -webkit-font-smoothing: antialiased;
+}
+@media (prefers-color-scheme: dark) {
+  .spk {
+    --spk-label: #f5f5f7;
+    --spk-label-2: #aaaaaf;
+    --spk-label-3: #74747a;
+    --spk-surface: #1c1c1e;
+    --spk-fill: rgba(118, 118, 128, 0.22);
+    --spk-fill-hover: rgba(118, 118, 128, 0.32);
+    --spk-hair: rgba(255, 255, 255, 0.09);
+    --spk-accent: #0a84ff;
+    --spk-accent-soft: rgba(10, 132, 255, 0.18);
+    --spk-open: #3fd168;
+  }
+}
+:where(.spk) button { font: inherit; color: inherit; }
+
+/* the host's clock */
+.spk-clock { display: flex; align-items: center; gap: 8px; margin: 0 0 16px; font-size: 13px; color: var(--spk-label-2); }
+.spk-clock time { font-weight: 600; color: var(--spk-label); font-variant-numeric: tabular-nums; }
+.spk-clock__dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--spk-label-3); }
+.spk-clock.is-open .spk-clock__dot { background: var(--spk-open); box-shadow: 0 0 0 3px color-mix(in srgb, var(--spk-open) 22%, transparent); }
+
+/* days: a snap strip */
+.spk-days {
+  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(62px, 1fr); gap: 8px;
+  margin: 0 -2px; padding: 2px 2px 4px;
+  overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain;
+}
+.spk-days::-webkit-scrollbar { display: none; }
+.spk-day {
+  scroll-snap-align: start;
+  display: grid; justify-items: center; gap: 2px; padding: 9px 4px 8px;
+  border: 0; border-radius: 14px; background: var(--spk-fill); cursor: pointer;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  transition: background-color 160ms ease, color 160ms ease, transform 120ms var(--spk-ease);
+}
+.spk-day__wd { font-size: 12px; color: var(--spk-label-2); white-space: nowrap; }
+.spk-day__num { font-size: 20px; font-weight: 600; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.spk-day__n { font-size: 11px; color: var(--spk-label-3); white-space: nowrap; }
+.spk-day[aria-checked="true"] { background: var(--spk-label); color: var(--spk-surface); }
+.spk-day[aria-checked="true"] .spk-day__wd, .spk-day[aria-checked="true"] .spk-day__n { color: inherit; opacity: 0.72; }
+.spk-day[aria-disabled="true"] { cursor: default; background: transparent; box-shadow: inset 0 0 0 1px var(--spk-hair); }
+.spk-day[aria-disabled="true"] > * { opacity: 0.45; }
+.spk-day:not([aria-disabled="true"]):active { transform: scale(0.96); }
+@media (hover: hover) and (pointer: fine) {
+  .spk-day:not([aria-disabled="true"]):not([aria-checked="true"]):hover { background: var(--spk-fill-hover); }
+}
+
+.spk-zone { margin: 14px 0 10px; font-size: 12px; color: var(--spk-label-2); }
+
+/* slots */
+.spk-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; min-height: 40px; }
+.spk-slot {
+  height: 40px; padding: 0 8px; border: 0; border-radius: 10px;
+  background: var(--spk-accent-soft); color: var(--spk-accent);
+  font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; cursor: pointer;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  transition: background-color 160ms ease, color 160ms ease, transform 120ms var(--spk-ease);
+}
+.spk-slot[aria-checked="true"] { background: var(--spk-accent); color: var(--spk-on-accent); }
+.spk-slot:active { transform: scale(0.96); }
+@media (hover: hover) and (pointer: fine) {
+  .spk-slot:not([aria-checked="true"]):hover { background: color-mix(in srgb, var(--spk-accent) 18%, transparent); }
+}
+.spk-day:focus-visible, .spk-slot:focus-visible, .spk-btn:focus-visible, .spk a:focus-visible { outline: 2px solid var(--spk-accent); outline-offset: 2px; }
+.spk-empty { grid-column: 1 / -1; margin: 6px 0; font-size: 14px; color: var(--spk-label-2); }
+.spk-empty a { color: var(--spk-accent); }
+
+/* cascade: --i from sibling-index() where it exists, from the script elsewhere */
+@supports (order: sibling-index()) {
+  .spk-slot { --i: calc(sibling-index() - 1); }
+}
+.spk-slots.is-entering .spk-slot { animation: spk-in 320ms var(--spk-ease) both; animation-delay: calc(min(var(--i, 0), 14) * 22ms); }
+@keyframes spk-in { from { opacity: 0; transform: translateY(6px) scale(0.97); } }
+
+/* the pick: what was chosen, in both clocks, and the two ways to send it */
+.spk-pick { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--spk-hair); }
+.spk-pick[hidden] { display: none; }
+.spk-pick__when { margin: 0; font-size: 16px; font-weight: 600; }
+.spk-pick__when span { font-weight: 400; color: var(--spk-label-2); }
+.spk-pick__host { margin: 2px 0 12px; font-size: 13px; color: var(--spk-label-2); }
+.spk-pick__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.spk-btn {
+  display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 999px;
+  background: var(--spk-fill); color: var(--spk-label); font-size: 14px; font-weight: 600; text-decoration: none;
+  transition: background-color 160ms ease, transform 120ms var(--spk-ease);
+}
+.spk-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.spk-btn--primary { background: var(--spk-accent); color: var(--spk-on-accent); }
+.spk-btn:active { transform: scale(0.97); }
+@media (hover: hover) and (pointer: fine) {
+  .spk-btn:not(.spk-btn--primary):hover { background: var(--spk-fill-hover); }
+  .spk-btn--primary:hover { background: color-mix(in srgb, var(--spk-accent) 88%, #000); }
+}
+.spk-pick.is-entering > * { animation: spk-in 360ms var(--spk-ease) both; }
+.spk-pick.is-entering > :nth-child(2) { animation-delay: 40ms; }
+.spk-pick.is-entering > :nth-child(3) { animation-delay: 80ms; }
+
+.spk-status { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  .spk-slots.is-entering .spk-slot, .spk-pick.is-entering > * { animation-name: spk-fade; animation-delay: 0ms; }
+  .spk-day, .spk-slot, .spk-btn { transition: background-color 160ms ease, color 160ms ease; }
+  .spk-day:active, .spk-slot:active, .spk-btn:active { transform: none; }
+}
+@keyframes spk-fade { from { opacity: 0; } }

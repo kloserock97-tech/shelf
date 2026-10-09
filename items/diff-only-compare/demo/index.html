@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Differences-Only Compare</title>
+<link rel="stylesheet" href="../variants/html/diff-compare.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  body { min-height: 100vh; min-height: 100dvh; display: grid; grid-template-columns: minmax(0, 720px); justify-content: center; align-content: center; padding: 28px 16px; box-sizing: border-box; }
+  .card { box-sizing: border-box; width: 100%; min-width: 0; padding: 20px 16px 14px; border-radius: 20px; background: var(--dfc-surface); }
+  .card .dfc-bar, .card .dfc-meta { padding: 0 6px; }
+  .dfc { --dfc-max-h: min(560px, calc(100dvh - 190px)); }
+  @media (max-width: 520px) {
+    body { padding: 54px 12px 16px; align-content: start; }
+    .card { padding: 16px 10px 10px; border-radius: 18px; }
+    .dfc { --dfc-max-h: calc(100dvh - 200px); }
+  }
+</style>
+</head>
+<body>
+<section class="dfc card" aria-labelledby="dfc-title">
+  <div class="dfc-bar">
+    <h1 class="dfc-title" id="dfc-title">Compare e-bikes</h1>
+    <label class="dfc-switch"><input type="checkbox" role="switch"><span>Only differences</span></label>
+  </div>
+  <p class="dfc-meta">
+    <span class="dfc-legend" aria-hidden="true">
+      <span class="dfc-mark" data-mark="best"><svg viewBox="0 0 10 10"><path d="M5 8.5v-7M2 4.2 5 1.5l3 2.7"/></svg>Best</span>
+      <span><span class="dfc-mark" data-mark="worst"><svg viewBox="0 0 10 10"><path d="M5 1.5v7M2 5.8 5 8.5l3-2.7"/></svg></span>Worst</span>
+    </span>
+    <span class="dfc-status" role="status"></span>
+  </p>
+  <div class="dfc-scroll" tabindex="0" role="region" aria-labelledby="dfc-title">
+    <table class="dfc-table">
+      <caption class="dfc-sr">Three e-bikes side by side. The best and the worst value in each row are marked.</caption>
+      <thead>
+        <tr>
+          <td class="dfc-corner"></td>
+          <th scope="col"><div class="dfc-head"><span class="dfc-head__name">Metro</span><span class="dfc-head__sub">City commuter</span></div></th>
+          <th scope="col"><div class="dfc-head"><span class="dfc-head__name">Ranger</span><span class="dfc-head__sub">Trail &amp; touring</span></div></th>
+          <th scope="col"><div class="dfc-head"><span class="dfc-head__name">Hauler</span><span class="dfc-head__sub">Family cargo</span></div></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="dfc-section"><th colspan="4" scope="colgroup">Price</th></tr>
+        <tr data-better="lower"><th scope="row">Price</th><td data-v="2199">€2,199</td><td data-v="2899">€2,899</td><td data-v="3499">€3,499</td></tr>
+        <tr><th scope="row">Warranty</th><td>2 years</td><td>2 years</td><td>2 years</td></tr>
+
+        <tr class="dfc-section"><th colspan="4" scope="colgroup">Battery</th></tr>
+        <tr data-better="higher"><th scope="row">Range</th><td data-v="80">80 km</td><td data-v="120">120 km</td><td data-v="95">95 km</td></tr>
+        <tr data-better="higher"><th scope="row">Capacity</th><td data-v="500">500 Wh</td><td data-v="625">625 Wh</td><td data-v="625">625 Wh</td></tr>
+        <tr data-better="lower"><th scope="row">Full charge</th><td data-v="4.5">4.5 h</td><td data-v="5">5 h</td><td data-v="5">5 h</td></tr>
+        <tr><th scope="row">Removable</th><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+
+        <tr class="dfc-section"><th colspan="4" scope="colgroup">Ride</th></tr>
+        <tr><th scope="row">Motor</th><td>250 W, rear hub</td><td>250 W, rear hub</td><td>250 W, rear hub</td></tr>
+        <tr data-better="higher"><th scope="row">Torque</th><td data-v="50">50 Nm</td><td data-v="85">85 Nm</td><td data-v="85">85 Nm</td></tr>
+        <tr><th scope="row">Assist up to</th><td>25 km/h</td><td>25 km/h</td><td>25 km/h</td></tr>
+        <tr><th scope="row">Gears</th><td>8-speed hub</td><td>12-speed</td><td>5-speed hub</td></tr>
+        <tr><th scope="row">Brakes</th><td>Hydraulic disc</td><td>Hydraulic disc</td><td>Hydraulic disc</td></tr>
+
+        <tr class="dfc-section"><th colspan="4" scope="colgroup">Frame</th></tr>
+        <tr data-better="lower"><th scope="row">Weight</th><td data-v="19">19 kg</td><td data-v="24">24 kg</td><td data-v="34">34 kg</td></tr>
+        <tr data-better="higher"><th scope="row">Max load</th><td data-v="120">120 kg</td><td data-v="140">140 kg</td><td data-v="200">200 kg</td></tr>
+        <tr><th scope="row">Material</th><td>Aluminium</td><td>Aluminium</td><td>Aluminium</td></tr>
+        <tr><th scope="row">Kickstand</th><td>Single</td><td>Single</td><td>Double</td></tr>
+
+        <tr class="dfc-section"><th colspan="4" scope="colgroup">Extras</th></tr>
+        <tr><th scope="row">Lights</th><td>Integrated</td><td>Integrated</td><td>Integrated</td></tr>
+        <tr><th scope="row">App &amp; lock</th><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+<script src="../variants/html/diff-compare.js"></script>
+<script>
+  // ?shot=1: poster state. Differences only, scrolled a little so the stuck head shows its chips.
+  // diff-compare.js boots on DOMContentLoaded; this listener runs after it
+  document.addEventListener('DOMContentLoaded', () => {
+    const box = document.querySelector('.dfc');
+    if (!new URLSearchParams(location.search).has('shot') || !box.dfc) return;
+    box.dfc.setDiff(true, { animate: false });
+    requestAnimationFrame(() => { box.dfc.scroller.scrollTop = 40; });
+  });
+</script>
+</body>
+</html>

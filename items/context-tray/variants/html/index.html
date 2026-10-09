@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Agent Context Tray</title>
+<link rel="stylesheet" href="context-tray.css">
+</head>
+<body>
+<div id="tray"></div>
+
+<script src="context-tray.js"></script>
+<script>
+  // role: always (every task) · task (this request only) · background (a stream the agent skims)
+  const tray = ContextTray.create(document.getElementById('tray'), {
+    budget: 8000,
+    items: [
+      { id: 'profile', name: 'Profile', kind: 'profile', role: 'always', tokens: 400, pinned: true, preview: 'Role, tone, time zone' },
+      { id: 'spec', name: 'checkout-spec.md', kind: 'file', role: 'task', tokens: 2100, preview: '# Checkout v2\n…' },
+      { id: 'tickets', name: 'Open tickets', kind: 'sheet', role: 'task', tokens: 1600, preview: 'id,title,priority\n…' },
+      { id: 'inbox', name: 'Inbox', kind: 'mail', role: 'background', tokens: 900, preview: 'Threads about checkout' }
+    ]
+  }, {
+    // what the agent gets: only the items that are on, with their role
+    onSend: ({ text, items, tokens }) => fetch('/agent/ask', { method: 'POST', body: JSON.stringify({ text, context: items }) }),
+    onChange: (state) => console.log(state.tokens, '/', state.budget, state.level)
+  });
+
+  // add from your own @-mention or attachment picker
+  // tray.add({ name: 'pricing.csv', kind: 'sheet', role: 'task', tokens: 1200, preview: '…' });
+</script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Dither Density Chart</title>
+<link rel="stylesheet" href="../variants/html/dither-density.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  body {
+    min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: 20px 12px; box-sizing: border-box;
+    font: clamp(13px, 0.7vw + 7px, 16px)/1.35 system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
+  }
+  main { width: min(56em, 100%); }
+</style>
+</head>
+<body>
+<main>
+  <figure class="dd" aria-labelledby="dd-title">
+    <header class="dd__head">
+      <div>
+        <p class="dd__kicker">Week 40 · one ink</p>
+        <h1 class="dd__title" id="dd-title">Checkouts by hour</h1>
+        <p class="dd__sub">Sep 28 – Oct 4, local time. More ink, more checkouts.</p>
+      </div>
+      <div class="dd__seg" role="radiogroup" aria-label="Screen">
+        <button type="button" role="radio" data-mode="bayer">Bayer</button>
+        <button type="button" role="radio" data-mode="halftone">Halftone</button>
+        <button type="button" role="radio" data-mode="lines">Lines</button>
+      </div>
+    </header>
+    <div class="dd__chart">
+      <div class="dd__cols" aria-hidden="true"></div>
+      <div class="dd__rows" aria-hidden="true"></div>
+      <div class="dd__plot" tabindex="0" role="group" aria-roledescription="heatmap" aria-labelledby="dd-title" aria-describedby="dd-help">
+        <canvas class="dd__canvas" aria-hidden="true"></canvas>
+        <div class="dd__focus" aria-hidden="true"></div>
+        <div class="dd__tip" aria-hidden="true"></div>
+      </div>
+    </div>
+    <div class="dd__foot">
+      <div class="dd__legend" aria-hidden="true">
+        <span class="dd__legend-title">Checkouts per hour</span>
+        <div class="dd__ramp-wrap"><canvas class="dd__ramp"></canvas><i class="dd__caret"></i></div>
+        <div class="dd__ramp-labels"></div>
+      </div>
+      <p class="dd__spec"></p>
+    </div>
+    <p id="dd-help" hidden>Arrow keys move between hours and days; every value is also in the table below.</p>
+    <p class="dd__live" role="status"></p>
+    <div class="dd__sr"><table class="dd__table" aria-label="Checkouts by hour, all values"></table></div>
+  </figure>
+</main>
+
+<script type="module">
+  import { ditherDensity } from '../variants/html/dither-density.js';
+
+  // Seeded numbers: Hash Kit's mixer over a Weyl sequence.
+  function hashU(x) {
+    x ^= x >>> 16; x = Math.imul(x, 0x3f9c86cb);
+    x ^= x >>> 14; x = Math.imul(x, 0x1ae9dacf);
+    x ^= x >>> 15;
+    return x >>> 0;
+  }
+  function makeRandom(seed) {
+    let s = seed >>> 0;
+    return () => { s = (s + 0xb31c96c9) >>> 0; return hashU(s) / 4294967296; };
+  }
+  const rnd = makeRandom(40);
+
+  // A week of checkouts in an online shop: quiet nights, a lunch bump, the evening peak;
+  // weekends start late and peak on Sunday evening, Friday evening is quieter.
+  const bump = (h, at, width) => Math.exp(-(((h - at) / width) ** 2));
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const values = days.map((_, d) => Array.from({ length: 24 }, (_, h) => {
+    const weekend = d >= 5;
+    const wake = weekend ? 9.5 : 7.5;
+    const day = 1 / (1 + Math.exp(-(h - wake) * 1.3));
+    const lunch = (weekend ? 0.18 : 0.32) * bump(h, 12.6, 1.2);
+    const evening = (d === 4 ? 0.55 : d === 6 ? 1.15 : weekend ? 0.75 : 0.9) * bump(h, d === 6 ? 20.2 : 20.6, 2.2);
+    const late = 0.2 * bump(h, 23.5, 1.6) + 0.12 * bump(h, 0, 1.4);
+    const level = 0.04 + 0.42 * day * (1 - 0.6 * bump(h, 23.5, 2.5)) + lunch + evening + late;
+    return Math.round(122 * level * (1 + (rnd() - 0.5) * 0.18));
+  }));
+
+  const pad = (h) => String(h).padStart(2, '0');
+  const chart = ditherDensity(document.querySelector('.dd'), {
+    values,
+    rowLabels: days,
+    colLabel: (c, narrow) => (c % (narrow ? 6 : 3) === 0 ? pad(c) : ''),
+    cellLabel: (r, c) => `${days[r]}, ${pad(c)}:00–${pad((c + 1) % 24)}:00`,
+    format: (v) => Math.round(v).toLocaleString('en-US'),
+    unit: 'checkouts'
+  });
+
+  // ?shot=1 — halftone with the Sunday evening peak read out; ?mode=bayer|halftone|lines
+  const q = new URLSearchParams(location.search);
+  if (q.get('mode')) chart.setMode(q.get('mode'));
+  if (q.get('shot') === '1') { chart.setMode('halftone'); chart.show(6, 20); }
+</script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!-- One split button. The menu id must be unique; data-key names the remembered choice. Add .spb--soft for the quiet look. -->
+<div class="spb" data-key="export">
+  <button class="spb__main" type="button">
+    <span class="spb__icon" aria-hidden="true">
+      <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2.8v8.4M5.6 7.8 9 11.2l3.4-3.4M3.2 12.6v1.2c0 .8.6 1.4 1.4 1.4h8.8c.8 0 1.4-.6 1.4-1.4v-1.2"/></svg>
+      <svg class="spb__done" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m4 9.4 3.2 3.1L14 5.6"/></svg>
+    </span>
+    <span class="spb__label">Export PNG</span>
+  </button>
+  <button class="spb__toggle" type="button" commandfor="spb-export-menu" command="toggle-popover"
+          aria-label="Export options" aria-haspopup="menu" aria-expanded="false">
+    <svg class="spb__chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 6.2 4 4 4-4"/></svg>
+  </button>
+  <div class="spb__menu" id="spb-export-menu" popover role="menu" aria-label="Export format">
+    <button class="spb__item" type="button" role="menuitemradio" aria-checked="true" data-value="png" data-label="Export PNG">
+      <span aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3.5" width="14" height="13" rx="2.5"/><path d="m3.5 14 4-4 3 3 2-2 4 4"/></svg></span><span>PNG image<small>Raster, 2×</small></span>
+      <svg class="spb__check" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3.5 8.4 2.9 2.8 6.1-6.4"/></svg>
+    </button>
+    <button class="spb__item" type="button" role="menuitemradio" aria-checked="false" data-value="pdf" data-label="Export PDF">
+      <span aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 2.5h6l4 4v10c0 .6-.4 1-1 1h-9c-.6 0-1-.4-1-1v-13c0-.6.4-1 1-1Z"/><path d="M11.5 2.5v4h4"/></svg></span><span>PDF document<small>Vector, print-ready</small></span>
+      <svg class="spb__check" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3.5 8.4 2.9 2.8 6.1-6.4"/></svg>
+    </button>
+  </div>
+</div>
+
+<link rel="stylesheet" href="split-button.css">
+<script src="split-button.js" defer></script>

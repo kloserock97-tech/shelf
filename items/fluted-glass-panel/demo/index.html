@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Fluted Glass Panel</title>
+<link rel="stylesheet" href="../variants/html/fluted-glass.css">
+<style>
+  html, body { height: 100%; margin: 0; background: transparent; overflow: hidden; }
+  body { font: 13px/1.35 system-ui, -apple-system, "Segoe UI", sans-serif; color: #1d1c1a; }
+  .fluted { position: fixed; inset: 0; }
+  .panel {
+    position: fixed; left: 16px; bottom: 16px; width: 220px; box-sizing: border-box; max-width: calc(100vw - 32px);
+    display: grid; gap: 10px; padding: 14px; border-radius: 14px;
+    background: #fbfaf7e6; box-shadow: 0 8px 26px #1c191426, 0 0 0 1px #1c191414; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  }
+  .panel label { display: grid; grid-template-columns: 1fr auto; gap: 4px 8px; }
+  .panel output { font-variant-numeric: tabular-nums; opacity: .6; }
+  .panel input { grid-column: 1 / -1; width: 100%; margin: 0; accent-color: #b85f43; }
+  .panel :focus-visible { outline: 2px solid #3b5a8c; outline-offset: 2px; }
+  @media (max-width: 560px) { .panel { width: auto; right: 16px; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 10px 12px; } }
+  @media (prefers-color-scheme: dark) {
+    body { color: #ebe7e0; }
+    .panel { background: #1b1c1fe0; box-shadow: 0 8px 26px #0000007a, 0 0 0 1px #ffffff14; }
+    .panel input { accent-color: #d0805f; }
+    .panel :focus-visible { outline-color: #9db6dd; }
+  }
+  .shot .panel { display: none; }
+</style>
+</head>
+<body>
+<div class="fluted" role="img" aria-label="A ribbed glass pane over a large heading and coloured circles; the ribs bend the picture behind them.">
+  <canvas aria-hidden="true"></canvas>
+</div>
+<form class="panel" aria-label="Glass settings" onsubmit="return false">
+  <label>Ribs <output data-for="rib"></output><input type="range" name="rib" min="8" max="56" step="1"></label>
+  <label>Refraction <output data-for="refraction"></output><input type="range" name="refraction" min="0" max="1.5" step="0.01"></label>
+  <label>Dispersion <output data-for="dispersion"></output><input type="range" name="dispersion" min="0" max="1" step="0.01"></label>
+</form>
+<script type="module">
+  import { createFlutedGlass } from "../variants/html/fluted-glass.js";
+
+  const query = new URLSearchParams(location.search);
+  const shot = query.has("shot");
+  if (shot) document.documentElement.classList.add("shot");
+  const portrait = () => innerWidth / innerHeight < 0.9;
+  const paneFor = () => (portrait() ? [0.05, 0.3, 0.95, 0.86] : [0.37, 0.09, 0.95, 0.91]);
+
+  /* The picture behind the glass: a large heading and a few coloured forms, drawn in CSS px. */
+  function paint(g, W, H, dark) {
+    const C = dark
+      ? { bg: "#131417", ink: "#ece7de", sub: "#ece7de99", sun: "#c8694b", sea: "#4d6fa8", leaf: "#6f8c78", cream: "#e8dcc4" }
+      : { bg: "#ebe7df", ink: "#1c1b19", sub: "#1c1b1999", sun: "#d26f4d", sea: "#2f4c7c", leaf: "#9db29a", cream: "#f7f1e6" };
+    g.fillStyle = C.bg; g.fillRect(0, 0, W, H);
+    const m = Math.min(W, H), tall = W / H < 0.9;
+    const circle = (x, y, r, c) => { g.fillStyle = c; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); };
+    if (tall) {
+      g.fillStyle = C.leaf; g.fillRect(0, H * 0.83, W, H * 0.06);
+      circle(W * 0.62, H * 0.62, m * 0.36, C.sun);
+      circle(W * 0.26, H * 0.82, m * 0.2, C.sea);
+      circle(W * 0.8, H * 0.5, m * 0.07, C.cream);
+    } else {
+      g.fillStyle = C.leaf; g.fillRect(W * 0.18, H * 0.76, W, H * 0.07);
+      circle(W * 0.68, H * 0.42, m * 0.27, C.sun);
+      circle(W * 0.87, H * 0.72, m * 0.17, C.sea);
+      circle(W * 0.52, H * 0.22, m * 0.05, C.cream);
+    }
+    g.fillStyle = C.ink;
+    g.textBaseline = "alphabetic";
+    const size = tall ? W * 0.215 : Math.min(W * 0.14, H * 0.25);
+    g.font = `800 ${size}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+    if ("letterSpacing" in g) g.letterSpacing = `${(-size * 0.045).toFixed(1)}px`;
+    const x = tall ? W * 0.07 : W * 0.06;
+    g.fillText("Morning", x, tall ? H * 0.26 : H * 0.47);
+    g.fillText("light", x + size * 0.04, tall ? H * 0.26 + size * 0.98 : H * 0.47 + size * 0.98);
+    if ("letterSpacing" in g) g.letterSpacing = "2px";
+    g.font = `600 ${tall ? 11 : 12}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+    g.fillStyle = C.sub;
+    g.fillText("GLASS STUDY 04 — CAST, RIBBED", x, tall ? H * 0.07 : H * 0.12);
+  }
+
+  const canvas = document.querySelector(".fluted canvas");
+  const start = shot ? { rib: 28, refraction: 1.25, dispersion: 0.6 } : { rib: 24, refraction: 1, dispersion: 0.4 };
+  const glass = createFlutedGlass(canvas, paint, { ...start, panel: paneFor(), pointerTarget: document.body });
+  const form = document.querySelector(".panel");
+  if (!glass) {
+    // no WebGL2: the picture without the glass
+    form.hidden = true;
+    const draw = () => {
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      canvas.width = innerWidth * dpr; canvas.height = innerHeight * dpr;
+      const g = canvas.getContext("2d"); g.scale(dpr, dpr);
+      paint(g, innerWidth, innerHeight, matchMedia("(prefers-color-scheme: dark)").matches);
+    };
+    draw(); addEventListener("resize", draw);
+  } else {
+    addEventListener("resize", () => glass.set({ panel: paneFor() }));
+    const inputs = [...form.querySelectorAll("input")];
+    const show = () => inputs.forEach((i) => {
+      i.value = glass.params[i.name];
+      const v = glass.params[i.name];
+      form.querySelector(`[data-for="${i.name}"]`).value = i.name === "rib" ? `${v} px` : v.toFixed(2);
+    });
+    inputs.forEach((i) => i.addEventListener("input", () => { glass.set({ [i.name]: Number(i.value) }); show(); }));
+    show();
+    if (shot) glass.setTilt(0.38, -0.2, true);
+  }
+</script>
+</body>
+</html>

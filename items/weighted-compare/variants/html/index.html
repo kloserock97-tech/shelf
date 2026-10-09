@@ -1,0 +1,23 @@
+<!-- Each slider names a criterion (data-key) and carries its colour (--wcm-c on the wrapper).
+     Each row scores every criterion 0–10 in data-<key>. Higher is always better: score cost as "cheapness". -->
+<section class="wcm" aria-label="Pick a laptop">
+  <fieldset class="wcm-weights">
+    <legend>What matters</legend>
+    <div class="wcm-weight" style="--wcm-c: var(--wcm-c1)">
+      <div class="wcm-weight__top"><label for="w-price">Price</label><output for="w-price">6</output></div>
+      <input class="wcm-range" type="range" id="w-price" data-key="price" min="0" max="10" step="1" value="6">
+    </div>
+    <div class="wcm-weight" style="--wcm-c: var(--wcm-c2)">
+      <div class="wcm-weight__top"><label for="w-battery">Battery</label><output for="w-battery">5</output></div>
+      <input class="wcm-range" type="range" id="w-battery" data-key="battery" min="0" max="10" step="1" value="5">
+    </div>
+  </fieldset>
+  <p class="wcm-status" role="status"></p>
+  <ol class="wcm-list" aria-label="Options, best match first">
+    <li class="wcm-row" data-price="8" data-battery="5"><div class="wcm-name">Model A <small>13-inch</small></div></li>
+    <li class="wcm-row" data-price="5" data-battery="9"><div class="wcm-name">Model B <small>14-inch</small></div></li>
+  </ol>
+</section>
+
+<link rel="stylesheet" href="weighted-compare.css">
+<script src="weighted-compare.js" defer></script>

@@ -1,0 +1,53 @@
+<section class="csk" aria-label="Corner shape kit">
+  <figure class="csk__spec csk__ticket-spec">
+    <div class="csk-ticket">
+      <div class="csk-ticket__main">
+        <div class="csk-ticket__route">Lisbon <svg viewBox="0 0 22 12" aria-hidden="true"><path d="M1 6h19M15 1l5 5-5 5"/></svg> Porto</div>
+        <div class="csk-ticket__meta">
+          <span>Departs<b>06:42</b></span><span>Arrives<b>09:31</b></span><span>Coach<b>4</b></span>
+        </div>
+      </div>
+      <div class="csk-ticket__stub"><small>Seat</small><span class="csk-ticket__seat">21A</span></div>
+    </div>
+    <figcaption>round scoop · scoop round</figcaption>
+  </figure>
+
+  <figure class="csk__spec csk__stamp-spec">
+    <div class="csk-stamp" role="img" aria-label="Stamp, 28 cents, a mountain lake">
+      <svg viewBox="0 0 90 56" aria-hidden="true"><path d="M0 46 22 18l10 12 14-20 18 24 8-8 18 20v10H0z"/><circle cx="70" cy="12" r="6"/><path d="M8 50h74v2H8z" opacity=".5"/></svg>
+      <div><b>28</b><span>cents · lakes</span></div>
+    </div>
+    <figcaption>scoop</figcaption>
+  </figure>
+
+  <figure class="csk__spec csk__tag-spec">
+    <div class="csk-tag"><b>GATE 14</b><span>Bag 2 of 3 · 18.4 kg</span></div>
+    <figcaption>bevel round round bevel</figcaption>
+  </figure>
+
+  <figure class="csk__spec csk__avatar-spec">
+    <div class="csk-avatar" role="img" aria-label="Avatar, initials MK">MK</div>
+    <figcaption>squircle</figcaption>
+  </figure>
+
+  <figure class="csk__spec csk__coupon-spec">
+    <div class="csk-coupon"><b>−20%</b><span>CODE SPRING20</span></div>
+    <figcaption>notch</figcaption>
+  </figure>
+
+  <div class="csk__lab" role="group" aria-labelledby="csk-lab-title">
+    <div class="csk-morph" aria-hidden="true"></div>
+    <p class="csk__value" id="csk-lab-title"><span class="csk__code">superellipse(2.0)</span><small class="csk__words" aria-live="polite"></small></p>
+    <div class="csk__controls">
+      <input class="csk__slider" type="range" min="-3" max="4" step="0.1" value="2" aria-label="k in superellipse">
+      <button class="csk__play" type="button" aria-pressed="false">Play</button>
+    </div>
+    <ul class="csk__scale" aria-hidden="true"><li style="--at:0">notch</li><li style="--at:2">−1</li><li style="--at:3">0</li><li style="--at:4">1</li><li style="--at:5">2</li><li style="--at:7">square</li></ul>
+  </div>
+</section>
+
+<link rel="stylesheet" href="corner-shape-kit.css">
+<script type="module">
+  import { cornerShapeLab } from './corner-shape-kit.js';
+  cornerShapeLab(document.querySelector('.csk'));
+</script>

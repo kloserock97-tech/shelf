@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Index Scrubber List</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="../variants/html/index-scrubber.css">
+<style>
+  :root { --ink: #1d1d1f; --ink-2: #636366; --fill: rgba(118, 118, 128, 0.12); --accent: #0071e3; --shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 8px 28px rgba(0, 0, 0, 0.07); }
+  @media (prefers-color-scheme: dark) { :root { --ink: #f5f5f7; --ink-2: #a1a1a6; --fill: rgba(118, 118, 128, 0.24); --accent: #2997ff; --shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.08); } }
+  html, body { height: 100%; margin: 0; background: transparent; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; }
+  .screen { box-sizing: border-box; display: flex; flex-direction: column; height: 100%; max-width: 430px; max-height: 900px; margin: 0 auto; padding: 54px 12px 12px; }
+  .head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding: 10px 6px 12px; }
+  .head h1 { margin: 0; font-size: 32px; line-height: 1.05; font-weight: 700; letter-spacing: -0.02em; }
+  .head p { margin: 4px 0 0; font-size: 13px; color: var(--ink-2); }
+  .mute { flex: none; width: 36px; height: 36px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: var(--fill); color: var(--ink); cursor: pointer; }
+  .mute svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .mute:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .mute .off { display: none; }
+  .mute[aria-pressed="false"] .on { display: none; }
+  .mute[aria-pressed="false"] .off { display: block; }
+  .isl { flex: 1; min-height: 0; height: auto; border-radius: 18px; box-shadow: var(--shadow); }
+</style>
+</head>
+<body>
+<main class="screen">
+  <header class="head">
+    <div>
+      <h1>Contacts</h1>
+      <p id="count"></p>
+    </div>
+    <button class="mute" type="button" aria-pressed="true" aria-label="Sound">
+      <svg class="on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6"/><path d="M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>
+      <svg class="off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/></svg>
+    </button>
+  </header>
+  <div class="isl" aria-label="Contacts" data-manual>
+    <div class="isl__scroller" tabindex="-1"></div>
+  </div>
+</main>
+
+<script src="../variants/html/index-scrubber.js"></script>
+<script>
+  const PEOPLE = `Nina Abbott|Product manager;Joris Achterberg|Cycling club;Lucia Alvarez|Design lead
+Remy Baptiste|Recruiter;Hanna Becker|Front-end;Aiko Brandt|Accounting;Felix Brook|Landlord
+Marisol Castillo|Research;Wei Chen|iOS engineer;Rita Costa|Studio Hall
+Sigrid Dahl|Illustrator;Awa Diallo|Data science;Cole Dorsey|Climbing gym
+Ida Eklund|Copywriter;Mateo Espinoza|Brand
+Jonas Fischer|Back-end;Claire Fontaine|French tutor
+Beth Garner|Neighbour;Paolo Greco|Photographer;Anika Gupta|QA lead
+Noor Haddad|Cycling club;Simon Hale|Mentor;Freya Holm|Motion design
+Mikkel Jensen|Android engineer;Elise Joubert|Legal
+Harpreet Kaur|Engineering manager;Ola Kowalski|Plumber;Ren Kuroda|3D artist
+Mara Lindqvist|Product designer;Tiago Lobo|Sound designer
+Teo Marchetti|Icon designer;Julien Moreau|Bakery;Grace Mwangi|Investor;Ewan Murray|Flatmate
+Yuki Nakamura|UX writer;Petra Novak|Dentist
+Lena Okafor|Photographer;Bjorn Olsen|Sailing course
+Jisoo Park|Design systems;Dmitri Petrov|Chess club;Owen Pike|Founder
+Inês Ramos|Ceramics class;Diego Reyes|DevOps;Chiara Rossi|Translator
+Bruna Santos|Recruiter;Lukas Schmidt|Landlord;Rafael Silva|Running club;Maja Sørensen|Researcher
+Haru Tanaka|Game designer;Elena Torres|Pediatrician
+Iris Vance|Editor;Zsofia Varga|Violin teacher
+Anna Weber|Accessibility;Tom Whitfield|Bike repair
+Lin Zhou|Data visualisation`.split(/[;\n]/).map((s) => { const [name, sub] = s.split('|'); const parts = name.split(' '); return { first: parts[0], last: parts.slice(1).join(' '), sub }; });
+
+  // avatar colours: Hash Kit mixer (items/hash-kit) over the name picks one of eight hues
+  const hashU = (x) => { x ^= x >>> 16; x = Math.imul(x, 0x3f9c86cb); x ^= x >>> 14; x = Math.imul(x, 0x1ae9dacf); x ^= x >>> 15; return x >>> 0; };
+  const HUES = ['#5e8cf0', '#d9822b', '#3fa66b', '#b45cc9', '#d2554f', '#4c9fb0', '#8a7a5c', '#6c6fd8'];
+  const colour = (s) => { let h = 0x2f1; for (const ch of s) h = hashU((h + ch.codePointAt(0)) >>> 0); return HUES[(h >>> 13) % HUES.length]; };
+  const key = (p) => p.last.normalize('NFD').charAt(0).toUpperCase();
+
+  const groups = new Map();
+  for (const p of PEOPLE.sort((a, b) => a.last.localeCompare(b.last))) {
+    const L = key(p);
+    if (!groups.has(L)) groups.set(L, []);
+    groups.get(L).push(p);
+  }
+  const scroller = document.querySelector('.isl__scroller');
+  scroller.innerHTML = [...groups].map(([L, list]) => `
+    <section class="isl__sec" data-letter="${L}" aria-labelledby="h-${L}">
+      <h2 class="isl__head" id="h-${L}"><span class="isl__head-in"><span>${L}</span></span></h2>
+      <ul class="isl__rows">${list.map((p) => `
+        <li><button class="isl-row" type="button">
+          <span class="isl-row__av" style="--av:${colour(p.first + p.last)}" aria-hidden="true">${p.first[0]}${p.last[0]}</span>
+          <span class="isl-row__text"><span class="isl-row__name">${p.first} <b>${p.last}</b></span><span class="isl-row__sub">${p.sub}</span></span>
+        </button></li>`).join('')}
+      </ul>
+    </section>`).join('');
+  document.querySelector('#count').textContent = `${PEOPLE.length} people`;
+
+  const root = document.querySelector('.isl');
+  const isl = IndexScrubber.init(root);
+  root.indexScrubber = isl;
+
+  const mute = document.querySelector('.mute');
+  mute.addEventListener('click', () => {
+    const on = mute.getAttribute('aria-pressed') !== 'true';
+    mute.setAttribute('aria-pressed', String(on));
+    root.dataset.sound = on ? 'on' : 'off';
+  });
+
+  // ?shot=1: a scrub frozen on M, the M header stuck; ?letter=K picks another letter
+  const q = new URLSearchParams(location.search);
+  if (q.has('shot')) requestAnimationFrame(() => isl.hold((q.get('letter') || 'M').toUpperCase()));
+</script>
+</body>
+</html>

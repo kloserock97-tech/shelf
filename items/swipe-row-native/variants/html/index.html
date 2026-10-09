@@ -1,0 +1,35 @@
+<!-- Each row: content, then the start-side and end-side action groups. The script builds the scroller around them.
+     data-commit="<label>" removes the row and leaves "<label> · Undo"; data-full marks the long-swipe action.
+     Listen for "sr:action" (detail: { act, row }) to do the real work. data-sound="off" on the list mutes the clicks. -->
+<ul class="sr-list" aria-label="Messages">
+  <li class="sr">
+    <div class="sr__content" style="padding: 14px 16px">
+      <strong>Mara Lindqvist</strong>
+      <div>Thursday walkthrough moved to 15:30</div>
+    </div>
+    <div class="sr__actions" data-side="start">
+      <button type="button" data-act="read" data-tone="blue">Read</button>
+    </div>
+    <div class="sr__actions" data-side="end">
+      <button type="button" data-act="flag" data-tone="orange">Flag</button>
+      <button type="button" data-act="archive" data-tone="purple" data-commit="Archived">Archive</button>
+      <button type="button" data-act="delete" data-tone="red" data-commit="Deleted" data-full>Delete</button>
+    </div>
+  </li>
+  <li class="sr" style="--sr-end: 150px">
+    <div class="sr__content" style="padding: 14px 16px">
+      <strong>Teo Marchetti</strong>
+      <div>Re: icon set v3</div>
+    </div>
+    <div class="sr__actions" data-side="end">
+      <button type="button" data-act="archive" data-tone="purple" data-commit="Archived">Archive</button>
+      <button type="button" data-act="delete" data-tone="red" data-commit="Deleted" data-full>Delete</button>
+    </div>
+  </li>
+</ul>
+
+<link rel="stylesheet" href="swipe-row.css">
+<script src="swipe-row.js" defer></script>
+<script>
+  document.addEventListener('sr:action', (e) => console.log(e.detail.act, e.detail.row));
+</script>

@@ -1,0 +1,34 @@
+<!-- Hours in "week" are the host's own, in hostTimeZone; the visitor sees them converted to their zone.
+     "takenShare" hides that share of slots as already booked (a fixed pattern, not real data). -->
+<section class="spk" aria-labelledby="spk-title">
+  <script type="application/json" class="spk-config">
+    {
+      "host": "Alex",
+      "hostTimeZone": "Europe/Berlin",
+      "email": "hello@example.com",
+      "subject": "Intro call",
+      "minutes": 20,
+      "step": 30,
+      "days": 7,
+      "leadHours": 3,
+      "takenShare": 0.3,
+      "week": {
+        "mon": ["10:00-12:00", "15:00-17:30"],
+        "tue": ["09:30-12:00"],
+        "wed": ["10:00-12:00", "14:00-16:00"],
+        "thu": ["13:00-17:30"],
+        "fri": ["10:00-12:30"]
+      }
+    }
+  </script>
+  <h2 id="spk-title">Book a 20-minute call</h2>
+  <p class="spk-clock"></p>
+  <div class="spk-days" role="radiogroup" aria-label="Day"></div>
+  <p class="spk-zone"></p>
+  <div class="spk-slots" role="radiogroup" aria-label="Start time"></div>
+  <div class="spk-pick" hidden></div>
+  <p class="spk-status" role="status"></p>
+</section>
+
+<link rel="stylesheet" href="slot-picker.css">
+<script src="slot-picker.js" defer></script>

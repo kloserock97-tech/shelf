@@ -1,0 +1,203 @@
+/* Source-Morph Menu — the menu grows out of the button that opened it and flows back into it on close. */
+.smm {
+  --smm-font: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --smm-radius: 22px;
+  --smm-width: 256px;
+  --smm-spring: cubic-bezier(0.25, 1.15, 0.45, 1); /* replaced by linear() springs from source-morph-menu.js */
+  --smm-dur: 520ms;
+  --smm-item-spring: cubic-bezier(0.3, 1.4, 0.5, 1);
+  --smm-item-dur: 480ms;
+  --smm-out: cubic-bezier(0.45, 0, 0.2, 1);
+  --smm-out-dur: 280ms;
+  --smm-step: 30ms; /* cascade */
+
+  --smm-bg: #ffffff;
+  --smm-label: #17181b;
+  --smm-label-2: #6b6d74;
+  --smm-hover: rgba(23, 24, 27, 0.06);
+  --smm-hair: rgba(23, 24, 27, 0.08);
+  --smm-ring: #3a63ff;
+  --smm-shadow: drop-shadow(0 10px 24px rgba(20, 22, 30, 0.16)) drop-shadow(0 1px 2px rgba(20, 22, 30, 0.08));
+
+  /* set by the script from the source button before every open */
+  --src-w: 44px;
+  --src-h: 44px;
+  --src-r: 22px;
+  --src-bg: var(--smm-bg);
+  --src-fg: var(--smm-label);
+
+  /* the outer box only carries the shadow: clip-path on the body would cut a box-shadow off */
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+  width: max(var(--src-w), min(var(--smm-width), 100vw - 24px));
+  font-family: var(--smm-font);
+  color: var(--smm-label);
+  filter: var(--smm-shadow);
+  transition:
+    overlay var(--smm-out-dur) allow-discrete,
+    display var(--smm-out-dur) allow-discrete;
+}
+.smm:popover-open {
+  transition:
+    overlay var(--smm-dur) allow-discrete,
+    display var(--smm-dur) allow-discrete;
+}
+@media (prefers-color-scheme: dark) {
+  .smm {
+    --smm-bg: #26272b;
+    --smm-label: #ececee;
+    --smm-label-2: #9a9ca3;
+    --smm-hover: rgba(255, 255, 255, 0.07);
+    --smm-hair: rgba(255, 255, 255, 0.08);
+    --smm-ring: #8aa4ff;
+    --smm-shadow: drop-shadow(0 14px 30px rgba(0, 0, 0, 0.5)) drop-shadow(0 0 0.5px rgba(255, 255, 255, 0.25));
+  }
+}
+
+/* which corner of the panel sits on the same corner of the source (data-x / data-y come from the script) */
+@supports (anchor-name: --a) {
+  .smm[data-x="start"] { left: anchor(left); }
+  .smm[data-x="end"] { right: anchor(right); }
+  .smm[data-y="down"] { top: anchor(top); }
+  .smm[data-y="up"] { bottom: anchor(bottom); }
+}
+
+.smm__body {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--smm-radius);
+  background: var(--smm-bg);
+  color: var(--smm-label);
+  overflow: hidden;
+  /* closed = the source's rectangle in its corner (--smm-from, picked by data-x / data-y) */
+  clip-path: var(--smm-from);
+  transition:
+    clip-path var(--smm-out-dur) var(--smm-out),
+    background-color 130ms ease calc(var(--smm-out-dur) - 150ms),
+    color 130ms ease calc(var(--smm-out-dur) - 150ms);
+  background-color: var(--src-bg);
+  color: var(--src-fg);
+}
+.smm { --smm-from: inset(0 calc(100% - var(--src-w)) calc(100% - var(--src-h)) 0 round var(--src-r)); }
+.smm[data-x="end"] { --smm-from: inset(0 0 calc(100% - var(--src-h)) calc(100% - var(--src-w)) round var(--src-r)); }
+.smm[data-y="up"] { --smm-from: inset(calc(100% - var(--src-h)) calc(100% - var(--src-w)) 0 0 round var(--src-r)); }
+.smm[data-y="up"][data-x="end"] { --smm-from: inset(calc(100% - var(--src-h)) 0 0 calc(100% - var(--src-w)) round var(--src-r)); }
+.smm[data-y="up"] .smm__body { flex-direction: column-reverse; }
+
+.smm:popover-open .smm__body {
+  clip-path: inset(0 0 0 0 round var(--smm-radius));
+  background-color: var(--smm-bg);
+  color: var(--smm-label);
+  transition:
+    clip-path var(--smm-dur) var(--smm-spring),
+    background-color 160ms ease,
+    color 160ms ease;
+}
+@starting-style {
+  .smm:popover-open .smm__body { clip-path: var(--smm-from); background-color: var(--src-bg); color: var(--src-fg); }
+}
+
+/* the head repeats the source in place, so the button seems to stay while the panel grows from it */
+.smm__head {
+  display: flex;
+  flex: none;
+  height: var(--src-h);
+  cursor: pointer;
+}
+.smm[data-x="end"] .smm__head { justify-content: flex-end; }
+.smm__ghost {
+  width: var(--src-w) !important;
+  height: var(--src-h) !important;
+  margin: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  color: inherit !important;
+  pointer-events: none;
+}
+.smm__ghost [data-smm-turn] { transition: rotate var(--smm-out-dur) var(--smm-out); }
+.smm:popover-open .smm__ghost [data-smm-turn] { rotate: 45deg; transition: rotate var(--smm-dur) var(--smm-spring); }
+
+.smm__items {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 6px 6px;
+}
+.smm[data-y="up"] .smm__items { padding: 6px 6px 4px; }
+
+.smm__item {
+  --smm-dy: -8px;
+  display: grid;
+  grid-template-columns: 20px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 15px;
+  text-align: start;
+  cursor: pointer;
+  opacity: 0;
+  translate: 0 var(--smm-dy);
+  transition: opacity 90ms ease, translate 90ms ease, background-color 120ms ease;
+}
+.smm[data-y="up"] .smm__item { --smm-dy: 8px; }
+.smm__item svg { display: block; width: 20px; height: 20px; }
+.smm__item kbd,
+.smm__item small { font: inherit; font-size: 12.5px; color: var(--smm-label-2); }
+.smm__item:hover,
+.smm__item:focus-visible { background: var(--smm-hover); outline: none; }
+.smm__item:focus-visible { box-shadow: inset 0 0 0 2px var(--smm-ring); }
+.smm__item[aria-checked="true"] { font-weight: 560; }
+
+/* cascade: the item nearest the source first. --smm-i is set by the script; sibling-index() takes over where it exists */
+.smm:popover-open .smm__item {
+  opacity: 1;
+  translate: 0 0;
+  transition:
+    opacity 200ms ease calc(70ms + var(--smm-i, 0) * var(--smm-step)),
+    translate var(--smm-item-dur) var(--smm-item-spring) calc(70ms + var(--smm-i, 0) * var(--smm-step)),
+    background-color 120ms ease;
+}
+@starting-style {
+  .smm:popover-open .smm__item { opacity: 0; translate: 0 var(--smm-dy); }
+}
+@supports (order: sibling-index()) {
+  .smm__item { --smm-i: calc(sibling-index() - 1); }
+  .smm[data-y="up"] .smm__item { --smm-i: calc(sibling-count() - sibling-index()); }
+}
+
+/* the source hides under the open panel (opacity, so it can still take focus back) */
+[data-smm-under] { opacity: 0 !important; transition: none !important; }
+
+.smm__sep { height: 1px; margin: 4px 12px; background: var(--smm-hair); }
+
+@media (prefers-reduced-motion: reduce) {
+  .smm__body,
+  .smm:popover-open .smm__body {
+    clip-path: inset(0 round var(--smm-radius));
+    background-color: var(--smm-bg);
+    color: var(--smm-label);
+    transition: none;
+  }
+  .smm { opacity: 0; transition: opacity 140ms ease, overlay 140ms allow-discrete, display 140ms allow-discrete; }
+  .smm:popover-open { opacity: 1; }
+  @starting-style {
+    .smm:popover-open { opacity: 0; }
+    .smm:popover-open .smm__body { clip-path: inset(0 round var(--smm-radius)); background-color: var(--smm-bg); color: var(--smm-label); }
+  }
+  .smm__item,
+  .smm:popover-open .smm__item { translate: 0 0; transition: opacity 140ms ease, background-color 120ms ease; }
+  .smm__ghost [data-smm-turn],
+  .smm:popover-open .smm__ghost [data-smm-turn] { transition: none; }
+}

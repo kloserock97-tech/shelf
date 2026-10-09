@@ -1,0 +1,55 @@
+<figure class="dd" aria-labelledby="dd-title">
+  <header class="dd__head">
+    <div>
+      <p class="dd__kicker">One ink</p>
+      <h2 class="dd__title" id="dd-title">Checkouts by hour</h2>
+      <p class="dd__sub">More ink, more checkouts.</p>
+    </div>
+    <div class="dd__seg" role="radiogroup" aria-label="Screen">
+      <button type="button" role="radio" data-mode="bayer">Bayer</button>
+      <button type="button" role="radio" data-mode="halftone">Halftone</button>
+      <button type="button" role="radio" data-mode="lines">Lines</button>
+    </div>
+  </header>
+  <div class="dd__chart">
+    <div class="dd__cols" aria-hidden="true"></div>
+    <div class="dd__rows" aria-hidden="true"></div>
+    <div class="dd__plot" tabindex="0" role="group" aria-roledescription="heatmap" aria-labelledby="dd-title" aria-describedby="dd-help">
+      <canvas class="dd__canvas" aria-hidden="true"></canvas>
+      <div class="dd__focus" aria-hidden="true"></div>
+      <div class="dd__tip" aria-hidden="true"></div>
+    </div>
+  </div>
+  <div class="dd__foot">
+    <div class="dd__legend" aria-hidden="true">
+      <span class="dd__legend-title">Checkouts per hour</span>
+      <div class="dd__ramp-wrap"><canvas class="dd__ramp"></canvas><i class="dd__caret"></i></div>
+      <div class="dd__ramp-labels"></div>
+    </div>
+    <p class="dd__spec"></p>
+  </div>
+  <p id="dd-help" hidden>Arrow keys move between hours and days; every value is also in the table below.</p>
+  <p class="dd__live" role="status"></p>
+  <div class="dd__sr"><table class="dd__table" aria-label="Checkouts by hour, all values"></table></div>
+</figure>
+
+<link rel="stylesheet" href="dither-density.css">
+<script type="module">
+  import { ditherDensity } from './dither-density.js';
+
+  // values: 7 rows (days) × 24 columns (hours); the darkest cell is the maximum.
+  const values = [/* [3, 2, 1, …, 41], … */];
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const pad = (h) => String(h).padStart(2, '0');
+
+  ditherDensity(document.querySelector('.dd'), {
+    values,
+    rowLabels: days,
+    colLabel: (c, narrow) => (c % (narrow ? 6 : 3) === 0 ? pad(c) : ''),
+    cellLabel: (r, c) => `${days[r]}, ${pad(c)}:00–${pad((c + 1) % 24)}:00`,
+    format: (v) => Math.round(v).toLocaleString('en-US'),
+    unit: 'checkouts',
+    mode: 'bayer',   // 'bayer' | 'halftone' | 'lines'
+    matrix: 8        // Bayer matrix size, a power of two
+  });
+</script>

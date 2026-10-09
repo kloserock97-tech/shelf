@@ -1,0 +1,31 @@
+<!-- data-better="higher|lower" on a row turns on best/worst marks; data-v is the number compared.
+     Rows without data-v compare by text. Section rows (.dfc-section) fold when nothing under them differs. -->
+<section class="dfc" aria-labelledby="cmp-title">
+  <div class="dfc-bar">
+    <h2 class="dfc-title" id="cmp-title">Compare plans</h2>
+    <label class="dfc-switch"><input type="checkbox" role="switch"><span>Only differences</span></label>
+  </div>
+  <p class="dfc-meta"><span class="dfc-status" role="status"></span></p>
+  <div class="dfc-scroll" tabindex="0" role="region" aria-labelledby="cmp-title">
+    <table class="dfc-table">
+      <caption class="dfc-sr">Plans side by side. The best and the worst value in each row are marked.</caption>
+      <thead>
+        <tr>
+          <td class="dfc-corner"></td>
+          <th scope="col"><div class="dfc-head"><span class="dfc-head__name">Basic</span><span class="dfc-head__sub">For one person</span></div></th>
+          <th scope="col"><div class="dfc-head"><span class="dfc-head__name">Team</span><span class="dfc-head__sub">Up to 10 seats</span></div></th>
+          <th scope="col"><div class="dfc-head"><span class="dfc-head__name">Studio</span><span class="dfc-head__sub">Unlimited seats</span></div></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="dfc-section"><th colspan="4" scope="colgroup">Plan</th></tr>
+        <tr data-better="lower"><th scope="row">Price a month</th><td data-v="9">€9</td><td data-v="24">€24</td><td data-v="59">€59</td></tr>
+        <tr data-better="higher"><th scope="row">Storage</th><td data-v="50">50 GB</td><td data-v="500">500 GB</td><td data-v="2000">2 TB</td></tr>
+        <tr><th scope="row">Support</th><td>Email</td><td>Email</td><td>Email</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<link rel="stylesheet" href="diff-compare.css">
+<script src="diff-compare.js" defer></script>

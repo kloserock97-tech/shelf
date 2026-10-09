@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Weighted Decision Matrix</title>
+<link rel="stylesheet" href="../variants/html/weighted-compare.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  body { min-height: 100vh; min-height: 100dvh; display: grid; grid-template-columns: minmax(0, 600px); justify-content: center; align-content: center; padding: 28px 16px; box-sizing: border-box; }
+  .card { box-sizing: border-box; width: 100%; min-width: 0; padding: 22px 22px 14px; border-radius: 20px; background: var(--wcm-surface); }
+  .card__title { margin: 0 0 2px; font-size: 19px; font-weight: 600; letter-spacing: -0.01em; }
+  .card__sub { margin: 0 0 18px; font-size: 13px; color: var(--wcm-label-2); }
+  .card .wcm-weights { margin-bottom: 18px; }
+  .card .wcm-status { margin-bottom: 4px; }
+  @media (max-width: 520px) {
+    body { padding: 54px 12px 16px; align-content: start; }
+    .card { padding: 18px 16px 10px; border-radius: 18px; }
+  }
+</style>
+</head>
+<body>
+<section class="wcm card" aria-labelledby="wcm-title">
+  <h1 class="card__title" id="wcm-title">Where to hold the team offsite</h1>
+  <p class="card__sub">Set what matters to you. Each city is scored out of 10 per criterion.</p>
+  <fieldset class="wcm-weights">
+    <legend>What matters</legend>
+    <div class="wcm-weight" style="--wcm-c: var(--wcm-c1)">
+      <div class="wcm-weight__top"><label for="w-cost">Cost</label><output for="w-cost">7</output></div>
+      <input class="wcm-range" type="range" id="w-cost" data-key="cost" min="0" max="10" step="1" value="7">
+    </div>
+    <div class="wcm-weight" style="--wcm-c: var(--wcm-c2)">
+      <div class="wcm-weight__top"><label for="w-travel">Travel time</label><output for="w-travel">4</output></div>
+      <input class="wcm-range" type="range" id="w-travel" data-key="travel" min="0" max="10" step="1" value="4">
+    </div>
+    <div class="wcm-weight" style="--wcm-c: var(--wcm-c3)">
+      <div class="wcm-weight__top"><label for="w-weather">Weather</label><output for="w-weather">6</output></div>
+      <input class="wcm-range" type="range" id="w-weather" data-key="weather" min="0" max="10" step="1" value="6">
+    </div>
+    <div class="wcm-weight" style="--wcm-c: var(--wcm-c4)">
+      <div class="wcm-weight__top"><label for="w-venues">Venues</label><output for="w-venues">3</output></div>
+      <input class="wcm-range" type="range" id="w-venues" data-key="venues" min="0" max="10" step="1" value="3">
+    </div>
+  </fieldset>
+  <p class="wcm-status" role="status"></p>
+  <ol class="wcm-list" aria-label="Cities, best match first">
+    <li class="wcm-row" data-id="lisbon" data-cost="6" data-travel="5" data-weather="9" data-venues="8"><div class="wcm-name">Lisbon <small>Portugal</small></div></li>
+    <li class="wcm-row" data-id="valencia" data-cost="8" data-travel="5" data-weather="9" data-venues="6"><div class="wcm-name">Valencia <small>Spain</small></div></li>
+    <li class="wcm-row" data-id="krakow" data-cost="9" data-travel="7" data-weather="5" data-venues="6"><div class="wcm-name">Kraków <small>Poland</small></div></li>
+    <li class="wcm-row" data-id="tallinn" data-cost="7" data-travel="7" data-weather="4" data-venues="6"><div class="wcm-name">Tallinn <small>Estonia</small></div></li>
+    <li class="wcm-row" data-id="copenhagen" data-cost="2" data-travel="9" data-weather="4" data-venues="9"><div class="wcm-name">Copenhagen <small>Denmark</small></div></li>
+  </ol>
+</section>
+<script src="../variants/html/weighted-compare.js"></script>
+<script>
+  // ?shot=1: poster state. Venues pushed up, Lisbon just took the lead from Valencia, the badge stays on.
+  document.addEventListener('DOMContentLoaded', () => {
+    const box = document.querySelector('.wcm');
+    if (!new URLSearchParams(location.search).has('shot') || !box.wcm) return;
+    box.wcm.set({ venues: 9 }, { animate: false, announce: false });
+    box.wcm.hold();
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,181 @@
+/* Squish Button Group — joined buttons: the pressed one widens, its neighbours give way, the chosen one is a pill. */
+.sqg {
+  --sqg-font: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --sqg-h: 48px; /* button height */
+  --sqg-pad: 4px; /* shell padding */
+  --sqg-gap: 3px;
+  --sqg-r-out: calc(var(--sqg-h) / 2); /* outer ends and the chosen pill */
+  --sqg-r-in: 9px; /* corners that face a neighbour */
+  --sqg-r-press: 17px; /* a pressed button rounds halfway to the pill */
+  --sqg-grow-on: 1.32; /* chosen button share */
+  --sqg-grow-press: 1.24; /* pressed button share */
+  --sqg-grow-yield: 0.86; /* neighbours of a pressed button */
+  --sqg-spring: cubic-bezier(0.3, 1.35, 0.5, 1); /* replaced by a linear() spring from squish-group.js */
+  --sqg-dur: 460ms;
+  --sqg-press-spring: cubic-bezier(0.25, 1.1, 0.5, 1);
+  --sqg-press-dur: 200ms;
+
+  --sqg-shell: #e7e5df;
+  --sqg-seg: #f8f7f3;
+  --sqg-seg-hover: #ffffff;
+  --sqg-label: #17181b;
+  --sqg-label-2: #5e6067;
+  --sqg-on: #17181b;
+  --sqg-on-label: #f4f6ea;
+  --sqg-ring: #3a63ff;
+
+  container: sqg / inline-size;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+  font-family: var(--sqg-font);
+  color: var(--sqg-label);
+  -webkit-font-smoothing: antialiased;
+}
+@media (prefers-color-scheme: dark) {
+  .sqg {
+    --sqg-shell: #1d1e21;
+    --sqg-seg: #2a2b2f;
+    --sqg-seg-hover: #34363b;
+    --sqg-label: #ececee;
+    --sqg-label-2: #9a9ca3;
+    --sqg-on: #dbf266;
+    --sqg-on-label: #15160f;
+    --sqg-ring: #8aa4ff;
+  }
+}
+
+.sqg__legend {
+  padding: 0;
+  margin: 0 0 10px 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--sqg-label-2);
+}
+
+.sqg__track {
+  display: flex;
+  gap: var(--sqg-gap);
+  padding: var(--sqg-pad);
+  border-radius: calc(var(--sqg-r-out) + var(--sqg-pad));
+  background: var(--sqg-shell);
+}
+
+.sqg__btn {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  height: var(--sqg-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  box-sizing: border-box;
+  border-radius: var(--sqg-r-in);
+  background: var(--sqg-seg);
+  color: var(--sqg-label);
+  font-size: 15px;
+  font-weight: 550;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    flex-grow var(--sqg-dur) var(--sqg-spring),
+    border-radius var(--sqg-dur) var(--sqg-spring),
+    background-color 180ms ease,
+    color 180ms ease;
+}
+.sqg__btn:first-child { border-top-left-radius: var(--sqg-r-out); border-bottom-left-radius: var(--sqg-r-out); }
+.sqg__btn:last-child { border-top-right-radius: var(--sqg-r-out); border-bottom-right-radius: var(--sqg-r-out); }
+
+/* the radio is the state; it stays in the accessibility tree and takes focus */
+.sqg__btn input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+  appearance: none;
+}
+
+.sqg__in {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  pointer-events: none;
+}
+.sqg__icon {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  overflow: hidden;
+  transition: width 260ms ease, margin-right 260ms ease, opacity 200ms ease;
+}
+.sqg__icon svg { display: block; width: 18px; height: 18px; }
+.sqg__text { overflow: hidden; text-overflow: ellipsis; }
+
+@media (hover: hover) {
+  .sqg__btn:hover:not(:has(:checked)) { background: var(--sqg-seg-hover); }
+}
+
+/* pressed: widens, rounds halfway to the pill; the two neighbours give way */
+.sqg__btn[data-press] {
+  flex-grow: var(--sqg-grow-press);
+  border-radius: var(--sqg-r-press);
+  transition-duration: var(--sqg-press-dur), var(--sqg-press-dur), 180ms, 180ms;
+  transition-timing-function: var(--sqg-press-spring), var(--sqg-press-spring), ease, ease;
+}
+.sqg__btn:has(+ .sqg__btn[data-press]),
+.sqg__btn[data-press] + .sqg__btn { flex-grow: var(--sqg-grow-yield); }
+
+/* chosen: a pill inside the shell */
+.sqg__btn:has(:checked) {
+  flex-grow: var(--sqg-grow-on);
+  border-radius: var(--sqg-r-out);
+  background: var(--sqg-on);
+  color: var(--sqg-on-label);
+}
+.sqg__btn:has(:checked)[data-press] { flex-grow: calc(var(--sqg-grow-on) + 0.14); }
+
+.sqg__btn:has(:focus-visible) { outline: 2px solid var(--sqg-ring); outline-offset: 2px; }
+.sqg__btn:has(:disabled) { opacity: 0.45; cursor: default; }
+
+/* squarer corners where the platform can draw them: superellipse inside, round on the ends and on the pill */
+@supports (corner-shape: squircle) {
+  .sqg__btn { corner-shape: squircle; --sqg-r-in: 15px; --sqg-r-press: 22px; }
+  .sqg__btn:first-child { corner-top-left-shape: round; corner-bottom-left-shape: round; }
+  .sqg__btn:last-child { corner-top-right-shape: round; corner-bottom-right-shape: round; }
+  .sqg__btn:has(:checked) { corner-shape: round; }
+}
+
+/* narrow groups: idle buttons keep only the word, the chosen one keeps its icon */
+@container sqg (max-width: 440px) {
+  .sqg__btn { padding: 0 8px; font-size: 14px; }
+  .sqg:not(.sqg--icons) .sqg__btn:not(:has(:checked)) .sqg__icon { width: 0; margin-right: 0; opacity: 0; }
+}
+
+/* icon-only group: fixed width so the shares have room to move */
+.sqg--icons { --sqg-h: 44px; width: 248px; }
+.sqg--icons .sqg__btn { padding: 0; }
+.sqg--icons .sqg__icon { margin-right: 0; }
+
+.sqg__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sqg__btn,
+  .sqg__btn[data-press] { transition: background-color 160ms ease, color 160ms ease; }
+  .sqg__icon { transition: opacity 160ms ease; }
+}

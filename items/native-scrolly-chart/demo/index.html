@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Native Scrolly Chart</title>
+<link rel="stylesheet" href="../variants/html/native-scrolly.css">
+<style>
+  html, body { height: 100%; margin: 0; background: transparent; }
+  body {
+    box-sizing: border-box; padding: 16px 12px; display: grid; place-items: center;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased;
+  }
+  .frame { width: min(940px, 100%); }
+  .frame .nsc { --nsc-h: min(640px, calc(100dvh - 32px)); }
+  .frame .nsc { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 10px 40px rgba(0, 0, 0, 0.08); }
+  .mode { position: fixed; right: 14px; bottom: 8px; margin: 0; font: 11px/1.2 system-ui, sans-serif; color: #8e8e93; }
+</style>
+</head>
+<body>
+<div class="frame">
+  <section class="nsc" tabindex="0" aria-label="Story: a year of city bike rides">
+    <div class="nsc__layout">
+      <div class="nsc__stage">
+        <figure class="nsc__fig" aria-labelledby="nsc-title">
+          <div class="nsc__head">
+            <h1 class="nsc__title" id="nsc-title">Monthly rides, city bike share</h1>
+            <div class="nsc__caps" aria-hidden="true"><span class="nsc__cap nsc__cap--a">Rides per month, thousands</span><span class="nsc__cap nsc__cap--b">Rides per active member</span></div>
+          </div>
+          <div class="nsc__chart" aria-hidden="true">
+            <div class="nsc__plot">
+              <svg class="nsc__svg" viewBox="0 0 120 100" preserveAspectRatio="none">
+                <g class="nsc__grid"><line x1="0" x2="120" y1="0" y2="0"/><line x1="0" x2="120" y1="25" y2="25"/><line x1="0" x2="120" y1="50" y2="50"/><line x1="0" x2="120" y1="75" y2="75"/><line x1="0" x2="120" y1="100" y2="100"/></g>
+                <g>
+          <rect class="nsc__bar" x="2" y="0" width="6" height="100" style="--a:0.3;--b:0.85;--i:0;--cold:1"/>
+          <rect class="nsc__bar" x="12" y="0" width="6" height="100" style="--a:0.35;--b:0.825;--i:1;--cold:1"/>
+          <rect class="nsc__bar" x="22" y="0" width="6" height="100" style="--a:0.4833;--b:0.75;--i:2"/>
+          <rect class="nsc__bar" x="32" y="0" width="6" height="100" style="--a:0.6167;--b:0.7;--i:3"/>
+          <rect class="nsc__bar" x="42" y="0" width="6" height="100" style="--a:0.7667;--b:0.65;--i:4"/>
+          <rect class="nsc__bar" x="52" y="0" width="6" height="100" style="--a:0.9;--b:0.6;--i:5;--hot:1"/>
+          <rect class="nsc__bar" x="62" y="0" width="6" height="100" style="--a:0.9667;--b:0.575;--i:6;--hot:1"/>
+          <rect class="nsc__bar" x="72" y="0" width="6" height="100" style="--a:0.9167;--b:0.6;--i:7;--hot:1"/>
+          <rect class="nsc__bar" x="82" y="0" width="6" height="100" style="--a:0.7333;--b:0.65;--i:8"/>
+          <rect class="nsc__bar" x="92" y="0" width="6" height="100" style="--a:0.5833;--b:0.725;--i:9"/>
+          <rect class="nsc__bar" x="102" y="0" width="6" height="100" style="--a:0.4167;--b:0.8;--i:10"/>
+          <rect class="nsc__bar" x="112" y="0" width="6" height="100" style="--a:0.3667;--b:0.875;--i:11;--cold:1"/>
+                </g>
+                <g>
+          <rect class="nsc__ghost" x="2" y="0" width="6" height="100" style="--g:0.2167;--i:0"/>
+          <rect class="nsc__ghost" x="12" y="0" width="6" height="100" style="--g:0.25;--i:1"/>
+          <rect class="nsc__ghost" x="22" y="0" width="6" height="100" style="--g:0.3667;--i:2"/>
+          <rect class="nsc__ghost" x="32" y="0" width="6" height="100" style="--g:0.5;--i:3"/>
+          <rect class="nsc__ghost" x="42" y="0" width="6" height="100" style="--g:0.6833;--i:4"/>
+          <rect class="nsc__ghost" x="52" y="0" width="6" height="100" style="--g:0.8333;--i:5"/>
+          <rect class="nsc__ghost" x="62" y="0" width="6" height="100" style="--g:0.9167;--i:6"/>
+          <rect class="nsc__ghost" x="72" y="0" width="6" height="100" style="--g:0.8667;--i:7"/>
+          <rect class="nsc__ghost" x="82" y="0" width="6" height="100" style="--g:0.65;--i:8"/>
+          <rect class="nsc__ghost" x="92" y="0" width="6" height="100" style="--g:0.4667;--i:9"/>
+          <rect class="nsc__ghost" x="102" y="0" width="6" height="100" style="--g:0.3167;--i:10"/>
+          <rect class="nsc__ghost" x="112" y="0" width="6" height="100" style="--g:0.2667;--i:11"/>
+                </g>
+              </svg>
+              <p class="nsc__note nsc__note--1" style="left:2%;top:3%">Rides tripled<small>18k in Jan → 58k in Jul</small></p>
+              <p class="nsc__note nsc__note--2" style="right:59%;top:4%;text-align:right"><span class="is-warm">38%</span> of the year<small>in three summer months</small></p>
+              <span class="nsc__brace nsc__note nsc__note--2" style="left:42.5%;width:23.4%;top:0"></span>
+              <p class="nsc__note nsc__note--3" style="left:1%;top:27%"><span class="is-cool">+39%</span> in winter<small>Dec–Feb, on last year</small></p>
+              <span class="nsc__brace nsc__note nsc__note--3" style="left:1.7%;width:15%;top:59%"></span>
+              <span class="nsc__brace nsc__note nsc__note--3" style="left:93.4%;width:6.6%;top:59%"></span>
+              <p class="nsc__note nsc__note--4" style="right:0;top:0;text-align:right"><span class="is-cool">3.5</span> in Dec</p>
+              <p class="nsc__note nsc__note--4" style="left:45%;top:28%">2.3 in Jul</p>
+            </div>
+            <div class="nsc__ylabs">
+              <div class="nsc__yset nsc__yset--a"><span style="top:0">60k</span><span style="top:25%">45k</span><span style="top:50%">30k</span><span style="top:75%">15k</span><span style="top:100%">0</span></div>
+              <div class="nsc__yset nsc__yset--b"><span style="top:0">4</span><span style="top:25%">3</span><span style="top:50%">2</span><span style="top:75%">1</span><span style="top:100%">0</span></div>
+            </div>
+            <div class="nsc__xlabs"><span>J</span><span>F</span><span>M</span><span>A</span><span>M</span><span>J</span><span>J</span><span>A</span><span>S</span><span>O</span><span>N</span><span>D</span></div>
+          </div>
+          <ul class="nsc__legend" aria-hidden="true"><li><i></i>This year</li><li class="nsc__key-ghost"><i></i>Last year</li></ul>
+          <table class="nsc__table">
+            <caption>Monthly rides this year and last year, thousands, and rides per active member this year</caption>
+            <thead><tr><th scope="col">Month</th><th scope="col">This year</th><th scope="col">Last year</th><th scope="col">Per member</th></tr></thead>
+            <tbody>
+        <tr><th scope="row">Jan</th><td>18k</td><td>13k</td><td>3.4</td></tr>
+        <tr><th scope="row">Feb</th><td>21k</td><td>15k</td><td>3.3</td></tr>
+        <tr><th scope="row">Mar</th><td>29k</td><td>22k</td><td>3</td></tr>
+        <tr><th scope="row">Apr</th><td>37k</td><td>30k</td><td>2.8</td></tr>
+        <tr><th scope="row">May</th><td>46k</td><td>41k</td><td>2.6</td></tr>
+        <tr><th scope="row">Jun</th><td>54k</td><td>50k</td><td>2.4</td></tr>
+        <tr><th scope="row">Jul</th><td>58k</td><td>55k</td><td>2.3</td></tr>
+        <tr><th scope="row">Aug</th><td>55k</td><td>52k</td><td>2.4</td></tr>
+        <tr><th scope="row">Sep</th><td>44k</td><td>39k</td><td>2.6</td></tr>
+        <tr><th scope="row">Oct</th><td>35k</td><td>28k</td><td>2.9</td></tr>
+        <tr><th scope="row">Nov</th><td>25k</td><td>19k</td><td>3.2</td></tr>
+        <tr><th scope="row">Dec</th><td>22k</td><td>16k</td><td>3.5</td></tr>
+            </tbody>
+          </table>
+        </figure>
+      </div>
+      <div class="nsc__steps">
+        <div class="nsc__intro"><b>A year on two wheels</b><span>Scroll the story: the chart follows each step.</span></div>
+        <div class="nsc__step"><p class="nsc__card">From January to July, monthly rides <b>tripled</b>: 18 thousand at the start of the year, 58 thousand at its peak.</p></div>
+        <div class="nsc__step"><p class="nsc__card">Summer carried it. June, July and August brought <b class="is-warm">38%</b> of all 444 thousand rides.</p></div>
+        <div class="nsc__step"><p class="nsc__card">But winter grew fastest: December to February rides were up <b class="is-cool">39%</b> on last year.</p></div>
+        <div class="nsc__step"><p class="nsc__card">Per active member, the picture flips. Winter riders ride most often, <b class="is-cool">3.5</b> times in December against 2.3 in July.</p></div>
+      </div>
+    </div>
+  </section>
+</div>
+<p class="mode" aria-hidden="true"></p>
+
+<script type="module">
+  import { nativeScrolly } from '../variants/html/native-scrolly.js';
+
+  const q = new URLSearchParams(location.search);
+  const story = document.querySelector('.nsc');
+  // ?fallback=1 — the IntersectionObserver path even where scroll triggers work
+  const { mode } = nativeScrolly(story, { force: q.get('fallback') === '1' ? 'io' : undefined });
+  document.querySelector('.mode').textContent = mode === 'trigger' ? 'CSS scroll triggers' : 'IntersectionObserver fallback';
+
+  // ?shot=1 — step 3 on the reading line (?step=1…4 picks another step)
+  const n = Number(q.get('step')) || (q.get('shot') === '1' ? 3 : 0);
+  if (n) {
+    const step = story.querySelectorAll('.nsc__step')[n - 1];
+    const line = parseFloat(getComputedStyle(step).getPropertyValue('--nsc-line')) || 0.5;
+    const sr = story.getBoundingClientRect(), r = step.getBoundingClientRect();
+    story.scrollTop += r.top + r.height / 2 - (sr.top + sr.height * line);
+  }
+</script>
+</body>
+</html>

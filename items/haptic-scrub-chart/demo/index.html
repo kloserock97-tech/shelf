@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Haptic Scrub Chart</title>
+<link rel="stylesheet" href="../variants/html/haptic-scrub.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  body {
+    min-height: 100vh; min-height: 100dvh; box-sizing: border-box; padding: 54px 12px 16px;
+    display: grid; align-items: center; justify-items: center;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased;
+  }
+  .hs { width: min(440px, 100%); box-sizing: border-box; }
+  .hs__plot { height: min(380px, 46dvh); }
+</style>
+</head>
+<body>
+<figure class="hs" aria-labelledby="hs-title">
+  <header class="hs__head">
+    <h1 class="hs__title" id="hs-title">Ridge Loop</h1>
+    <p class="hs__sub" id="hs-sub"></p>
+  </header>
+  <div class="hs__plot" tabindex="0" role="slider" aria-labelledby="hs-title" aria-describedby="hs-sub" aria-orientation="horizontal">
+    <div class="hs__bubble" aria-hidden="true">
+      <span class="hs__bubble-tag" hidden></span>
+      <span class="hs__bubble-value"></span>
+      <span class="hs__bubble-x"></span>
+    </div>
+  </div>
+  <ul class="hs__keys" aria-hidden="true">
+    <li class="hs__key" data-k="pulse"><svg viewBox="0 0 40 16"><path d="M4 8h2M14 8h2M22 8h2M28 8h2M33 8h2M37 8h1"/></svg><span><b>Pulse</b> faster as it climbs</span></li>
+    <li class="hs__key" data-k="grid"><svg viewBox="0 0 40 16"><path d="M18 2v12M22 2v12"/></svg><span><b>Click</b> on every 100 m line</span></li>
+    <li class="hs__key" data-k="extremum"><svg viewBox="0 0 40 16"><path d="M12 3v10M18 3v10M26 8h4"/></svg><span><b>Double</b> at a peak or valley</span></li>
+  </ul>
+  <div class="hs__controls">
+    <button class="hs__switch hs__sound" type="button" role="switch" aria-checked="true"><span class="hs__track" aria-hidden="true"></span>Sound</button>
+    <button class="hs__switch hs__vibe" type="button" role="switch" aria-checked="false"><span class="hs__track" aria-hidden="true"></span>Vibration</button>
+  </div>
+  <p class="hs__hint"></p>
+</figure>
+
+<script type="module">
+  import { hapticScrub } from '../variants/html/haptic-scrub.js';
+
+  // Hash Kit: our own 32-bit mixer, 0…1 per integer cell
+  function hashU(x) {
+    x ^= x >>> 16; x = Math.imul(x, 0x3f9c86cb);
+    x ^= x >>> 14; x = Math.imul(x, 0x1ae9dacf);
+    x ^= x >>> 15;
+    return x >>> 0;
+  }
+  const hash1 = (i) => (hashU((i + 0xb31c96c9) >>> 0) >>> 8) / 16777216;
+  // value noise: hashed heights at whole numbers, eased in between
+  const vnoise = (x) => { const i = Math.floor(x), t = x - i, e = t * t * (3 - 2 * t); return hash1(i) + (hash1(i + 1) - hash1(i)) * e; };
+
+  // a 14.2 km trail: one long climb to the ridge, rolling hills around it, a sample every 100 m
+  const xs = [], ys = [];
+  for (let k = 0; k <= 142; k++) {
+    const x = k / 10;
+    const ridge = 330 * Math.exp(-(((x - 8.1) / 2.3) ** 2));
+    const hills = 150 * vnoise(x / 1.15 + 3) + 45 * vnoise(x / 0.4 + 11);
+    xs.push(x);
+    ys.push(Math.round(170 + ridge + hills));
+  }
+  let climb = 0;
+  for (let k = 1; k < ys.length; k++) climb += Math.max(0, ys[k] - ys[k - 1]);
+  const num = new Intl.NumberFormat('en-US');
+  document.querySelector('#hs-sub').textContent =
+    `14.2 km · ${num.format(Math.min(...ys))}–${num.format(Math.max(...ys))} m · ${num.format(climb)} m of climb`;
+
+  const chart = hapticScrub(document.querySelector('.hs'), {
+    xs, ys,
+    gridStep: 100,
+    format: (v) => `${num.format(Math.round(v))} m`,
+    formatX: (x) => `${x.toFixed(1)} km`
+  });
+
+  // ?shot=1 — the scrubber resting on the ridge top, its double pulse caught mid-ring
+  if (new URLSearchParams(location.search).get('shot') === '1') {
+    const top = [...chart.extrema].filter(([, kind]) => kind === 'peak').map(([i]) => i).sort((a, b) => ys[b] - ys[a])[0];
+    document.querySelector('.hs').classList.add('is-touch', 'hs--still');
+    chart.show(top, 'extremum');
+  }
+</script>
+<style>
+  /* stills: hold the flashes at a readable moment */
+  .hs--still .is-hit { animation-play-state: paused !important; animation-delay: -180ms !important; }
+  .hs--still .hs__touch { opacity: 0.08; }
+</style>
+</body>
+</html>

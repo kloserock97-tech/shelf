@@ -1,0 +1,209 @@
+/* Native Swipe Row — list rows swiped on the browser's own horizontal scroll snap. */
+.sr-list {
+  --sr-start: 84px;            /* width of the start-side actions when open */
+  --sr-end: 216px;             /* width of the end-side actions when open */
+  --sr-font: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --sr-bg: #ffffff;
+  --sr-label: #1d1d1f;
+  --sr-label-2: #636366;
+  --sr-label-3: #8e8e93;
+  --sr-sep: rgba(60, 60, 67, 0.18);
+  --sr-strip: rgba(118, 118, 128, 0.1);
+  --sr-accent: #0071e3;
+  --sr-focus: #0071e3;
+  --sr-blue: #0a7cff;
+  --sr-orange: #f08a00;
+  --sr-purple: #9a4fd0;
+  --sr-red: #ff3b30;
+  --sr-grey: #8e8e93;
+  --sr-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-family: var(--sr-font);
+  color: var(--sr-label);
+  -webkit-font-smoothing: antialiased;
+}
+@media (prefers-color-scheme: dark) {
+  .sr-list {
+    --sr-bg: #1c1c1e;
+    --sr-label: #f5f5f7;
+    --sr-label-2: #a1a1a6;
+    --sr-label-3: #6e6e73;
+    --sr-sep: rgba(84, 84, 88, 0.6);
+    --sr-strip: rgba(118, 118, 128, 0.18);
+    --sr-accent: #2997ff;
+    --sr-focus: #2997ff;
+    --sr-blue: #0a84ff;
+    --sr-orange: #ff9f0a;
+    --sr-purple: #bf5af2;
+    --sr-red: #ff453a;
+  }
+}
+
+.sr {
+  position: relative;
+  overflow: hidden;
+  background: var(--sr-bg);
+}
+.sr + .sr::before {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: var(--sr-inset, 16px);
+  right: 0;
+  border-top: 0.5px solid var(--sr-sep);
+  pointer-events: none;
+}
+
+/* the scroller: [pad | start gap | content | end gap | pad] */
+.sr__track {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  /* empty parts let taps through to the buttons below; a swipe on the content still scrolls this element */
+  pointer-events: none;
+}
+.sr__track::-webkit-scrollbar { display: none; }
+.sr__track.is-dragging { scroll-snap-type: none; }
+.sr__snap { flex: none; }
+.sr__snap--pad-s { width: calc(100% - var(--sr-start)); scroll-snap-align: start; }
+.sr__snap--gap-s { width: var(--sr-start); scroll-snap-align: start; }
+.sr__snap--gap-e { width: var(--sr-end); scroll-snap-align: end; }
+.sr__snap--pad-e { width: calc(100% - var(--sr-end)); scroll-snap-align: end; }
+.sr__content {
+  position: relative;
+  flex: none;
+  width: 100%;
+  box-sizing: border-box;
+  scroll-snap-align: start;
+  scroll-initial-target: nearest;
+  pointer-events: auto;
+  background: var(--sr-bg);
+  outline: none;
+  touch-action: pan-x pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.sr__content:focus-visible { box-shadow: inset 0 0 0 2px var(--sr-focus); border-radius: 10px; }
+
+/* the actions behind the content: each side is as wide as the content has moved (--x, px) */
+.sr__under { position: absolute; inset: 0; z-index: 0; }
+.sr__actions {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  overflow: hidden;
+}
+.sr__actions[data-side="start"] { left: 0; width: calc(max(0, -1 * var(--x, 0)) * 1px); }
+.sr__actions[data-side="end"] { right: 0; width: calc(max(0, var(--x, 0)) * 1px); }
+.sr__actions button {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0 4px;
+  border: 0;
+  background: var(--sr-grey);
+  color: #ffffff;
+  font: 500 13px/1.1 var(--sr-font);
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: pointer;
+  transition: flex-grow 0.24s var(--sr-ease), padding 0.24s var(--sr-ease);
+}
+.sr__actions button svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; transition: scale 0.2s var(--sr-ease); }
+.sr__actions button:focus-visible { outline: 2px solid #ffffff; outline-offset: -4px; }
+.sr__actions [data-tone="blue"] { background: var(--sr-blue); }
+.sr__actions [data-tone="orange"] { background: var(--sr-orange); }
+.sr__actions [data-tone="purple"] { background: var(--sr-purple); }
+.sr__actions [data-tone="red"] { background: var(--sr-red); }
+/* past the commit point the long-swipe action takes the whole side and its label hugs the content */
+.sr[data-armed="end"] .sr__actions[data-side="end"] button:not(.is-full) { flex-grow: 0.0001; padding: 0; }
+.sr[data-armed="end"] .sr__actions[data-side="end"] .is-full { align-items: flex-start; padding-inline-start: 22px; }
+.sr[data-armed="start"] .sr__actions[data-side="start"] .is-full { align-items: flex-end; padding-inline-end: 26px; }
+.sr[data-armed] .is-full svg { scale: 1.12; }
+.sr[data-armed=""] .is-full svg { scale: 1; }
+
+/* keyboard equivalent: a "more" button that shows only while the row has keyboard focus */
+.sr__kbd {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  right: 10px;
+  translate: 0 -50%;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--sr-strip);
+  color: var(--sr-label);
+  opacity: 0;
+  pointer-events: none;
+  cursor: pointer;
+}
+.sr__kbd svg { width: 18px; height: 18px; fill: currentColor; }
+.sr:has(:focus-visible) .sr__kbd { opacity: 1; pointer-events: auto; }
+.sr__kbd:focus-visible { outline: 2px solid var(--sr-focus); outline-offset: 1px; }
+
+/* removed: a thin strip in the row's place */
+.sr__strip { display: none; }
+.sr.is-gone .sr__track,
+.sr.is-gone .sr__under,
+.sr.is-gone .sr__kbd { display: none; }
+.sr.is-gone .sr__strip {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0;
+  min-height: 40px;
+  padding: 0 8px 0 16px;
+  background: var(--sr-strip);
+  color: var(--sr-label-2);
+  font: 13px/1.2 var(--sr-font);
+}
+.sr__strip-text::after { content: "\a0\b7"; }
+.sr__undo {
+  margin: 0;
+  margin-inline-start: 2px;
+  padding: 6px 6px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--sr-accent);
+  font: 600 13px/1.2 var(--sr-font);
+  cursor: pointer;
+}
+.sr__undo:hover { background: var(--sr-strip); }
+.sr__undo:focus-visible { outline: 2px solid var(--sr-focus); outline-offset: 0; }
+
+.sr-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sr__actions button,
+  .sr__actions button svg { transition: none; }
+}
+.sr.is-gone::before,
+.sr.is-gone + .sr::before { left: 0; }

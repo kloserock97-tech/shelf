@@ -1,0 +1,121 @@
+/* Unit Morph Chart */
+.um {
+  --um-ink: #0b0b0b;
+  --um-ink-2: #52514e;
+  --um-ink-3: #898781;
+  --um-surface: #fcfcfb;
+  --um-grid: #e1e0d9;
+  --um-axis: #c3c2b7;
+  --um-fill: rgba(11, 11, 11, 0.05);
+  --um-ring: rgba(11, 11, 11, 0.1);
+  --um-accent: #2a78d6;
+  --um-c1: #2a78d6;
+  --um-c2: #eb6834;
+  --um-c3: #1baf7a;
+  --um-c4: #eda100;
+  --um-c5: #e87ba4;
+  margin: 0; padding: 1.35em 1.4em 1.1em; border-radius: 1.4em; display: grid; gap: 0.95em; position: relative;
+  background: var(--um-surface); color: var(--um-ink); box-shadow: 0 0 0 1px var(--um-ring), 0 18px 40px -24px rgba(0, 0, 0, 0.25);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif; line-height: 1.35;
+}
+@media (prefers-color-scheme: dark) {
+  .um {
+    --um-ink: #ffffff;
+    --um-ink-2: #c3c2b7;
+    --um-ink-3: #898781;
+    --um-surface: #1a1a19;
+    --um-grid: #2c2c2a;
+    --um-axis: #383835;
+    --um-fill: rgba(255, 255, 255, 0.07);
+    --um-ring: rgba(255, 255, 255, 0.1);
+    --um-accent: #3987e5;
+    --um-c1: #3987e5;
+    --um-c2: #d95926;
+    --um-c3: #199e70;
+    --um-c4: #c98500;
+    --um-c5: #d55181;
+  }
+}
+
+.um__head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 0.8em 1.5em; }
+.um__eyebrow { margin: 0 0 0.3em; color: var(--um-ink-3); font-size: 0.75em; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+.um__title { margin: 0; font-size: 1.32em; font-weight: 680; letter-spacing: -0.018em; line-height: 1.15; }
+.um__note { margin: 0.35em 0 0; color: var(--um-ink-2); font-size: 0.9em; min-height: 1.35em; }
+
+/* layout switch: a radio group with a sliding thumb */
+.um__views { box-sizing: border-box; position: relative; display: inline-grid; grid-auto-flow: column; grid-auto-columns: 1fr; padding: 3px; border-radius: 999px; background: var(--um-fill); }
+.um__thumb {
+  position: absolute; top: 3px; bottom: 3px; left: 3px; border-radius: 999px; background: var(--um-surface);
+  box-shadow: 0 0 0 0.5px var(--um-ring), 0 2px 6px rgba(0, 0, 0, 0.12);
+  transition: transform 360ms cubic-bezier(.23, 1, .32, 1);
+}
+.um__view {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 0.45em; height: 2.2em; padding: 0 0.95em;
+  border: 0; border-radius: 999px; background: none; color: var(--um-ink-2); font: inherit; font-size: 0.88em; font-weight: 550; cursor: pointer;
+  white-space: nowrap; transition: color 160ms;
+}
+.um__view svg { width: 15px; height: 15px; flex: none; }
+.um__view[aria-checked="true"] { color: var(--um-ink); }
+.um__view:focus-visible { outline: 2px solid var(--um-accent); outline-offset: 1px; }
+
+.um__plot { position: relative; height: clamp(300px, 54vh, 440px); border-radius: 0.7em; outline: none; touch-action: manipulation; }
+.um__plot:focus-visible { box-shadow: 0 0 0 2px var(--um-accent); }
+.um__plot canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.um__plot.is-fading canvas { animation: um-fade 260ms ease-out; }
+@keyframes um-fade { from { opacity: 0; } }
+
+/* guides: axis labels, counts, hairlines; each layout brings its own layer */
+.um__guides { position: absolute; inset: 0; pointer-events: none; transition: opacity 220ms ease; font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.um__guides.is-out { opacity: 0; transition-duration: 140ms; }
+.um__guides.is-in { opacity: 0; }
+.um__g { position: absolute; left: 0; top: 0; white-space: nowrap; color: var(--um-ink-2); }
+.um__g--middle { translate: -50% 0; text-align: center; }
+.um__g--end { translate: -100% 0; text-align: right; }
+.um__g--num { color: var(--um-ink); font-weight: 650; font-size: 1.12em; }
+.um__g--muted { color: var(--um-ink-3); }
+.um__g--title { color: var(--um-ink); font-weight: 600; }
+.um__g b { color: var(--um-ink); font-weight: 650; }
+.um__gv, .um__gh { position: absolute; left: 0; top: 0; background: var(--um-grid); }
+.um__gv { width: 1px; }
+.um__gh { height: 1px; }
+.um__gv--axis, .um__gh--axis { background: var(--um-axis); }
+.um__gv--mark { background: none; border-left: 1px dashed var(--um-ink-3); }
+
+/* the record you are holding */
+.um__tip {
+  position: absolute; left: 0; top: 0; z-index: 2; min-width: 11.5em; padding: 0.65em 0.8em 0.7em; border-radius: 0.75em; pointer-events: none;
+  background: var(--um-surface); color: var(--um-ink); font-size: 0.84em; font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 0.5px var(--um-ring), 0 10px 28px -8px rgba(0, 0, 0, 0.28);
+  opacity: 0; transition: opacity 140ms ease;
+}
+.um__tip.is-on { opacity: 1; }
+.um__tip-head { display: flex; align-items: center; justify-content: space-between; gap: 1em; margin-bottom: 0.45em; font-weight: 650; }
+.um__tip-pin { color: var(--um-ink-3); font-size: 0.85em; font-weight: 550; }
+.um__tip dl { display: grid; grid-template-columns: auto auto; gap: 0.2em 1.2em; margin: 0; }
+.um__tip dt { color: var(--um-ink-2); }
+.um__tip dd { margin: 0; text-align: right; }
+.um__sw { display: inline-block; width: 8px; height: 8px; margin-right: 0.4em; border-radius: 2px; vertical-align: 0.05em; }
+
+.um__foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5em 1.4em; }
+.um__legend { display: flex; flex-wrap: wrap; gap: 0.35em 0.35em; margin: 0; padding: 0; list-style: none; }
+.um__legend button {
+  display: inline-flex; align-items: center; gap: 0.45em; height: 1.9em; padding: 0 0.7em 0 0.55em; border: 0; border-radius: 999px;
+  background: none; color: var(--um-ink-2); font: inherit; font-size: 0.82em; cursor: pointer; transition: background-color 140ms;
+}
+.um__legend button:hover, .um__legend button[aria-pressed="true"] { background: var(--um-fill); color: var(--um-ink); }
+.um__legend button:focus-visible { outline: 2px solid var(--um-accent); outline-offset: 1px; }
+.um__legend i { width: 9px; height: 9px; border-radius: 2.5px; }
+.um__legend b { color: var(--um-ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+.um__hint { margin: 0; color: var(--um-ink-3); font-size: 0.78em; }
+
+.um__sr, .um__live { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+@media (max-width: 520px) {
+  .um { padding: 1.1em 1em 1em; }
+  .um__views { width: 100%; }
+  .um__view { padding: 0 0.4em; }
+  .um__view svg { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .um__thumb { transition: none; }
+}

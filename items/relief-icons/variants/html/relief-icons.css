@@ -1,0 +1,86 @@
+/* Relief Icons. Without WebGL the buttons show their own flat line icons; with it (.is-relief) the canvas behind
+   draws them as relief and the SVGs only keep the layout and the hit areas. */
+.relief {
+  --ri-plate: #e4e2de;
+  --ri-ridge: #f0eee9;
+  --ri-accent: #df7a3f;
+  --ri-lamp: #fff6ec;
+  --ri-ambient: 0.8;
+  --ri-power: 0.42;
+  --ri-spread: 10;
+  --ri-spec: 0.3;
+  --ri-line: #3a3833;
+  --ri-ring: #b85a24;
+  position: relative;
+  isolation: isolate;
+  border-radius: 28px;
+  background: var(--ri-plate);
+  overflow: hidden;
+  color: var(--ri-line);
+}
+@media (prefers-color-scheme: dark) {
+  .relief {
+    --ri-plate: #24262c;
+    --ri-ridge: #3a3d45;
+    --ri-accent: #f08d4f;
+    --ri-lamp: #ffe6c8;
+    --ri-ambient: 0.34;
+    --ri-power: 1.9;
+    --ri-spread: 12;
+    --ri-spec: 0.45;
+    --ri-line: #d9d6d0;
+    --ri-ring: #f3a46f;
+  }
+}
+.relief > canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.relief.is-relief > canvas { opacity: 1; }
+
+.relief__grid {
+  list-style: none;
+  margin: 0;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(var(--ri-cols, 4), 1fr);
+  gap: 4px;
+}
+.relief__icon {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  border-radius: 20px;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.relief__icon svg {
+  width: 58%;
+  height: 58%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: opacity 0.35s ease, transform 0.2s ease;
+}
+.relief__icon[aria-pressed='true'] { color: var(--ri-accent); }
+.relief__icon:active svg { transform: scale(0.94); }
+/* relief on: the canvas draws the icons, the SVGs stay for layout and as hit areas */
+.relief.is-relief .relief__icon svg { opacity: 0; transform: none; }
+.relief__icon:focus-visible { outline: 2px solid var(--ri-ring); outline-offset: -6px; }
+@media (prefers-reduced-motion: reduce) {
+  .relief > canvas, .relief__icon svg { transition: none; }
+}

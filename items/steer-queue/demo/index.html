@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Steer-While-Running Queue</title>
+<link rel="stylesheet" href="../variants/html/steer-queue.css">
+<style>
+  html, body { min-height: 100%; margin: 0; background: transparent; }
+  body {
+    display: grid; place-items: center; min-height: 100vh; box-sizing: border-box; padding: 32px 16px;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .wrap { width: 100%; max-width: 560px; }
+  .hint { margin: 14px 4px 0; font-size: 13px; color: #86868b; text-align: center; }
+  @media (prefers-color-scheme: dark) { .hint { color: #8e8e93; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="run"></div>
+  <p class="hint">Add notes while it runs. Drag the queue to change the order, pause with the dial.</p>
+</div>
+<script src="../variants/html/steer-queue.js"></script>
+<script>
+  var shot = new URLSearchParams(location.search).get('shot') === '1';
+
+  // what a note changes in the upcoming steps (a real agent replans on its own)
+  var rewrites = {
+    'Keep each plan description under 40 words': [{ id: 'draft', text: 'Draft new plan descriptions, 40 words each at most' }],
+    'Leave the annual discount out of the FAQ': [{ id: 'faq', text: 'Rewrite the FAQ around the top questions, without the annual discount' }],
+    'Show me the drafts before the FAQ': [{ id: 'faq', text: 'Wait for a go-ahead on the drafts, then rewrite the FAQ' }]
+  };
+
+  var q = SteerQueue.create(document.getElementById('run'), {
+    title: 'Refresh the pricing page copy',
+    steps: [
+      { id: 'read', text: 'Read the current pricing page', ms: 2200, note: '3 plans, 41 lines of copy' },
+      { id: 'tickets', text: 'Pull last quarter’s plan questions from support', ms: 2600, note: '118 tickets, 9 recurring questions' },
+      { id: 'draft', text: 'Draft new plan descriptions', ms: 3400, note: '3 drafts, 112 words' },
+      { id: 'faq', text: 'Rewrite the FAQ around the top questions', ms: 3000, note: '6 answers' },
+      { id: 'check', text: 'Check every claim against the plan limits', ms: 2400, note: '2 fixes: seats, storage' },
+      { id: 'draftpr', text: 'Open a draft for review', ms: 1600, note: 'Draft #57 is ready' }
+    ]
+  }, {
+    autostart: !shot,
+    suggestions: [
+      { text: 'Keep each plan description under 40 words' },
+      { text: 'Leave the annual discount out of the FAQ' },
+      { text: 'Use British spelling' },
+      { text: 'Show me the drafts before the FAQ', mode: 'interrupt' }
+    ],
+    onTake: function (note) { var r = rewrites[note.text]; return r ? { rewrite: r } : null; }
+  });
+
+  // ?shot=1 — the poster: one note already in the run, step 3 paused at 45%, two notes waiting (one interrupts)
+  if (shot) {
+    document.querySelector('.hint').style.display = 'none';
+    q.seek(1, 0);
+    q.queue('Keep each plan description under 40 words', 'after');
+    q.seek(2, 0.45);
+    q.pause();
+    q.queue('Leave the annual discount out of the FAQ', 'after');
+    q.queue('Show me the drafts before the FAQ', 'interrupt');
+    document.querySelector('.sq-sugg').hidden = true;
+    document.querySelector('.sq-input').value = 'Link the plan comparison table';
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Streaming Generative Widget</title>
+<link rel="stylesheet" href="../variants/html/genui-widget.css">
+<style>
+  html, body { min-height: 100%; margin: 0; background: transparent; }
+  body {
+    display: grid; place-items: center; min-height: 100vh; box-sizing: border-box; padding: 28px 16px;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .wrap { width: 100%; max-width: 520px; display: grid; gap: 10px; }
+  .ask {
+    justify-self: end; max-width: 80%; margin: 0; padding: 9px 14px; border-radius: 18px 18px 6px 18px;
+    background: #0071e3; color: #fff; font-size: 15px; line-height: 1.35;
+  }
+  .hint { margin: 4px 4px 0; font-size: 13px; color: #86868b; text-align: center; }
+  @media (prefers-color-scheme: dark) { .ask { background: #0a84ff; } .hint { color: #8e8e93; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="ask">How soon can I save €6,000 for a sabbatical?</p>
+  <div id="answer"></div>
+  <p class="hint">Move the slider while the rest is still arriving. Cut the stream halfway to see what survives.</p>
+</div>
+<script src="../variants/html/genui-widget.js"></script>
+<script>
+  // The model's answer: a widget described as JSON, streamed as text.
+  var ANSWER = [
+    '{"type":"widget","title":"Sabbatical fund","children":[',
+    '{"type":"text","text":"You have €1,200 saved. Pick a monthly deposit and an account, and the chart shows when the fund reaches €6,000."},',
+    '{"type":"slider","id":"monthly","label":"Monthly deposit","min":100,"max":1000,"step":25,"value":400,"prefix":"€","suffix":" a month"},',
+    '{"type":"choice","id":"account","label":"Account","value":"fixed12","options":[',
+    '{"value":"instant","label":"Instant access","hint":"1.2% a year","rate":1.2},',
+    '{"value":"fixed12","label":"Fixed, 12 months","hint":"3.1% a year","rate":3.1},',
+    '{"value":"fixed24","label":"Fixed, 24 months","hint":"3.6% a year","rate":3.6}]},',
+    '{"type":"stat","label":"Goal reached","value":"eta"},',
+    '{"type":"chart","id":"growth","label":"Balance by month","data":"balance","goal":6000,"prefix":"€"},',
+    '{"type":"button","label":"Set up the monthly transfer","action":"transfer"}',
+    ']}'
+  ].join('\n');
+
+  var START = new Date(2026, 10, 1); // first deposit: November 2026
+  function month(k) {
+    var d = new Date(START.getFullYear(), START.getMonth() + k, 1);
+    return d.toLocaleString('en-GB', { month: 'short' }) + ' ' + d.getFullYear();
+  }
+
+  var w = GenUIWidget.create(document.getElementById('answer'), {
+    // host logic: the model picks and fills components, the numbers come from here
+    compute: function (state, blocks) {
+      var rate = 0;
+      var acc = blocks.account;
+      if (acc && Array.isArray(acc.options)) acc.options.forEach(function (o) { if (o && o.value === state.account && typeof o.rate === 'number') rate = o.rate; });
+      var goal = blocks.growth && typeof blocks.growth.goal === 'number' ? blocks.growth.goal : 6000;
+      var monthly = state.monthly || 0, b = 1200, values = [], labels = [], eta = -1;
+      for (var k = 0; k < 24; k++) {
+        b = b * (1 + rate / 100 / 12) + monthly;
+        values.push(Math.round(b));
+        labels.push(month(k));
+        if (eta < 0 && b >= goal) eta = k;
+      }
+      return {
+        balance: { values: values, labels: labels, goal: goal },
+        eta: eta >= 0 ? month(eta) : 'Not in 2 years',
+        etaNote: eta >= 0 ? 'in ' + (eta + 1) + ' months' : 'raise the deposit',
+        hint: eta >= 0 ? 'goal in ' + month(eta) : 'goal not reached in 2 years'
+      };
+    },
+    onAction: function (name, state) {
+      if (name === 'transfer') return '€' + state.monthly + ' a month from 1 Nov';
+      return null;
+    }
+  });
+
+  var q = new URLSearchParams(location.search);
+  if (q.get('shot') === '1') {
+    // the poster: 84% of the answer in, four blocks live, the chart still a skeleton
+    document.querySelector('.hint').style.display = 'none';
+    w.setSource(ANSWER);
+    w.seek(Number(q.get('at')) || 0.84);
+  } else {
+    w.play(ANSWER, { seed: 7 });
+  }
+</script>
+</body>
+</html>

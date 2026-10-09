@@ -1,0 +1,120 @@
+/* Drum Wheel Picker — rows turn on a drum through scroll-driven animations; snap and inertia are the browser's. */
+.dp {
+  --dp-row: 36px;              /* row height; the keyframes below are worked out for 36 / 252 and a radius of 130 px */
+  --dp-h: 252px;               /* wheel height: seven rows */
+  --dp-persp: 600px;
+  --dp-font: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --dp-label: #1d1d1f;
+  --dp-label-2: #8e8e93;
+  --dp-lens: rgba(118, 118, 128, 0.12);
+  --dp-accent: #0071e3;
+  position: relative;
+  font-family: var(--dp-font);
+  color: var(--dp-label);
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
+}
+@media (prefers-color-scheme: dark) {
+  .dp {
+    --dp-label: #f5f5f7;
+    --dp-label-2: #6e6e73;
+    --dp-lens: rgba(118, 118, 128, 0.24);
+    --dp-accent: #2997ff;
+  }
+}
+
+/* the centre band behind all wheels */
+.dp__lens {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: var(--dp-row);
+  margin-top: calc(var(--dp-row) / -2);
+  border-radius: 9px;
+  background: var(--dp-lens);
+  pointer-events: none;
+}
+.dp__wheels { position: relative; display: flex; }
+
+.dp__wheel {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  height: var(--dp-h);
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+  outline: none;
+  border-radius: 10px;
+  cursor: grab;
+  -webkit-mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent);
+  mask-image: linear-gradient(transparent, #000 30%, #000 70%, transparent);
+}
+.dp__wheel::-webkit-scrollbar { display: none; }
+.dp__wheel.is-dragging { scroll-snap-type: none; cursor: grabbing; }
+.dp__wheel:focus-visible { -webkit-mask-image: none; mask-image: none; box-shadow: inset 0 0 0 2px var(--dp-accent); }
+.dp__wheel--month { flex-grow: 1.7; }
+.dp__wheel--day { flex-grow: 0.8; }
+.dp__wheel--year { flex-grow: 1.1; }
+
+.dp__list {
+  list-style: none;
+  margin: 0;
+  padding: calc((var(--dp-h) - var(--dp-row)) / 2) 0;
+}
+.dp__item {
+  height: var(--dp-row);
+  scroll-snap-align: center;
+  font-size: 21px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  white-space: nowrap;
+  transition: color 0.15s;
+}
+.dp__face {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  backface-visibility: hidden;
+}
+.dp__item.is-off { color: var(--dp-label-2); }
+.dp__wheel--month .dp__face { justify-content: flex-end; padding-right: 14px; }
+.dp__wheel--year .dp__face { justify-content: flex-start; padding-left: 14px; }
+
+/* the drum: each row turns by its own place in the wheel (view timeline), longhands only */
+@supports (animation-timeline: view()) {
+  .dp__face {
+    animation-name: dp-drum;
+    animation-duration: auto;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-timeline: view();
+    animation-range-start: cover 0%;
+    animation-range-end: cover 100%;
+  }
+}
+@keyframes dp-drum {
+  0% { transform: perspective(var(--dp-persp)) translate3d(0, -27.69px, -71.93px) rotateX(-63.47deg); opacity: 0.38; }
+  8.33% { transform: perspective(var(--dp-persp)) translate3d(0, -16.33px, -51.56px) rotateX(-52.89deg); opacity: 0.545; }
+  16.67% { transform: perspective(var(--dp-persp)) translate3d(0, -8.49px, -33.86px) rotateX(-42.31deg); opacity: 0.696; }
+  25% { transform: perspective(var(--dp-persp)) translate3d(0, -3.62px, -19.43px) rotateX(-31.73deg); opacity: 0.823; }
+  33.33% { transform: perspective(var(--dp-persp)) translate3d(0, -1.08px, -8.76px) rotateX(-21.16deg); opacity: 0.92; }
+  41.67% { transform: perspective(var(--dp-persp)) translate3d(0, -0.14px, -2.21px) rotateX(-10.58deg); opacity: 0.98; }
+  50% { transform: perspective(var(--dp-persp)) translate3d(0, 0px, 0px) rotateX(0deg); opacity: 1; }
+  58.33% { transform: perspective(var(--dp-persp)) translate3d(0, 0.14px, -2.21px) rotateX(10.58deg); opacity: 0.98; }
+  66.67% { transform: perspective(var(--dp-persp)) translate3d(0, 1.08px, -8.76px) rotateX(21.16deg); opacity: 0.92; }
+  75% { transform: perspective(var(--dp-persp)) translate3d(0, 3.62px, -19.43px) rotateX(31.73deg); opacity: 0.823; }
+  83.33% { transform: perspective(var(--dp-persp)) translate3d(0, 8.49px, -33.86px) rotateX(42.31deg); opacity: 0.696; }
+  91.67% { transform: perspective(var(--dp-persp)) translate3d(0, 16.33px, -51.56px) rotateX(52.89deg); opacity: 0.545; }
+  100% { transform: perspective(var(--dp-persp)) translate3d(0, 27.69px, -71.93px) rotateX(63.47deg); opacity: 0.38; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dp__item { transition: none; }
+}

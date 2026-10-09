@@ -1,0 +1,44 @@
+/* Radiance UI Light. Without WebGL2 this is a plain page. With it (.is-lit) the canvas behind draws the page under
+   the light: lit text and card faces turn transparent in the DOM but stay in place for reading, selection and
+   screen readers. Lights (data-rl-emit) keep their own DOM look. */
+.rl {
+  --rl-bg: #15161a;              /* the unlit page; also the fallback */
+  --rl-floor: #3b3d45;           /* page albedo under light */
+  --rl-ambient: 0.05;
+  --rl-ambient-ink: 0.42;        /* text and cards keep this much light without the lamp */
+  --rl-exposure: 1.4;
+  --rl-rim: 5;                   /* css px of light soaking into a card from its edge */
+  --rl-ink: #f4f4f7;
+  --rl-face: #2c2e36;
+  position: relative;
+  isolation: isolate;
+  background: var(--rl-bg);
+  color: var(--rl-ink);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  touch-action: pan-y;
+}
+/* light pages get paper under a lamp; data-theme="dark" on .rl keeps the dark look anyway */
+@media (prefers-color-scheme: light) {
+  .rl:not([data-theme="dark"]) {
+    --rl-bg: #e4e1dc;
+    --rl-floor: #f1eee8;
+    --rl-ambient: 1;
+    --rl-ambient-ink: 1;
+    --rl-exposure: 1.6;
+    --rl-ink: #1d1d22;
+    --rl-face: #fbfaf7;
+  }
+}
+.rl > canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: -1;
+}
+.rl:not(.is-lit) > canvas { display: none; }
+.rl [data-rl-text] { color: var(--rl-ink); }
+.rl [data-rl-box] { background: var(--rl-face); }
+.rl.is-lit [data-rl-text] { color: transparent; }
+.rl.is-lit [data-rl-box] { background: transparent; }

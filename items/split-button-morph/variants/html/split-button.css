@@ -1,0 +1,265 @@
+/* Split Button Morph — main action + menu; the menu half turns from a half-capsule into a circle and the menu comes out of it. */
+.spb {
+  --spb-font: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --spb-h: 44px;
+  --spb-r-out: calc(var(--spb-h) / 2);
+  --spb-r-in: 7px;
+  --spb-toggle-w: 38px;
+  --spb-gap: 3px;
+  --spb-gap-open: 7px;
+  --spb-spring: cubic-bezier(0.3, 1.3, 0.5, 1); /* replaced by linear() springs from split-button.js */
+  --spb-dur: 480ms;
+  --spb-out: cubic-bezier(0.4, 0, 0.7, 0.2);
+  --spb-out-dur: 220ms;
+
+  --spb-bg: #17181b;
+  --spb-label: #f4f5ef;
+  --spb-hover: #2a2c31;
+  --spb-open-bg: #c9f24f;
+  --spb-open-label: #17181b;
+  --spb-menu: #ffffff;
+  --spb-menu-label: #17181b;
+  --spb-menu-label-2: #6b6d74;
+  --spb-menu-hover: rgba(23, 24, 27, 0.06);
+  --spb-menu-check: #17181b;
+  --spb-menu-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 12px 32px -6px rgba(20, 22, 30, 0.22);
+  --spb-hair: rgba(0, 0, 0, 0.07);
+  --spb-ring: #3a63ff;
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--spb-font);
+  -webkit-font-smoothing: antialiased;
+}
+@media (prefers-color-scheme: dark) {
+  .spb {
+    --spb-bg: #dbf266;
+    --spb-label: #15160f;
+    --spb-hover: #e6f78f;
+    --spb-open-bg: #f2f2ee;
+    --spb-open-label: #15160f;
+    --spb-menu: #26272b;
+    --spb-menu-label: #ececee;
+    --spb-menu-label-2: #9a9ca3;
+    --spb-menu-hover: rgba(255, 255, 255, 0.07);
+    --spb-menu-check: #dbf266;
+    --spb-menu-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 16px 40px -8px rgba(0, 0, 0, 0.6);
+    --spb-hair: rgba(255, 255, 255, 0.08);
+    --spb-ring: #8aa4ff;
+  }
+}
+/* the quieter look: tinted fill, ink text */
+.spb--soft {
+  --spb-bg: #e9e7e1;
+  --spb-label: #17181b;
+  --spb-hover: #dfddd6;
+  --spb-open-bg: #17181b;
+  --spb-open-label: #f4f5ef;
+}
+@media (prefers-color-scheme: dark) {
+  .spb--soft {
+    --spb-bg: #2e2f34;
+    --spb-label: #ececee;
+    --spb-hover: #393a40;
+    --spb-open-bg: #dbf266;
+    --spb-open-label: #15160f;
+  }
+}
+
+.spb__main,
+.spb__toggle {
+  height: var(--spb-h);
+  margin: 0;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--spb-label);
+  background: var(--spb-bg);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    scale 160ms ease;
+}
+.spb__main:focus-visible,
+.spb__toggle:focus-visible { outline: 2px solid var(--spb-ring); outline-offset: 2px; }
+@media (hover: hover) {
+  .spb__main:hover,
+  .spb__toggle:hover { background: var(--spb-hover); }
+}
+.spb__main:active { scale: 0.97; }
+
+.spb__main {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 18px 0 15px;
+  border-radius: var(--spb-r-out) var(--spb-r-in) var(--spb-r-in) var(--spb-r-out);
+  font-size: 15px;
+  font-weight: 560;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.spb__icon { position: relative; flex: none; width: 18px; height: 18px; }
+.spb__icon svg { position: absolute; inset: 0; width: 18px; height: 18px; transition: opacity 180ms ease, scale 260ms var(--spb-spring); }
+.spb__icon .spb__done { opacity: 0; scale: 0.4; }
+.spb[data-done] .spb__icon .spb__done { opacity: 1; scale: 1; }
+.spb[data-done] .spb__icon svg:not(.spb__done) { opacity: 0; scale: 0.4; }
+.spb__label { display: inline-block; }
+
+.spb__toggle {
+  display: grid;
+  place-items: center;
+  width: var(--spb-toggle-w);
+  margin-left: var(--spb-gap);
+  border-radius: var(--spb-r-in) var(--spb-r-out) var(--spb-r-out) var(--spb-r-in);
+  transition:
+    width var(--spb-dur) var(--spb-spring),
+    margin-left var(--spb-dur) var(--spb-spring),
+    border-radius var(--spb-dur) var(--spb-spring),
+    background-color 160ms ease,
+    color 160ms ease;
+}
+.spb__chev { width: 16px; height: 16px; transition: rotate var(--spb-dur) var(--spb-spring); }
+
+/* open: the half-capsule becomes a circle, steps away, the chevron turns over */
+.spb:has(.spb__menu:popover-open) .spb__toggle {
+  width: var(--spb-h);
+  margin-left: var(--spb-gap-open);
+  border-radius: var(--spb-r-out);
+  background: var(--spb-open-bg);
+  color: var(--spb-open-label);
+}
+.spb:has(.spb__menu:popover-open) .spb__chev { rotate: 180deg; }
+/* the circle grows into a reserved strip on the right, so nothing next to the button moves */
+.spb {
+  padding-right: calc(var(--spb-h) + var(--spb-gap-open) - var(--spb-toggle-w) - var(--spb-gap));
+  transition: padding-right var(--spb-dur) var(--spb-spring);
+}
+.spb:has(.spb__menu:popover-open) { padding-right: 0; }
+
+/* the menu: anchored under the toggle, its right edge on the toggle's right edge */
+.spb__menu {
+  position: fixed;
+  inset: auto;
+  margin: 8px 0 0;
+  padding: 6px;
+  min-width: 232px;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 20px;
+  background: var(--spb-menu);
+  color: var(--spb-menu-label);
+  box-shadow: var(--spb-menu-shadow);
+  font-family: var(--spb-font);
+  overflow: visible;
+  /* closed shape = the toggle's circle, sitting on the toggle */
+  clip-path: inset(0 0 calc(100% - var(--spb-h)) calc(100% - var(--spb-h)) round var(--spb-r-out));
+  translate: 0 calc(-1 * var(--spb-h) - 8px);
+  opacity: 0;
+  transition:
+    clip-path var(--spb-out-dur) var(--spb-out),
+    translate var(--spb-out-dur) var(--spb-out),
+    opacity 120ms ease 100ms,
+    overlay var(--spb-out-dur) allow-discrete,
+    display var(--spb-out-dur) allow-discrete;
+}
+@supports (position-area: bottom) {
+  .spb__menu {
+    position-area: bottom span-left;
+    position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+  }
+}
+.spb__menu:popover-open {
+  /* the clip opens 48 px past the box, so the shadow is not cut off */
+  clip-path: inset(-48px round 68px);
+  translate: 0 0;
+  opacity: 1;
+  transition:
+    clip-path var(--spb-dur) var(--spb-spring),
+    translate var(--spb-dur) var(--spb-spring),
+    opacity 90ms ease,
+    overlay var(--spb-dur) allow-discrete,
+    display var(--spb-dur) allow-discrete;
+}
+@starting-style {
+  .spb__menu:popover-open {
+    clip-path: inset(0 0 calc(100% - var(--spb-h)) calc(100% - var(--spb-h)) round var(--spb-r-out));
+    translate: 0 calc(-1 * var(--spb-h) - 8px);
+    opacity: 0;
+  }
+}
+
+.spb__item {
+  display: grid;
+  grid-template-columns: 20px 1fr 16px;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  margin: 0;
+  padding: 6px 12px;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 15px;
+  text-align: start;
+  cursor: pointer;
+  opacity: 0;
+  translate: 6px -4px;
+  transition: opacity 120ms ease, translate 120ms ease, background-color 120ms ease;
+}
+.spb__menu:popover-open .spb__item {
+  opacity: 1;
+  translate: 0 0;
+  transition:
+    opacity 200ms ease calc(60ms + var(--spb-i, 0) * 32ms),
+    translate var(--spb-dur) var(--spb-spring) calc(60ms + var(--spb-i, 0) * 32ms),
+    background-color 120ms ease;
+}
+@starting-style {
+  .spb__menu:popover-open .spb__item { opacity: 0; translate: 6px -4px; }
+}
+.spb__item:nth-child(2) { --spb-i: 1; }
+.spb__item:nth-child(3) { --spb-i: 2; }
+.spb__item:nth-child(4) { --spb-i: 3; }
+.spb__item:nth-child(5) { --spb-i: 4; }
+.spb__item:nth-child(6) { --spb-i: 5; }
+@supports (order: sibling-index()) {
+  .spb__item { --spb-i: calc(sibling-index() - 1); }
+}
+.spb__item:hover,
+.spb__item:focus-visible { background: var(--spb-menu-hover); outline: none; }
+.spb__item:focus-visible { box-shadow: inset 0 0 0 2px var(--spb-ring); }
+.spb__item > span:first-child { display: grid; place-items: center; width: 20px; height: 20px; }
+.spb__item svg { display: block; width: 20px; height: 20px; }
+.spb__item small { display: block; margin-top: 1px; font-size: 12.5px; color: var(--spb-menu-label-2); }
+.spb__check { width: 16px !important; height: 16px !important; color: var(--spb-menu-check); opacity: 0; scale: 0.5; transition: opacity 140ms ease, scale 240ms var(--spb-spring); }
+.spb__item[aria-checked="true"] .spb__check { opacity: 1; scale: 1; }
+.spb__item[aria-checked="true"] { font-weight: 560; }
+
+@media (prefers-reduced-motion: reduce) {
+  .spb,
+  .spb__toggle,
+  .spb__chev { transition: background-color 160ms ease, color 160ms ease; }
+  .spb__menu,
+  .spb__menu:popover-open {
+    clip-path: none;
+    translate: 0 0;
+    transition: opacity 140ms ease, overlay 140ms allow-discrete, display 140ms allow-discrete;
+  }
+  .spb__item,
+  .spb__menu:popover-open .spb__item { translate: 0 0; transition: opacity 140ms ease, background-color 120ms ease; }
+  @starting-style {
+    .spb__menu:popover-open { clip-path: none; translate: 0 0; }
+    .spb__menu:popover-open .spb__item { translate: 0 0; }
+  }
+  .spb__main:active { scale: 1; }
+}

@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Radiance UI Light</title>
+<link rel="stylesheet" href="../variants/html/radiance-light.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  .rl { box-sizing: border-box; min-height: 100vh; min-height: 100dvh; padding: 22px clamp(16px, 5vw, 56px) 72px; display: flex; flex-direction: column; gap: clamp(28px, 6vh, 56px); overflow: hidden; }
+  .nav { display: flex; align-items: center; gap: 20px; font-size: 14px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 650; letter-spacing: 0.02em; }
+  .mark { width: 14px; height: 14px; border-radius: 50%; background: #ffb35c; --rl-glow: #ffb35c; --rl-power: 0.55; }
+  .links { display: flex; gap: 18px; margin-left: auto; }
+  .links a { text-decoration: none; opacity: 0.8; }
+  .live { display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px 0 10px; border-radius: 999px; font-size: 13px; }
+  .live i { width: 8px; height: 8px; border-radius: 50%; background: #46e08a; --rl-glow: #46e08a; --rl-power: 1; }
+  .hero { max-width: 760px; }
+  .eyebrow { margin: 0 0 12px; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; --rl-ink: #a7a9b4; }
+  h1 { margin: 0; font-size: clamp(34px, 6.4vw, 64px); line-height: 1.02; letter-spacing: -0.025em; font-weight: 700; }
+  .lede { margin: 18px 0 26px; max-width: 520px; font-size: 16px; line-height: 1.5; --rl-ink: #c3c5cf; }
+  .cta { display: inline-flex; align-items: center; height: 44px; padding: 0 20px; border-radius: 12px; background: #ff7a45; color: #1a0d06; font-weight: 600; font-size: 15px; text-decoration: none; --rl-glow: #ff7a45; --rl-power: 0.32; }
+  .cta:focus-visible, .links a:focus-visible, .lamp button:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+  .cards { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(14px, 3vw, 40px); max-width: 980px; }
+  .card { border-radius: 18px; padding: 20px 20px 22px; min-height: 120px; box-sizing: border-box; }
+  .card h2 { margin: 0 0 8px; font-size: 17px; }
+  .card p { margin: 0; font-size: 14px; line-height: 1.45; --rl-ink: #b4b6c0; }
+  .lamp { position: absolute; right: 16px; bottom: 16px; display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: rgb(0 0 0 / 0.45); color: #f2f2f5; font-size: 12px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  .lamp button { font: inherit; color: inherit; height: 28px; padding: 0 12px; border-radius: 999px; border: 0; background: none; cursor: pointer; }
+  .lamp button[aria-pressed='true'] { background: rgb(255 255 255 / 0.18); }
+  .hud { position: absolute; left: 16px; bottom: 18px; font: 11px/1 ui-monospace, monospace; opacity: 0.55; color: #9a9ca6; }
+  @media (prefers-color-scheme: light) {
+    .rl:not([data-theme='dark']) .eyebrow { --rl-ink: #6b6a70; }
+    .rl:not([data-theme='dark']) .lede { --rl-ink: #4a4a52; }
+    .rl:not([data-theme='dark']) .card p { --rl-ink: #5a5a62; }
+    .rl:not([data-theme='dark']) .lamp { background: rgb(255 255 255 / 0.6); color: #1d1d22; }
+    .rl:not([data-theme='dark']) .lamp button[aria-pressed='true'] { background: rgb(0 0 0 / 0.1); }
+  }
+  @media (max-width: 640px) {
+    .links { display: none; }
+    .live { margin-left: auto; }
+    .cards { grid-template-columns: 1fr; gap: 12px; }
+    .card { min-height: 0; padding: 16px; }
+    .hud { display: none; }
+  }
+</style>
+</head>
+<body>
+<main class="rl" aria-label="Product page under a moving light">
+  <canvas aria-hidden="true"></canvas>
+  <header class="nav">
+    <span class="brand"><i class="mark" data-rl-emit aria-hidden="true"></i><span data-rl-text="cast">Kiln</span></span>
+    <nav class="links" aria-label="Main">
+      <a href="#features" data-rl-text="cast">Features</a>
+      <a href="#pricing" data-rl-text="cast">Pricing</a>
+      <a href="#changelog" data-rl-text="cast">Changelog</a>
+    </nav>
+    <span class="live" data-rl-box><i data-rl-emit aria-hidden="true"></i><span data-rl-text>All systems normal</span></span>
+  </header>
+  <section class="hero" id="features">
+    <p class="eyebrow" data-rl-text="cast">Release 4.2</p>
+    <h1 data-rl-text="cast">Light that knows where things are</h1>
+    <p class="lede" data-rl-text>Move the pointer: the lamp follows it, the cards and every letter of the headline throw soft shadows, and the button glows onto its neighbours.</p>
+    <a class="cta" href="#pricing" data-rl-emit>Start a free trial</a>
+  </section>
+  <ul class="cards" role="list">
+    <li class="card" data-rl-box><h2 data-rl-text>Shared drafts</h2><p data-rl-text>Everyone edits the same file, changes land in seconds.</p></li>
+    <li class="card" data-rl-box><h2 data-rl-text>Version history</h2><p data-rl-text>Every save is kept for 90 days, any one restores in a click.</p></li>
+    <li class="card" data-rl-box><h2 data-rl-text>Review mode</h2><p data-rl-text>Comments pin to a spot and follow it when the layout moves.</p></li>
+  </ul>
+  <div class="lamp" role="group" aria-label="Lamp colour">
+    <button type="button" aria-pressed="true" data-lamp="#ffd7a8">Warm</button>
+    <button type="button" aria-pressed="false" data-lamp="#8fe6ff">Cool</button>
+    <button type="button" aria-pressed="false" data-lamp="">Off</button>
+  </div>
+  <p class="hud" aria-hidden="true"></p>
+</main>
+<script type="module">
+  import { createRadianceLight } from '../variants/html/radiance-light.js';
+  const root = document.querySelector('.rl');
+  const params = new URLSearchParams(location.search);
+  const shot = params.has('shot');
+  if (params.get('theme') === 'dark') root.dataset.theme = 'dark';
+  const hud = document.querySelector('.hud');
+  const r = root.getBoundingClientRect();
+  const light = createRadianceLight(root, {
+    shot: shot ? { x: r.width * 0.56, y: Math.min(r.height * 0.5, 330) } : null,
+    onTier: (t, ms) => { hud.textContent = `quality ${3 - t}/3${ms ? ` · ${ms.toFixed(1)} ms` : ''}`; }
+  });
+  document.querySelectorAll('[data-lamp]').forEach((b) => b.addEventListener('click', () => {
+    document.querySelectorAll('[data-lamp]').forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
+    light?.setLamp(b.dataset.lamp || null);
+  }));
+  document.querySelectorAll('.rl a').forEach((a) => a.addEventListener('click', (e) => e.preventDefault()));
+</script>
+</body>
+</html>

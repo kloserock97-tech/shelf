@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Chart Skeleton</title>
+<link rel="stylesheet" href="../variants/html/chart-skeleton.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  body {
+    min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: 20px 12px; box-sizing: border-box;
+    font: clamp(13px, 0.7vw + 7px, 16px)/1.35 system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
+  }
+  main { width: min(52em, 100%); display: grid; gap: 1em; }
+  /* demo controls: which answer the fake server gives */
+  .sim { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.6em 0.9em; color: #636366; font-size: 0.85em; }
+  .sim__seg { display: inline-grid; grid-auto-flow: column; padding: 2px; border-radius: 9px; background: rgba(118, 118, 128, 0.12); }
+  .sim button {
+    min-height: 30px; padding: 0 0.95em; border: 0; border-radius: 7px; background: none; color: #1d1d1f;
+    font: inherit; font-weight: 500; cursor: pointer;
+  }
+  .sim__seg button[aria-checked="true"] { background: #fff; font-weight: 600; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); }
+  .sim__replay { display: inline-flex; align-items: center; gap: 0.4em; background: rgba(118, 118, 128, 0.12) !important; border-radius: 999px !important; }
+  .sim__replay svg { width: 14px; height: 14px; }
+  .sim button:focus-visible { outline: 2px solid #0071e3; outline-offset: 1px; }
+  @media (prefers-color-scheme: dark) {
+    .sim { color: #a1a1a6; }
+    .sim button { color: #f5f5f7; }
+    .sim__seg { background: rgba(118, 118, 128, 0.24); }
+    .sim__seg button[aria-checked="true"] { background: #636366; }
+    .sim__replay { background: rgba(118, 118, 128, 0.24) !important; }
+    .sim button:focus-visible { outline-color: #3a9bff; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <figure class="csk" data-state="loading" aria-labelledby="csk-title">
+    <header class="csk__head">
+      <div>
+        <h1 class="csk__title" id="csk-title">Orders per day</h1>
+        <p class="csk__sub">Last 30 days, Sep 10 – Oct 9</p>
+      </div>
+      <p class="csk__kpi"><span class="csk__kpi-value"></span><span class="csk__kpi-note"></span></p>
+    </header>
+    <div class="csk__body">
+      <div class="csk__plot" role="group" aria-roledescription="line chart" aria-labelledby="csk-title" aria-describedby="csk-status"></div>
+      <div class="csk__panel" hidden>
+        <span class="csk__icon" aria-hidden="true">
+          <svg class="is-empty" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v16h16"/><path d="M7 15l3.5-3.5 3 2.5L19 8" stroke-dasharray="1.5 3"/></svg>
+          <svg class="is-error" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v16h16"/><path d="M7 15l3.5-3.5 2 1.7"/><path d="M15.5 9.5L19 6"/><path d="M14 16.5v.01M14 12.5v2"/></svg>
+        </span>
+        <p class="csk__panel-title"></p>
+        <p class="csk__panel-text"></p>
+        <div class="csk__actions"></div>
+      </div>
+    </div>
+    <p class="csk__status" id="csk-status" role="status"></p>
+  </figure>
+
+  <div class="sim">
+    <span id="sim-label">Server answers with</span>
+    <span class="sim__seg" role="radiogroup" aria-labelledby="sim-label">
+      <button type="button" role="radio" data-answer="data">Data</button>
+      <button type="button" role="radio" data-answer="empty">Nothing</button>
+      <button type="button" role="radio" data-answer="error">Timeout</button>
+    </span>
+    <button type="button" class="sim__replay"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.5-3.6"/><path d="M13 2.5v2.5h-2.5"/></svg>Reload</button>
+  </div>
+</main>
+
+<script type="module">
+  import { chartSkeleton } from '../variants/html/chart-skeleton.js';
+
+  // Seeded numbers: Hash Kit's mixer over a Weyl sequence.
+  function hashU(x) {
+    x ^= x >>> 16; x = Math.imul(x, 0x3f9c86cb);
+    x ^= x >>> 14; x = Math.imul(x, 0x1ae9dacf);
+    x ^= x >>> 15;
+    return x >>> 0;
+  }
+  function makeRandom(seed) {
+    let s = seed >>> 0;
+    return () => { s = (s + 0xb31c96c9) >>> 0; return hashU(s) / 4294967296; };
+  }
+  const rnd = makeRandom(4410);
+
+  // 30 days of a small online shop: busier on weekends, a slow climb, a sale on Oct 3–4.
+  const dates = Array.from({ length: 30 }, (_, i) => new Date(2026, 8, 10 + i));
+  const values = dates.map((d, i) => {
+    const day = d.getDay();
+    const week = day === 0 ? 1.18 : day === 6 ? 1.24 : day === 5 ? 1.08 : day === 1 ? 0.9 : 1;
+    const sale = i === 23 ? 1.55 : i === 24 ? 1.3 : 1;
+    return Math.round((118 + 1.3 * i) * week * sale * (1 + (rnd() - 0.5) * 0.14));
+  });
+  const total = values.reduce((a, b) => a + b, 0);
+  const prior = 3612;
+
+  const num = new Intl.NumberFormat('en-US');
+  const chart = chartSkeleton(document.querySelector('.csk'), {
+    dates,
+    expected: [90, 190],
+    format: (v) => num.format(Math.round(v)),
+    formatDate: (d, style) => d.toLocaleDateString('en-US',
+      style === 'long' ? { weekday: 'short', month: 'short', day: 'numeric' } : { month: 'short', day: 'numeric' })
+  });
+
+  let answer = 'data';
+  let timer = 0;
+  const radios = [...document.querySelectorAll('[data-answer]')];
+  const respond = (kind) => {
+    if (kind === 'data') {
+      chart.data(values, { kpi: num.format(total), kpiNote: `orders, +${Math.round((total / prior - 1) * 100)}% vs Aug 11 – Sep 9` });
+    } else if (kind === 'empty') {
+      chart.empty({
+        title: 'No orders yet',
+        text: 'The store opened on Oct 7. Orders show up here about a minute after checkout.',
+        action: { label: 'Preview with sample data', onClick: () => request('data') }
+      });
+    } else {
+      chart.error({
+        title: 'Couldn’t load orders',
+        text: 'The server didn’t answer in 10 seconds. Nothing is lost, the chart just has no numbers yet.',
+        action: { label: 'Try again', onClick: () => request('data') }
+      });
+    }
+  };
+  function request(kind = answer) {
+    clearTimeout(timer);
+    chart.loading();
+    timer = setTimeout(() => respond(kind), 1700);
+  }
+  function select(kind, go) {
+    answer = kind;
+    radios.forEach((b) => { b.setAttribute('aria-checked', String(b.dataset.answer === kind)); b.tabIndex = b.dataset.answer === kind ? 0 : -1; });
+    if (go) request();
+  }
+  radios.forEach((b, i) => {
+    b.addEventListener('click', () => select(b.dataset.answer, true));
+    b.addEventListener('keydown', (ev) => {
+      const dir = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[ev.key];
+      if (!dir) return;
+      ev.preventDefault();
+      const next = radios[(i + dir + radios.length) % radios.length];
+      next.focus();
+      select(next.dataset.answer, true);
+    });
+  });
+  document.querySelector('.sim__replay').addEventListener('click', () => request());
+
+  // ?shot=1 — the moment the ghost turns into data; ?state=loading|empty|error — that state, still
+  const q = new URLSearchParams(location.search);
+  const still = q.get('state');
+  if (q.get('shot') === '1') {
+    select('data');
+    chart.data(values, { kpi: num.format(total), kpiNote: `orders, +${Math.round((total / prior - 1) * 100)}% vs Aug 11 – Sep 9` });
+    chart.freeze(0.5);
+  } else if (still === 'empty' || still === 'error') { select(still); respond(still); }
+  else if (still === 'loading') { select('data'); chart.loading(); }
+  else { select('data'); request(); }
+</script>
+</body>
+</html>

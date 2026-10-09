@@ -1,0 +1,24 @@
+<!-- Give .isl a height (here 480px). One section per letter: data-letter, a sticky .isl__head with .isl__head-in inside,
+     rows in .isl__rows. The script adds the A–Z rail, the bubble, a footer and header counts.
+     data-letters="ABC…" on .isl sets the rail's alphabet; data-sound="off" mutes the ticks. -->
+<div class="isl" aria-label="Contacts" style="height: 480px">
+  <div class="isl__scroller" tabindex="-1">
+    <section class="isl__sec" data-letter="A" aria-labelledby="isl-h-a">
+      <h2 class="isl__head" id="isl-h-a"><span class="isl__head-in"><span>A</span></span></h2>
+      <ul class="isl__rows">
+        <li><button class="isl-row" type="button"><span class="isl-row__av" style="--av:#5e8cf0" aria-hidden="true">NA</span><span class="isl-row__text"><span class="isl-row__name">Nina <b>Abbott</b></span><span class="isl-row__sub">Product manager</span></span></button></li>
+        <li><button class="isl-row" type="button"><span class="isl-row__av" style="--av:#3fa66b" aria-hidden="true">LA</span><span class="isl-row__text"><span class="isl-row__name">Lucia <b>Alvarez</b></span><span class="isl-row__sub">Design lead</span></span></button></li>
+      </ul>
+    </section>
+    <section class="isl__sec" data-letter="B" aria-labelledby="isl-h-b">
+      <h2 class="isl__head" id="isl-h-b"><span class="isl__head-in"><span>B</span></span></h2>
+      <ul class="isl__rows">
+        <li><button class="isl-row" type="button"><span class="isl-row__av" style="--av:#d9822b" aria-hidden="true">HB</span><span class="isl-row__text"><span class="isl-row__name">Hanna <b>Becker</b></span><span class="isl-row__sub">Front-end</span></span></button></li>
+      </ul>
+    </section>
+    <!-- … one section per letter that has people -->
+  </div>
+</div>
+
+<link rel="stylesheet" href="index-scrubber.css">
+<script src="index-scrubber.js" defer></script>

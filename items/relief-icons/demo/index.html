@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Relief Icons</title>
+<link rel="stylesheet" href="../variants/html/relief-icons.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  body {
+    min-height: 100vh; min-height: 100dvh;
+    display: grid; place-content: center; justify-items: center; gap: 14px;
+    padding: 24px 16px; box-sizing: border-box;
+    font: 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: #5d5a54;
+  }
+  @media (prefers-color-scheme: dark) { body { color: #a19d96; } }
+  .relief { width: min(480px, calc(100vw - 32px)); box-shadow: 0 1px 0 rgb(255 255 255 / 0.6) inset, 0 18px 40px -22px rgb(40 30 20 / 0.45); }
+  @media (prefers-color-scheme: dark) { .relief { box-shadow: 0 1px 0 rgb(255 255 255 / 0.06) inset, 0 18px 44px -20px rgb(0 0 0 / 0.7); } }
+  @media (max-width: 440px) { .relief { --ri-cols: 3; } }
+  .caption { margin: 0; text-align: center; }
+  .tilt {
+    font: inherit; color: inherit; padding: 6px 12px; border-radius: 999px; border: 1px solid currentColor;
+    background: none; cursor: pointer; opacity: 0.85;
+  }
+  .tilt:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+  .coarse { display: none; }
+  @media (hover: none) { .fine { display: none; } .coarse { display: inline; } }
+  .is-shot .caption, .is-shot .tilt { display: none; }
+  .is-shot .relief { width: 620px; }
+</style>
+</head>
+<body>
+<div class="relief" data-relief role="group" aria-label="Pinned tools">
+  <canvas aria-hidden="true"></canvas>
+  <ul class="relief__grid" role="list">
+    <li><button class="relief__icon" type="button" data-relief-icon aria-pressed="false" aria-label="Search"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.2"/><path d="m10.1 10.1 3.4 3.4"/></svg></button></li>
+    <li><button class="relief__icon" type="button" data-relief-icon aria-pressed="false" aria-label="Places"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 14s4.4-3.7 4.4-7.3A4.4 4.4 0 0 0 3.6 6.7C3.6 10.3 8 14 8 14Z"/><circle cx="8" cy="6.6" r="1.6"/></svg></button></li>
+    <li><button class="relief__icon" type="button" data-relief-icon aria-pressed="false" aria-label="Inbox"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.4 4.2h11.2v7.6H2.4z"/><path d="m2.6 4.5 5.4 4.2 5.4-4.2"/></svg></button></li>
+    <li><button class="relief__icon" type="button" data-relief-icon aria-pressed="false" aria-label="Ideas"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5.7 11.3a4.3 4.3 0 1 1 4.6 0v1.1H5.7Z"/><path d="M6.4 14.2h3.2"/></svg></button></li>
+    <li><button class="relief__icon" type="button" data-relief-icon aria-pressed="false" aria-label="Experiments"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6.2 2.3h3.6M6.9 2.3v3.9l-3.5 5.9a1.3 1.3 0 0 0 1.1 2h7a1.3 1.3 0 0 0 1.1-2L9.1 6.2V2.3"/><path d="M5 10.4h6"/></svg></button></li>
+    <li><button class="relief__icon" type="button" data-relief-icon aria-pressed="false" aria-label="Language"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M2.2 8h11.6"/><path d="M8 2.1c1.7 1.7 2.6 3.7 2.6 5.9S9.7 12.2 8 13.9C6.3 12.2 5.4 10.2 5.4 8s.9-4.2 2.6-5.9Z"/></svg></button></li>
+    <li><button class="relief__icon" type="button" data-relief-icon aria-pressed="false" aria-label="Layers"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m8 2.4 5.6 2.9L8 8.2 2.4 5.3Z"/><path d="m2.4 8.2 5.6 2.9 5.6-2.9"/><path d="m2.4 11 5.6 2.9 5.6-2.9"/></svg></button></li>
+    <li><button class="relief__icon" type="button" data-relief-icon aria-pressed="false" aria-label="History"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.7"/><path d="M8 4.8V8l2.2 1.5"/></svg></button></li>
+    <li><button class="relief__icon" type="button" data-relief-icon aria-pressed="false" aria-label="Profile"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5.4" r="2.7"/><path d="M2.8 13.8c.7-2.7 2.5-4.1 5.2-4.1s4.5 1.4 5.2 4.1"/></svg></button></li>
+    <li><button class="relief__icon" type="button" data-relief-icon aria-pressed="false" aria-label="Growth"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 13.5h11"/><path d="m3.5 10.3 3.1-3.3 2.4 2.2 3.7-4.4"/><path d="M9.9 4.6h2.9v2.9"/></svg></button></li>
+    <li><button class="relief__icon" type="button" data-relief-icon aria-pressed="false" aria-label="Milestones"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.8 14V2.4"/><path d="M3.8 3h7.7l-1.8 2.7 1.8 2.7H3.8"/></svg></button></li>
+    <li><button class="relief__icon" type="button" data-relief-icon aria-pressed="false" aria-label="Routes"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="3.8" cy="12.2" r="1.5"/><circle cx="12.2" cy="3.8" r="1.5"/><path d="M5.3 12.2h3.2a2.2 2.2 0 0 0 0-4.4H7.3a2.2 2.2 0 0 1 0-4.4h3.4"/></svg></button></li>
+  </ul>
+</div>
+<p class="caption"><span class="fine">Move the pointer to move the lamp. Hover lifts an icon, a click pins it.</span><span class="coarse">Tap an icon to pin it. Tilt the phone to move the lamp.</span></p>
+<button class="tilt" type="button" hidden>Light with phone tilt</button>
+<script type="module">
+  import { createReliefIcons } from '../variants/html/relief-icons.js';
+  const shot = new URLSearchParams(location.search).has('shot');
+  if (shot) document.documentElement.classList.add('is-shot');
+  const root = document.querySelector('[data-relief]');
+  const icons = [...root.querySelectorAll('[data-relief-icon]')];
+  icons.forEach((b) => b.addEventListener('click', () => b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true'))));
+  if (shot) [1, 6].forEach((i) => icons[i].setAttribute('aria-pressed', 'true'));
+  const r = root.getBoundingClientRect();
+  const relief = createReliefIcons(root, shot ? { lampHeight: 95, shot: { x: r.width * 0.2, y: r.height * 0.06 } } : {});
+  if (relief && shot) relief.lift(5, 1.75);
+  const tilt = document.querySelector('.tilt');
+  if (relief && matchMedia('(hover: none) and (pointer: coarse)').matches && 'DeviceOrientationEvent' in window) {
+    tilt.hidden = false;
+    tilt.addEventListener('click', async () => { if (await relief.enableTilt()) tilt.hidden = true; });
+  }
+</script>
+</body>
+</html>

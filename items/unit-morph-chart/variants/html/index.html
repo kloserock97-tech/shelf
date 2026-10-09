@@ -1,0 +1,41 @@
+<figure class="um" aria-labelledby="um-title">
+  <header class="um__head">
+    <div>
+      <h2 class="um__title" id="um-title">300 tickets, one dot each</h2>
+      <p class="um__note"></p>
+    </div>
+    <div class="um__views" aria-label="Layout"></div>
+  </header>
+  <div class="um__plot" tabindex="0" role="group" aria-roledescription="unit chart" aria-labelledby="um-title"></div>
+  <footer class="um__foot">
+    <ul class="um__legend" aria-label="Topics"></ul>
+  </footer>
+  <div class="um__sr"></div>
+  <p class="um__live" role="status"></p>
+</figure>
+
+<link rel="stylesheet" href="unit-morph.css">
+<script type="module">
+  import { unitMorph, columns, waffle, swarm, tiles } from './unit-morph.js';
+
+  // one object per record; color() picks a palette slot --um-c1…5
+  const TOPICS = ['Billing', 'Account', 'Bugs', 'Delivery', 'Requests'];
+  const REGIONS = ['North America', 'Europe', 'Asia-Pacific', 'Latin America', 'Africa & ME'];
+  const tickets = [/* { id: 'T-4120', topic: 0, region: 1, hours: 2.4 }, … */];
+
+  unitMorph(document.querySelector('.um'), {
+    records: tickets,
+    color: (t) => t.topic,
+    legend: TOPICS,
+    describe: (t) => `${t.id}, ${TOPICS[t.topic]}, ${t.hours.toFixed(1)} hours`,
+    tip: (t) => ({ title: t.id, rows: [['Topic', TOPICS[t.topic]], ['Resolved in', `${t.hours.toFixed(1)} h`]] }),
+    layouts: [
+      { id: 'bars', label: 'Bars', note: 'Tickets per topic.', build: columns({ group: (t) => t.topic, labels: TOPICS }) },
+      { id: 'share', label: 'Share', note: 'Each topic’s share.', build: waffle({ group: (t) => t.topic, labels: TOPICS }) },
+      { id: 'speed', label: 'Speed', note: 'Time to resolve.',
+        build: swarm({ value: (t) => t.hours, domain: [0.2, 110], ticks: [1, 4, 24, 96], format: (h) => `${h}h` }) },
+      { id: 'region', label: 'Region', note: 'Where they came from.',
+        build: tiles({ group: (t) => t.region, labels: REGIONS, at: [[0, 0], [1, 0], [2, 0.5], [0, 1], [1, 1]] }) }
+    ]
+  });
+</script>

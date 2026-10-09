@@ -1,0 +1,16 @@
+/* The canvas fills its box; the CSS gradient underneath stands in when WebGL2 is missing. */
+.riso-paper {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(60% 50% at 66% 46%, #de6a52cc, transparent 70%),
+    linear-gradient(170deg, #35589a 0%, #8b7fa0 42%, #f0c45a 100%);
+}
+.riso-paper > canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+@media (prefers-color-scheme: dark) {
+  .riso-paper {
+    background:
+      radial-gradient(60% 50% at 66% 46%, #d9765c99, transparent 70%),
+      linear-gradient(170deg, #2f5552 0%, #161514 55%, #4a4436 100%);
+  }
+}

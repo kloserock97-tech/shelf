@@ -1,0 +1,135 @@
+/* Anchor-Hop Product Tour: one spotlight that hops between targets, a step card that picks its own side. */
+.aht-root {
+  --aht-accent: #0073e6;
+  --aht-dim: rgba(10, 12, 20, 0.5);
+  --aht-pad: 6px;
+  --aht-card-bg: #1d1d1f;
+  --aht-card-fg: #ffffff;
+  --aht-card-fg-2: rgba(255, 255, 255, 0.68);
+  --aht-card-fill: rgba(255, 255, 255, 0.12);
+  --aht-card-fill-hover: rgba(255, 255, 255, 0.22);
+  --aht-shadow: 0 14px 36px rgba(0, 0, 0, 0.28), 0 2px 8px rgba(0, 0, 0, 0.12);
+  --aht-ease: var(--aht-spring, cubic-bezier(0.23, 1, 0.32, 1));
+  position: relative;
+  anchor-scope: --aht-target;
+}
+@media (prefers-color-scheme: dark) {
+  .aht-root {
+    --aht-accent: #0a84ff;
+    --aht-dim: rgba(0, 0, 0, 0.62);
+    --aht-card-bg: #f5f5f7;
+    --aht-card-fg: #000000;
+    --aht-card-fg-2: rgba(0, 0, 0, 0.62);
+    --aht-card-fill: rgba(0, 0, 0, 0.07);
+    --aht-card-fill-hover: rgba(0, 0, 0, 0.13);
+    --aht-shadow: 0 14px 36px rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* spotlight: a hole in the dim, drawn as a huge spread shadow around a rounded box */
+.aht-spot {
+  position: absolute;
+  z-index: 40;
+  position-anchor: --aht-target;
+  top: calc(anchor(top) - var(--aht-pad));
+  left: calc(anchor(left) - var(--aht-pad));
+  right: calc(anchor(right) - var(--aht-pad));
+  bottom: calc(anchor(bottom) - var(--aht-pad));
+  border-radius: var(--aht-r, 12px);
+  box-shadow: 0 0 0 2px var(--aht-accent), 0 0 0 200vmax var(--aht-dim);
+  pointer-events: none;
+  transition:
+    top 560ms var(--aht-ease), left 560ms var(--aht-ease), right 560ms var(--aht-ease), bottom 560ms var(--aht-ease),
+    border-radius 560ms var(--aht-ease), opacity 260ms ease;
+}
+.aht-spot[hidden] { display: none; }
+/* iris: the hole opens from the whole frame and closes back into it */
+.aht-spot.is-full {
+  top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+  border-radius: inherit;
+  box-shadow: 0 0 0 0 transparent, 0 0 0 200vmax transparent;
+}
+.aht-spot.is-full.is-out { opacity: 0; }
+
+/* step card */
+.aht-card {
+  position: absolute;
+  z-index: 41;
+  position-anchor: --aht-target;
+  position-area: bottom;
+  position-try-fallbacks: bottom span-right, bottom span-left, top, top span-right, top span-left, right, left;
+  margin: 14px;
+  box-sizing: border-box;
+  width: min(280px, calc(100% - 24px));
+  padding: 14px 14px 12px 16px;
+  border-radius: 16px;
+  background: var(--aht-card-bg);
+  color: var(--aht-card-fg);
+  box-shadow: var(--aht-shadow);
+  font: 14px/1.42 system-ui, -apple-system, "Segoe UI", sans-serif;
+  text-align: left;
+  outline: none;
+  opacity: 1;
+  translate: 0 0;
+  transition: opacity 220ms ease, translate 320ms cubic-bezier(0.23, 1, 0.32, 1), display 220ms allow-discrete;
+}
+@starting-style { .aht-card { opacity: 0; translate: 0 6px; } }
+.aht-card[hidden] { display: none; opacity: 0; }
+.aht-card:focus { outline: none; } /* a dialog container: focus lands here so the step is read out; buttons inside carry the ring */
+.aht-card__count { margin: 0 28px 4px 0; font-size: 12px; font-weight: 600; letter-spacing: 0.02em; color: var(--aht-card-fg-2); font-variant-numeric: tabular-nums; }
+.aht-card__title { margin: 0 28px 4px 0; font-size: 16px; font-weight: 650; letter-spacing: -0.01em; line-height: 1.25; }
+.aht-card__text { margin: 0; color: var(--aht-card-fg-2); text-wrap: pretty; }
+.aht-card__hint {
+  display: flex; align-items: center; gap: 6px; margin: 8px 0 0; font-size: 12.5px; font-weight: 550; color: var(--aht-card-fg);
+}
+.aht-card__hint[hidden] { display: none; }
+.aht-card__hint svg { width: 14px; height: 14px; flex: none; }
+.aht-card__foot { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+.aht-card__dots { display: flex; gap: 5px; margin-right: auto; }
+.aht-card__dots i { width: 6px; height: 6px; border-radius: 3px; background: var(--aht-card-fill-hover); transition: width 320ms cubic-bezier(0.23, 1, 0.32, 1), background-color 200ms; }
+.aht-card__dots i.is-on { width: 16px; background: var(--aht-card-fg); }
+.aht-btn {
+  height: 32px; padding: 0 12px; border: 0; border-radius: 9px; cursor: pointer;
+  background: var(--aht-card-fill); color: var(--aht-card-fg); font: 600 13px/1 system-ui, -apple-system, "Segoe UI", sans-serif;
+  transition: background-color 160ms ease, transform 160ms ease;
+}
+.aht-btn:hover { background: var(--aht-card-fill-hover); }
+.aht-btn:active { transform: scale(0.96); }
+.aht-btn[disabled] { opacity: 0.4; cursor: default; transform: none; }
+.aht-btn--primary { background: var(--aht-accent); color: #fff; }
+.aht-btn--primary:hover { background: var(--aht-accent); filter: brightness(1.08); }
+.aht-btn:focus-visible, .aht-card__close:focus-visible { outline: 2px solid var(--aht-accent); outline-offset: 2px; }
+.aht-card__close {
+  position: absolute; top: 8px; right: 8px; display: grid; place-items: center; width: 28px; height: 28px;
+  padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--aht-card-fg-2); cursor: pointer;
+}
+.aht-card__close:hover { background: var(--aht-card-fill); color: var(--aht-card-fg); }
+.aht-card__close svg { width: 14px; height: 14px; }
+
+/* arrow: side and offset come from the script after layout (data-side, --aht-arrow) */
+.aht-card__arrow {
+  position: absolute; width: 12px; height: 12px; background: inherit; rotate: 45deg; border-radius: 2px;
+  left: calc(var(--aht-arrow, 50%) - 6px); top: -5px;
+}
+.aht-card[data-side="top"] .aht-card__arrow { top: auto; bottom: -5px; }
+.aht-card[data-side="right"] .aht-card__arrow { left: -5px; top: calc(var(--aht-arrow, 50%) - 6px); }
+.aht-card[data-side="left"] .aht-card__arrow { left: auto; right: -5px; top: calc(var(--aht-arrow, 50%) - 6px); }
+
+/* the hop: the card morphs between places; the old page snapshot is dropped so the live spotlight is not doubled */
+html.aht-hopping .aht-card { view-transition-name: aht-card; }
+html.aht-hopping::view-transition-old(root) { display: none; }
+html.aht-hopping::view-transition-new(root) { animation: none; }
+::view-transition-group(aht-card) { animation-duration: 460ms; animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1); }
+::view-transition-old(aht-card), ::view-transition-new(aht-card) { height: 100%; object-fit: none; object-position: left top; }
+::view-transition-old(aht-card) { animation-duration: 150ms; }
+::view-transition-new(aht-card) { animation-duration: 300ms; }
+
+/* frozen frame for posters */
+.aht-root.is-still .aht-spot, .aht-root.is-still .aht-card { transition: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .aht-spot { transition: opacity 200ms ease; }
+  .aht-card { transition: opacity 200ms ease, display 200ms allow-discrete; translate: none; }
+  @starting-style { .aht-card { translate: none; } }
+  .aht-card__dots i { transition: none; }
+}

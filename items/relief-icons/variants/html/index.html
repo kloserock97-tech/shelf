@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Relief Icons</title>
+<link rel="stylesheet" href="relief-icons.css">
+</head>
+<body>
+<!-- The buttons carry plain 16×16 line icons: that is the look without WebGL. With WebGL the canvas draws them as relief. -->
+<div class="relief" data-relief role="group" aria-label="Tools" style="width: 320px; --ri-cols: 3">
+  <canvas aria-hidden="true"></canvas>
+  <ul class="relief__grid" role="list">
+    <li><button class="relief__icon" type="button" data-relief-icon aria-pressed="false" aria-label="Search"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.2"/><path d="m10.1 10.1 3.4 3.4"/></svg></button></li>
+    <li><button class="relief__icon" type="button" data-relief-icon aria-pressed="true" aria-label="Inbox"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.4 4.2h11.2v7.6H2.4z"/><path d="m2.6 4.5 5.4 4.2 5.4-4.2"/></svg></button></li>
+    <li><button class="relief__icon" type="button" data-relief-icon aria-pressed="false" aria-label="History"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.7"/><path d="M8 4.8V8l2.2 1.5"/></svg></button></li>
+  </ul>
+</div>
+<script type="module">
+  import { createReliefIcons } from './relief-icons.js';
+  const root = document.querySelector('[data-relief]');
+  root.querySelectorAll('[data-relief-icon]').forEach((b) =>
+    b.addEventListener('click', () => b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true'))));
+  const relief = createReliefIcons(root, { ridge: 1.7, lampHeight: 120 });
+  // phones: relief?.enableTilt() from a tap lets the tilt move the lamp (iOS asks for permission)
+</script>
+</body>
+</html>

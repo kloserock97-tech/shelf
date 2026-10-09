@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Source-Morph Menu</title>
+<link rel="stylesheet" href="../variants/html/source-morph-menu.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    box-sizing: border-box;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: light-dark(#17181b, #ececee);
+    -webkit-font-smoothing: antialiased;
+  }
+  .app {
+    position: relative;
+    width: min(760px, 100%);
+    height: min(540px, calc(100dvh - 32px));
+    min-height: 420px;
+    border-radius: 28px;
+    background: light-dark(#ffffff, #1b1c1f);
+    box-shadow: 0 1px 2px light-dark(rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.4));
+    overflow: hidden;
+  }
+  .corner { position: absolute; }
+  .corner--tl { top: 16px; left: 16px; }
+  .corner--tr { top: 16px; right: 16px; }
+  .corner--br { right: 20px; bottom: 20px; }
+
+  /* the three sources: different sizes, shapes and colours */
+  .src {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin: 0;
+    border: 0;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 560;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 140ms ease, scale 140ms ease;
+  }
+  .src:active { scale: 0.97; }
+  .src:focus-visible { outline: 2px solid light-dark(#3a63ff, #8aa4ff); outline-offset: 2px; }
+  .src svg { flex: none; display: block; }
+  .src--workspace {
+    height: 44px;
+    padding: 0 14px 0 6px;
+    border-radius: 14px;
+    background: light-dark(#f1efea, #2a2b2f);
+    color: inherit;
+  }
+  .src--workspace .avatar {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: light-dark(#17181b, #dbf266);
+    color: light-dark(#f4f5ef, #15160f);
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .src--new {
+    height: 40px;
+    padding: 0 16px 0 12px;
+    border-radius: 20px;
+    background: light-dark(#17181b, #ececee);
+    color: light-dark(#f4f5ef, #15160f);
+  }
+  .src--share {
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    padding: 0;
+    border-radius: 18px;
+    background: light-dark(#c9f24f, #dbf266);
+    color: #15160f;
+  }
+  @media (hover: hover) {
+    .src--workspace:hover { background: light-dark(#e8e6e0, #34363b); }
+  }
+
+  /* placeholder page content */
+  .page { position: absolute; inset: 84px 24px 24px; display: grid; align-content: start; gap: 12px; max-width: 460px; }
+  .page h1 { margin: 0 0 4px; font-size: 22px; font-weight: 650; letter-spacing: -0.02em; }
+  .line { height: 10px; border-radius: 5px; background: light-dark(#f0eee9, #26272b); }
+  .status { position: absolute; left: 24px; bottom: 30px; right: 96px; margin: 0; font-size: 13px; color: light-dark(#6b6d74, #8e9097); }
+  .smm__item .check { opacity: 0; }
+  .smm__item[aria-checked="true"] .check { opacity: 1; }
+  html.is-shot .app { height: 520px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="corner corner--tl">
+    <button class="src src--workspace" type="button" commandfor="menu-workspace" command="toggle-popover" aria-label="Workspace: Field Lab">
+      <span class="avatar" aria-hidden="true">FL</span>
+      <span>Field Lab</span>
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4.5 6.5 3.5 3.5 3.5-3.5"/></svg>
+    </button>
+  </div>
+  <div class="corner corner--tr">
+    <button class="src src--new" type="button" commandfor="menu-new" command="toggle-popover">
+      <svg data-smm-turn width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>
+      <span>New</span>
+    </button>
+  </div>
+  <div class="corner corner--br">
+    <button class="src src--share" type="button" commandfor="menu-share" command="toggle-popover" aria-label="Share">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 3.5v10M7 7.2l4-3.7 4 3.7"/><path d="M5.5 11v5.2c0 1 .8 1.8 1.8 1.8h7.4c1 0 1.8-.8 1.8-1.8V11"/></svg>
+    </button>
+  </div>
+
+  <div class="page" aria-hidden="true">
+    <h1>River survey, week 41</h1>
+    <div class="line" style="width: 92%"></div>
+    <div class="line" style="width: 78%"></div>
+    <div class="line" style="width: 86%"></div>
+    <div class="line" style="width: 54%"></div>
+  </div>
+  <p class="status" role="status" id="status"></p>
+
+  <div class="smm" id="menu-workspace" popover role="menu" aria-label="Switch workspace">
+    <div class="smm__body"><div class="smm__items">
+      <button class="smm__item" type="button" role="menuitemradio" aria-checked="true" data-value="Field Lab">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="14" height="14" rx="4"/><path d="M7 13V7h5M7 10h4"/></svg>
+        <span>Field Lab</span>
+        <svg class="check" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3.5 8.4 2.9 2.8 6.1-6.4"/></svg>
+      </button>
+      <button class="smm__item" type="button" role="menuitemradio" aria-checked="false" data-value="Harbor Crew">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="14" height="14" rx="4"/><path d="M7 6.5v7M13 6.5v7M7 10h6"/></svg>
+        <span>Harbor Crew</span>
+        <svg class="check" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3.5 8.4 2.9 2.8 6.1-6.4"/></svg>
+      </button>
+      <button class="smm__item" type="button" role="menuitemradio" aria-checked="false" data-value="Personal">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="7.5" r="3"/><path d="M4.5 16.5c.8-2.8 3-4.2 5.5-4.2s4.7 1.4 5.5 4.2"/></svg>
+        <span>Personal</span>
+        <svg class="check" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3.5 8.4 2.9 2.8 6.1-6.4"/></svg>
+      </button>
+      <button class="smm__item" type="button" role="menuitem" data-value="Workspace settings">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h7M15 6h1M4 14h1M9 14h7"/><circle cx="13" cy="6" r="2"/><circle cx="7" cy="14" r="2"/></svg>
+        <span>Workspace settings</span><span></span>
+      </button>
+    </div></div>
+  </div>
+
+  <div class="smm" id="menu-new" popover role="menu" aria-label="Create">
+    <div class="smm__body"><div class="smm__items">
+      <button class="smm__item" type="button" role="menuitem" data-value="document">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 2.5h6l4 4v10c0 .6-.4 1-1 1h-9c-.6 0-1-.4-1-1v-13c0-.6.4-1 1-1Z"/><path d="M11.5 2.5v4h4M7.5 11h5M7.5 14h3"/></svg>
+        <span>Document</span><kbd>D</kbd>
+      </button>
+      <button class="smm__item" type="button" role="menuitem" data-value="board">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3.5" width="14" height="13" rx="2.5"/><path d="M7.5 3.5v13M12.5 3.5v8"/></svg>
+        <span>Board</span><kbd>B</kbd>
+      </button>
+      <button class="smm__item" type="button" role="menuitem" data-value="sheet">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3.5" width="14" height="13" rx="2.5"/><path d="M3 8h14M3 12.3h14M8 8v8.5"/></svg>
+        <span>Sheet</span><kbd>S</kbd>
+      </button>
+      <button class="smm__item" type="button" role="menuitem" data-value="folder">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.8 6c0-.8.7-1.5 1.5-1.5h3.4l1.8 2h6.2c.8 0 1.5.7 1.5 1.5v6.5c0 .8-.7 1.5-1.5 1.5H4.3c-.8 0-1.5-.7-1.5-1.5V6Z"/></svg>
+        <span>Folder</span><kbd>F</kbd>
+      </button>
+      <button class="smm__item" type="button" role="menuitem" data-value="import">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3v9M6.5 8.5 10 12l3.5-3.5M4 13.5v1.5c0 .8.7 1.5 1.5 1.5h9c.8 0 1.5-.7 1.5-1.5v-1.5"/></svg>
+        <span>Import file…</span><span></span>
+      </button>
+    </div></div>
+  </div>
+
+  <div class="smm" id="menu-share" popover role="menu" aria-label="Share">
+    <div class="smm__body"><div class="smm__items">
+      <button class="smm__item" type="button" role="menuitem" data-value="publish">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M3 10h14M10 3c2 2 2.8 4.4 2.8 7s-.8 5-2.8 7c-2-2-2.8-4.4-2.8-7S8 5 10 3Z"/></svg>
+        <span>Publish to web</span><span></span>
+      </button>
+      <button class="smm__item" type="button" role="menuitem" data-value="pdf">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 2.5h6l4 4v10c0 .6-.4 1-1 1h-9c-.6 0-1-.4-1-1v-13c0-.6.4-1 1-1Z"/><path d="M11.5 2.5v4h4"/></svg>
+        <span>Export PDF</span><span></span>
+      </button>
+      <button class="smm__item" type="button" role="menuitem" data-value="invite">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="7.5" r="3"/><path d="M2.8 16.5c.7-2.6 2.8-4 5.2-4s4.5 1.4 5.2 4M15 6.5v5M12.5 9h5"/></svg>
+        <span>Invite people</span><span></span>
+      </button>
+      <button class="smm__item" type="button" role="menuitem" data-value="link">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 11.5a3 3 0 0 0 4.2 0l2.6-2.6a3 3 0 0 0-4.2-4.2l-1 1"/><path d="M11.5 8.5a3 3 0 0 0-4.2 0l-2.6 2.6a3 3 0 0 0 4.2 4.2l1-1"/></svg>
+        <span>Copy link</span><kbd>⌘L</kbd>
+      </button>
+    </div></div>
+  </div>
+</div>
+
+<script src="../variants/html/source-morph-menu.js"></script>
+<script>
+  const status = document.getElementById('status');
+  const say = {
+    document: 'Created “Untitled document”', board: 'Created “Untitled board”', sheet: 'Created “Untitled sheet”', folder: 'Created “New folder”',
+    import: 'Choose a file to import', publish: 'Published to web', pdf: 'Exported river-survey.pdf', invite: 'Invite link ready', link: 'Link copied'
+  };
+  document.addEventListener('smm:pick', (e) => {
+    const v = e.detail.value;
+    if (e.target.id === 'menu-workspace' && v !== 'Workspace settings') {
+      const src = document.querySelector('.src--workspace');
+      src.querySelector('span:not(.avatar)').textContent = v;
+      src.querySelector('.avatar').textContent = v.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
+      src.setAttribute('aria-label', `Workspace: ${v}`);
+      status.textContent = `Switched to ${v}`;
+    } else status.textContent = say[v] ?? v;
+  });
+
+  // ?shot=1 — the New menu open; ?shot=2 — the Share menu open (grows up and left)
+  const q = new URLSearchParams(location.search);
+  if (q.has('shot')) {
+    document.documentElement.classList.add('is-shot');
+    const id = q.get('shot') === '2' ? 'menu-share' : 'menu-new';
+    const menu = document.getElementById(id);
+    setTimeout(() => { menu.showPopover({ source: document.querySelector(`[commandfor="${id}"]`) }); setTimeout(() => document.activeElement?.blur(), 60); }, 150);
+  }
+</script>
+</body>
+</html>

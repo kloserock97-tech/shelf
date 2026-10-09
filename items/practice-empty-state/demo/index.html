@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Practice Rows Empty State</title>
+<link rel="stylesheet" href="../variants/html/practice-rows.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  body {
+    min-height: 100vh; min-height: 100dvh; box-sizing: border-box;
+    display: grid; grid-template-columns: minmax(0, 440px); justify-content: center; align-content: start;
+    padding: clamp(24px, 8vh, 72px) 16px 24px; font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  html.is-shot body { align-content: center; padding-top: 24px; }
+  .demo-bar { display: flex; justify-content: center; margin-top: 14px; }
+  .demo-reset {
+    height: 32px; padding: 0 14px; border: 0; border-radius: 999px; cursor: pointer;
+    background: rgba(118, 118, 128, 0.14); color: inherit; font: 500 13px/1 system-ui, -apple-system, "Segoe UI", sans-serif; opacity: 0.8;
+  }
+  .demo-reset:hover { opacity: 1; }
+  .demo-reset:focus-visible { outline: 2px solid #0a84ff; outline-offset: 2px; }
+  html.is-shot .demo-bar { visibility: hidden; }
+  @media (prefers-color-scheme: dark) { body { color: #f5f5f7; } }
+  @media (max-width: 420px) { body { padding: 54px 12px 16px; } .pes { padding: 16px 12px 14px; } }
+</style>
+</head>
+<body>
+<main>
+  <section class="pes" aria-labelledby="pes-title" data-store="practice-rows-demo">
+    <header class="pes__head">
+      <h2 class="pes__title" id="pes-title">Today</h2>
+      <p class="pes__meter">
+        <span class="pes-dot" data-move="done" aria-hidden="true"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.6 6.2l2.2 2.2 4.6-4.8"/></svg></span>
+        <span class="pes-dot" data-move="star" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.4l2.41 5.88 6.34.48-4.85 4.11 1.51 6.17L12 16.7l-5.41 3.34 1.51-6.17-4.85-4.11 6.34-.48z"/></svg></span>
+        <span class="pes-dot" data-move="snooze" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.5 14.6A7.8 7.8 0 1 1 9.4 4.5a6.2 6.2 0 0 0 10.1 10.1z"/></svg></span>
+        <span class="pes__meter-text" aria-hidden="true">0/3</span>
+      </p>
+    </header>
+    <form class="pes__add">
+      <label class="pes-sr" for="pes-input">New task</label>
+      <input class="pes__input" id="pes-input" type="text" placeholder="Add a task…" autocomplete="off" enterkeyhint="done">
+      <button class="pes__add-btn" type="submit">Add</button>
+    </form>
+    <p class="pes__lead">Nothing here yet. Try each move on an example. They go away when you add a real task.</p>
+    <ul class="pes__list" aria-label="Tasks"></ul>
+    <ul class="pes__practice" aria-label="Examples to try">
+      <li class="pes-row pes-row--practice" data-teach="done">
+        <div class="pes-row__face">
+          <button class="pes-ctl pes-ctl--done" type="button" aria-pressed="false" aria-label="Example: finish this task"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle class="pes-fill" cx="12" cy="12" r="9"/><path class="pes-tick" d="M8 12.4l2.7 2.7L16.2 9.6"/></svg></button>
+          <span class="pes-row__text">Tap the circle to finish a task</span>
+          <span class="pes-row__tag">Example</span>
+        </div>
+      </li>
+      <li class="pes-row pes-row--practice" data-teach="star">
+        <div class="pes-row__face">
+          <span class="pes-ctl pes-ctl--ghost" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/></svg></span>
+          <span class="pes-row__text">Star a task to keep it on top</span>
+          <span class="pes-row__tag">Example</span>
+          <button class="pes-ctl pes-ctl--star" type="button" aria-pressed="false" aria-label="Example: star this task"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path class="pes-fill" d="M12 3.4l2.41 5.88 6.34.48-4.85 4.11 1.51 6.17L12 16.7l-5.41 3.34 1.51-6.17-4.85-4.11 6.34-.48z"/></svg></button>
+        </div>
+      </li>
+      <li class="pes-row pes-row--practice" data-teach="snooze">
+        <div class="pes-row__under" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M19.5 14.6A7.8 7.8 0 1 1 9.4 4.5a6.2 6.2 0 0 0 10.1 10.1z"/></svg><span>Snooze</span></div>
+        <div class="pes-row__face" data-swipe tabindex="0" aria-keyshortcuts="ArrowLeft" aria-label="Example: swipe left, or press the Left arrow key, to snooze till tomorrow">
+          <span class="pes-ctl pes-ctl--ghost" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/></svg></span>
+          <span class="pes-row__text">Swipe left to snooze till tomorrow</span>
+          <span class="pes-row__hint" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 8H3.5M7 4.5L3.5 8 7 11.5"/></svg></span>
+          <span class="pes-row__tag">Example</span>
+        </div>
+      </li>
+    </ul>
+    <p class="pes__clear" hidden>All clear for today.</p>
+    <p class="pes__status pes-sr" role="status"></p>
+  </section>
+  <div class="demo-bar"><button class="demo-reset" type="button">Reset demo</button></div>
+</main>
+<script src="../variants/html/practice-rows.js"></script>
+<script>
+  (() => {
+    const box = document.querySelector(".pes");
+    document.querySelector(".demo-reset").addEventListener("click", () => box.pes.reset());
+    // ?shot=1: poster frame, two moves tried and the third example half-swiped. Stored progress is ignored.
+    if (new URLSearchParams(location.search).has("shot")) {
+      document.documentElement.classList.add("is-shot");
+      box.pes.reset();
+      box.pes.shot();
+    }
+  })();
+</script>
+</body>
+</html>

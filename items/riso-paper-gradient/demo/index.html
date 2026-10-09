@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Riso Paper Gradient</title>
+<link rel="stylesheet" href="../variants/html/riso-paper.css">
+<style>
+  html, body { height: 100%; margin: 0; background: transparent; overflow: hidden; }
+  body { font: 13px/1.35 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .riso-paper { position: fixed; inset: 0; }
+  .panel {
+    position: fixed; left: 16px; bottom: 16px; width: 228px; box-sizing: border-box; max-width: calc(100vw - 32px);
+    display: grid; gap: 10px; padding: 14px 14px 12px; border-radius: 14px;
+    color: #1d1c1a; background: #fbf8f2e6; box-shadow: 0 1px 0 #ffffff inset, 0 8px 28px #2a221a29, 0 0 0 1px #2a221a14;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  }
+  .panel label { display: grid; grid-template-columns: 1fr auto; gap: 4px 8px; align-items: center; }
+  .panel output { font-variant-numeric: tabular-nums; opacity: .6; }
+  .panel input { grid-column: 1 / -1; width: 100%; margin: 0; accent-color: #c4553f; }
+  .panel button {
+    font: inherit; font-weight: 600; padding: 7px 10px; border-radius: 9px; cursor: pointer;
+    border: 1px solid #2a221a26; background: #ffffff; color: inherit;
+  }
+  .panel button:hover { background: #f4efe6; }
+  .panel :focus-visible { outline: 2px solid #35589a; outline-offset: 2px; }
+  @media (prefers-color-scheme: dark) {
+    .panel { color: #ece6da; background: #1d1c1ae0; box-shadow: 0 1px 0 #ffffff12 inset, 0 8px 28px #00000066, 0 0 0 1px #ffffff14; }
+    .panel input { accent-color: #d9765c; }
+    .panel button { background: #2a2826; border-color: #ffffff1f; }
+    .panel button:hover { background: #33302d; }
+    .panel :focus-visible { outline-color: #8fc2bd; }
+  }
+  .shot .panel { display: none; }
+</style>
+</head>
+<body>
+<div class="riso-paper" role="img" aria-label="A three-colour risograph gradient on paper: blue fading into a coral sun and yellow, with halftone dots, fibres and creases.">
+  <canvas aria-hidden="true"></canvas>
+</div>
+<form class="panel" aria-label="Print settings" onsubmit="return false">
+  <label>Registration <output data-for="registration"></output><input type="range" name="registration" min="0" max="1" step="0.01"></label>
+  <label>Grain <output data-for="grain"></output><input type="range" name="grain" min="0" max="1" step="0.01"></label>
+  <label>Creases <output data-for="creases"></output><input type="range" name="creases" min="0" max="1" step="0.01"></label>
+  <button type="button" data-reprint>Print again</button>
+</form>
+<script type="module">
+  import { createRisoPaper } from "../variants/html/riso-paper.js";
+
+  const query = new URLSearchParams(location.search);
+  const shot = query.has("shot");
+  if (shot) document.documentElement.classList.add("shot");
+  const start = shot ? { registration: 0.62, grain: 0.55, creases: 0.6, seed: 11 } : { registration: 0.5, grain: 0.5, creases: 0.45, seed: 7 };
+  const riso = createRisoPaper(document.querySelector(".riso-paper canvas"), start);
+  const form = document.querySelector(".panel");
+  if (!riso) form.hidden = true;
+  else {
+    const inputs = [...form.querySelectorAll("input")];
+    const show = () => inputs.forEach((i) => {
+      i.value = riso.params[i.name];
+      form.querySelector(`[data-for="${i.name}"]`).value = Math.round(riso.params[i.name] * 100) + "%";
+    });
+    inputs.forEach((i) => i.addEventListener("input", () => { riso.set({ [i.name]: Number(i.value) }); show(); }));
+    form.querySelector("[data-reprint]").addEventListener("click", () => riso.reprint());
+    show();
+  }
+</script>
+</body>
+</html>

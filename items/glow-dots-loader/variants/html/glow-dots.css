@@ -1,0 +1,78 @@
+/* Glow Dots Loader. Without WebGL2 the card is plain CSS with three pulsing dots. With it (.is-lit) the canvas
+   behind draws the card, its text and button under the dots' light; the DOM text turns transparent but stays
+   in place for reading, selection and screen readers. */
+.gd {
+  --gd-bg: #17181c;            /* what the unlit card looks like; also the fallback */
+  --gd-floor: #4a4c55;         /* card albedo under light */
+  --gd-ambient: 0.035;
+  --gd-ambient-ink: 0.42;      /* text and button keep this much light in the dark, enough for contrast */
+  --gd-exposure: 1.5;
+  --gd-ink: #f3f3f6;
+  --gd-face: #4b4e59;
+  --gd-dot-1: #6fc3ff;
+  --gd-dot-2: #b49bff;
+  --gd-dot-3: #ff98c8;
+  --gd-ok: #58e08c;
+  --gd-fail: #ff5b52;
+  position: relative;
+  isolation: isolate;
+  box-sizing: border-box;
+  display: grid;
+  gap: 6px;
+  padding: 24px 24px 20px;
+  border-radius: 22px;
+  background: var(--gd-bg);
+  color: var(--gd-ink);
+  overflow: hidden;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.gd > canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  display: block;
+}
+.gd:not(.is-lit) > canvas { display: none; }
+.gd__title { margin: 0; font-size: 21px; line-height: 1.25; font-weight: 650; letter-spacing: -0.01em; --gd-ink: #ffffff; color: var(--gd-ink); }
+.gd__text { margin: 0; font-size: 14px; line-height: 1.45; --gd-ink: #c9cad2; color: var(--gd-ink); }
+.gd__dots {
+  height: 78px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 13.5px;
+}
+.gd__dot { width: 9px; height: 9px; border-radius: 50%; background: var(--gd-dot-2); animation: gd-pulse 1.3s ease-in-out infinite; }
+.gd__dot:nth-child(1) { background: var(--gd-dot-1); }
+.gd__dot:nth-child(2) { background: var(--gd-dot-2); animation-delay: 0.2s; }
+.gd__dot:nth-child(3) { background: var(--gd-dot-3); animation-delay: 0.4s; }
+@keyframes gd-pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+.gd[data-state='success'] .gd__dot { background: var(--gd-ok); animation: none; }
+.gd[data-state='error'] .gd__dot { background: var(--gd-fail); animation: none; opacity: 0.35; }
+.gd.is-lit .gd__dot { visibility: hidden; }
+.gd__foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.gd__meta { font-size: 13px; font-variant-numeric: tabular-nums; --gd-ink: #b6b8c2; color: var(--gd-ink); }
+.gd__btn {
+  --gd-ink: #ececf1;
+  height: 40px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--gd-face);
+  color: var(--gd-ink);
+  font: 500 14px/1 system-ui, -apple-system, "Segoe UI", sans-serif;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.gd__btn:focus-visible { outline: 2px solid #ffffff; outline-offset: 3px; }
+.gd__sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/* lit: the canvas draws text and faces; hover adds a thin veil on top */
+.gd.is-lit [data-gd-text] { color: transparent; }
+.gd.is-lit [data-gd-box] { background: transparent; box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06); }
+.gd.is-lit .gd__btn:hover { background: rgb(255 255 255 / 0.07); }
+@media (prefers-reduced-motion: reduce) {
+  .gd__dot { animation-duration: 2.6s; }
+  .gd__btn { transition: none; }
+}

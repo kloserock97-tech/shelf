@@ -1,0 +1,17 @@
+<!-- A date picker: month, day and year wheels, coupled (the day wheel follows the month and the year).
+     It dispatches "change" with detail.date and keeps the date in element.value. data-sound="off" mutes the clicks. -->
+<div class="dp" data-date="2026-11-14" data-from="1990" data-to="2040" aria-label="Delivery date"></div>
+<output id="picked"></output>
+
+<!-- A single wheel of your own values:
+<div class="dp"><div class="dp__lens"></div><div class="dp__wheels"><div id="qty"></div></div></div>
+<script>DrumPicker.wheel(document.getElementById('qty'), { values: [1, 2, 3, 4, 5, 6], index: 1, label: 'Quantity', onChange: (v) => console.log(v) });</script>
+-->
+
+<link rel="stylesheet" href="drum-picker.css">
+<script src="drum-picker.js" defer></script>
+<script>
+  document.addEventListener('change', (e) => {
+    if (e.target.matches('.dp')) document.getElementById('picked').textContent = e.detail.date.toDateString();
+  });
+</script>

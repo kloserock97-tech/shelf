@@ -1,0 +1,23 @@
+<!-- Any button can be the source: point commandfor at the menu. The panel grows from the corner of the source that
+     faces the middle of the screen. An icon marked data-smm-turn turns 45° in the panel head (plus → cross). -->
+<button class="my-button" type="button" commandfor="create-menu" command="toggle-popover">
+  <svg data-smm-turn width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>
+  New
+</button>
+
+<div class="smm" id="create-menu" popover role="menu" aria-label="Create">
+  <div class="smm__body">
+    <div class="smm__items">
+      <button class="smm__item" type="button" role="menuitem" data-value="document"><span></span><span>Document</span><kbd>D</kbd></button>
+      <button class="smm__item" type="button" role="menuitem" data-value="board"><span></span><span>Board</span><kbd>B</kbd></button>
+      <button class="smm__item" type="button" role="menuitem" data-value="folder"><span></span><span>Folder</span><kbd>F</kbd></button>
+    </div>
+  </div>
+</div>
+
+<link rel="stylesheet" href="source-morph-menu.css">
+<script src="source-morph-menu.js" defer></script>
+<script>
+  // a pick: e.detail.value
+  document.addEventListener('smm:pick', (e) => console.log(e.detail.value));
+</script>

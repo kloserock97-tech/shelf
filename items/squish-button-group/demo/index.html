@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Squish Button Group</title>
+<link rel="stylesheet" href="../variants/html/squish-group.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    box-sizing: border-box;
+    display: grid;
+    place-content: center;
+    grid-template-columns: minmax(0, 520px);
+    gap: 34px;
+    padding: 32px 16px;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .note {
+    margin: 12px 0 0 6px;
+    font-size: 13px;
+    color: light-dark(#6b6d74, #8e9097);
+    font-variant-numeric: tabular-nums;
+  }
+  .row { display: flex; justify-content: flex-start; }
+  html.is-shot body { zoom: 1.3; min-height: calc(100dvh / 1.3); }
+</style>
+</head>
+<body>
+<div>
+  <fieldset class="sqg" id="view">
+    <legend class="sqg__legend">Calendar view</legend>
+    <div class="sqg__track">
+      <label class="sqg__btn">
+        <input type="radio" name="view" value="Day">
+        <span class="sqg__in">
+          <span class="sqg__icon" aria-hidden="true"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="3" width="12" height="12" rx="3.2"/><path d="M6.5 7h5M6.5 10h3"/></svg></span>
+          <span class="sqg__text">Day</span>
+        </span>
+      </label>
+      <label class="sqg__btn">
+        <input type="radio" name="view" value="Week" checked>
+        <span class="sqg__in">
+          <span class="sqg__icon" aria-hidden="true"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2.5" y="3" width="13" height="12" rx="3.2"/><path d="M6.8 6v6M9 6v6M11.2 6v6"/></svg></span>
+          <span class="sqg__text">Week</span>
+        </span>
+      </label>
+      <label class="sqg__btn">
+        <input type="radio" name="view" value="Month">
+        <span class="sqg__in">
+          <span class="sqg__icon" aria-hidden="true"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2.5" y="3" width="13" height="12" rx="3.2"/><path d="M2.8 7.2h12.4M2.8 11h12.4M6.8 7.2v7.6M11.2 7.2v7.6"/></svg></span>
+          <span class="sqg__text">Month</span>
+        </span>
+      </label>
+      <label class="sqg__btn">
+        <input type="radio" name="view" value="Agenda">
+        <span class="sqg__in">
+          <span class="sqg__icon" aria-hidden="true"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="4.2" cy="5" r="1.1" fill="currentColor" stroke="none"/><circle cx="4.2" cy="9" r="1.1" fill="currentColor" stroke="none"/><circle cx="4.2" cy="13" r="1.1" fill="currentColor" stroke="none"/><path d="M7.5 5h7M7.5 9h7M7.5 13h4.5"/></svg></span>
+          <span class="sqg__text">Agenda</span>
+        </span>
+      </label>
+    </div>
+  </fieldset>
+  <p class="note" id="view-note" aria-hidden="true">Oct 12 – 18 · 14 events</p>
+</div>
+
+<div class="row">
+  <fieldset class="sqg sqg--icons">
+    <legend class="sqg__legend">Text align</legend>
+    <div class="sqg__track">
+      <label class="sqg__btn">
+        <input type="radio" name="align" value="left" checked>
+        <span class="sqg__in"><span class="sqg__icon" aria-hidden="true"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3 4.5h12M3 8h8M3 11.5h12M3 15h6"/></svg></span><span class="sqg__sr">Left</span></span>
+      </label>
+      <label class="sqg__btn">
+        <input type="radio" name="align" value="center">
+        <span class="sqg__in"><span class="sqg__icon" aria-hidden="true"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3 4.5h12M5 8h8M3 11.5h12M6 15h6"/></svg></span><span class="sqg__sr">Center</span></span>
+      </label>
+      <label class="sqg__btn">
+        <input type="radio" name="align" value="right">
+        <span class="sqg__in"><span class="sqg__icon" aria-hidden="true"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3 4.5h12M7 8h8M3 11.5h12M9 15h6"/></svg></span><span class="sqg__sr">Right</span></span>
+      </label>
+      <label class="sqg__btn">
+        <input type="radio" name="align" value="justify">
+        <span class="sqg__in"><span class="sqg__icon" aria-hidden="true"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3 4.5h12M3 8h12M3 11.5h12M3 15h12"/></svg></span><span class="sqg__sr">Justify</span></span>
+      </label>
+    </div>
+  </fieldset>
+</div>
+
+<script src="../variants/html/squish-group.js"></script>
+<script>
+  // demo caption under the calendar group
+  const notes = { Day: 'Thu, Oct 15 · 3 events', Week: 'Oct 12 – 18 · 14 events', Month: 'October · 41 events', Agenda: 'Next 30 days · 52 events' };
+  const note = document.getElementById('view-note');
+  document.getElementById('view').addEventListener('change', (e) => { note.textContent = notes[e.target.value]; });
+
+  // ?shot=1 — Week is chosen, Month is held down: it widens, Week and Agenda give way
+  if (new URLSearchParams(location.search).has('shot')) {
+    document.documentElement.classList.add('is-shot');
+    const month =document.querySelector('#view input[value="Month"]').closest('.sqg__btn');
+    requestAnimationFrame(() => month.setAttribute('data-press', ''));
+    addEventListener('pointerdown', () => month.removeAttribute('data-press'), { once: true, capture: true });
+  }
+</script>
+</body>
+</html>

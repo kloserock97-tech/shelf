@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Streaming Generative Widget</title>
+<link rel="stylesheet" href="genui-widget.css">
+</head>
+<body>
+<div id="answer"></div>
+
+<script src="genui-widget.js"></script>
+<script>
+  // The model is told to answer with { title, children: [{ type: text|slider|choice|stat|chart|button, ... }] }.
+  const widget = GenUIWidget.create(document.getElementById('answer'), {
+    controls: false, // no Replay / Cut buttons for a real stream
+    // numbers for stat and chart come from your code, from the control values the person sets
+    compute: (state, blocks) => {
+      const total = (state.seats || 0) * (state.plan === 'team' ? 12 : 8);
+      return { cost: '€' + total + ' a month', costNote: state.seats + ' seats' };
+    },
+    onAction: (name, state) => (name === 'checkout' ? 'Sent to billing' : null)
+  });
+
+  // feed it the model's text as it arrives
+  async function ask(question) {
+    const res = await fetch('/model/answer', { method: 'POST', body: JSON.stringify({ question }) });
+    const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+    try {
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        widget.push(value);
+      }
+      widget.end();
+    } catch (e) {
+      widget.cut(); // what has arrived keeps working, the rest is marked as missing
+    }
+  }
+  ask('How much would 12 seats cost?');
+</script>
+</body>
+</html>
