@@ -3,8 +3,9 @@
 import { render } from 'astro:content';
 import App from '../layouts/App.astro';
 import Icon from './Icon.astro';
+import ItemCard from './ItemCard.astro';
 import {
-  variantsOf, promptFor, itemUrl, collectionUrl, posterUrl, demoUrl, isExternal, isPrivate, isMobileOnly, subtitle, type Item
+  variantsOf, promptFor, collectionUrl, posterUrl, demoUrl, isExternal, isPrivate, isMobileOnly, type Item
 } from '../lib/items';
 import { pairsOf, similarTo } from '../lib/similar';
 import { jobOf, collectionOf, projectOf, nameOf } from '../lib/curation';
@@ -220,20 +221,22 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
             </div>
           )}
         </section>
-        {lists.map((l) => (
-          <section data-list={l.key}>
-            <h2 class="sh-h2">{t(lang, l.key)}</h2>
-            <div class="sh-related">
-              {l.items.map((r) => (
-                <a class="sh-related__row" href={itemUrl(r, lang)}>
-                  <span class="sh-related__thumb">{posterUrl(r) && <img src={posterUrl(r)} alt="" loading="lazy" decoding="async">}</span>
-                  <span class="sh-related__text"><span class="sh-card__title">{r.data.title}</span><span class="sh-card__sub">{subtitle(r, lang)}</span></span>
-                </a>
-              ))}
-            </div>
-          </section>
-        ))}
       </div>
+      {/* Where to go next, in sight: Works well with and Similar as shelves of cards right under the code, where the
+          code column ends (the notes beside it can run 1000px longer), not at the foot of the narrow column. Without
+          code, or on a narrow screen, they run the full width after the notes. The same cards as the lists. */}
+      {lists.length > 0 && (
+        <div class="sh-item__more">
+          {lists.map((l) => (
+            <section class="sh-more" data-list={l.key} aria-labelledby={`more-${l.key}`}>
+              <h2 class="sh-grid__title" id={`more-${l.key}`}>{t(lang, l.key)} <span class="sh-grid__count">{l.items.length}</span></h2>
+              <div class="sh-more__row">
+                {l.items.map((r) => <ItemCard item={r} lang={lang} />)}
+              </div>
+            </section>
+          ))}
+        </div>
+      )}
     </div>
   </article>
   {prompts.map((p) => <template data-prompt-variant={p.id}>{p.text}</template>)}

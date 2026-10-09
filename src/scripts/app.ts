@@ -713,6 +713,8 @@ let itemApi: { copyCode: () => void; copyPrompt: () => void; slug: string } | nu
 
 function initItem(article: HTMLElement) {
   const slug = article.dataset.item!;
+  // the cards of Works well with and Similar play their loops on hover, as in the lists
+  $$('.sh-more .sh-card__thumb', article).forEach(wireLoop);
 
   const stage = $('#stage');
   const frame = $<HTMLIFrameElement>('#demo-frame');
