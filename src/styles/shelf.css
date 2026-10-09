@@ -947,6 +947,12 @@ button.sh-menu__item { appearance: none; margin: 0; border: 0; width: 100%; back
 .sh-sheet__sub { font: 400 13px/18px var(--font-sans); color: var(--label-secondary); }
 .sh-sheet__actions { display: flex; align-items: center; gap: var(--space-2); margin-left: auto; }
 .sh-sheet .sh-stage { margin: 0 12px 12px; min-height: 0; height: min(62vh, 560px); border-radius: 14px; }
+/* Item page: ‹ 12 of 37 › before the star; an end of the list greys its arrow out */
+.sh-nbr { display: flex; align-items: center; gap: 2px; }
+.sh-nbr[hidden] { display: none; }
+.sh-nbr__pos { min-width: 7ch; text-align: center; font: 500 12px/16px var(--font-sans); font-variant-numeric: tabular-nums; color: var(--label-secondary); white-space: nowrap; }
+.sh-btn[aria-disabled="true"] { opacity: 0.4; pointer-events: none; }
+@media (max-width: 600px) { .sh-nbr__pos { display: none; } }
 /* Live demo: the name gives way to the actions; under the stage one line of summary and ‹ 3 of 37 › */
 .sh-ql__name { min-width: 0; }
 .sh-ql__name > * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

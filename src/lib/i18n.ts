@@ -140,6 +140,7 @@ const en = {
   scCopyCode: 'Copy code',
   scCopyPrompt: 'Copy prompt',
   scVariant: 'Code variant',
+  scNeighbours: 'Next or previous item',
   scThisList: 'This list',
 
   copied: 'Copied',
@@ -369,6 +370,7 @@ const ru: Record<Key, string> = {
   scCopyCode: 'Скопировать код',
   scCopyPrompt: 'Скопировать промпт',
   scVariant: 'Вариант кода',
+  scNeighbours: 'Следующий или предыдущий элемент',
   scThisList: 'Этот список',
 
   copied: 'Скопировано',

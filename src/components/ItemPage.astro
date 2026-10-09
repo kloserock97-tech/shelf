@@ -69,6 +69,13 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
     </nav>
     {colCrumbs && <Fragment set:html={`<style>${colCrumbs}</style>`} />}
     <div class="sh-toolbar__spacer"></div>
+    {/* ‹ 12 of 37 ›: the neighbours in the list you came from (its order is kept in sessionStorage), else in this
+        kind; J and K step. app.ts fills the links once it knows the order. */}
+    <div class="sh-nbr" data-neighbours hidden>
+      <a class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" data-nbr="-1" aria-label={t(lang, 'prevItem')} aria-keyshortcuts="K"><Icon name="ChevronLeft" /></a>
+      <span class="sh-nbr__pos" data-nbr-pos></span>
+      <a class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm" data-nbr="1" aria-label={t(lang, 'nextItem')} aria-keyshortcuts="J"><Icon name="ChevronRight" /></a>
+    </div>
     <button class="sh-btn sh-btn--ghost sh-btn--icon sh-btn--sm sh-fav" type="button" data-fav={item.id} aria-pressed="false" aria-label={t(lang, 'favAdd', { title: d.title })}><Icon name="Star" /></button>
     <button class="sh-btn sh-btn--sm sh-hide-narrow" type="button" data-copy-link data-toast={t(lang, 'linkCopied')}><Icon name="Link" /><span class="sh-btn__label">{t(lang, 'copyLink')}</span></button>
     {demo && <a class="sh-btn sh-btn--sm sh-btn--primary sh-demo-btn" href={demo} target="_blank" rel="noopener" aria-label={t(lang, 'openDemo')}><Icon name="ExternalLink" /><span class="sh-demo-btn__label">{t(lang, 'openDemo')}</span></a>}

@@ -89,6 +89,7 @@ const check = (ok, what) => { if (!ok) problems.push(`flow: ${what}`); return ok
 {
   const { page } = await open(ctx, 'items/spring-toggle/');
   await page.waitForSelector('#demo-frame.is-ready', { timeout: 8000 }).catch(() => check(false, 'the Spring Toggle demo never became ready'));
+  check(await page.locator('[data-neighbours]').isVisible(), 'the item page shows no ‹ › to its neighbours');
   await page.locator('[data-variant-switch] .sh-seg__opt', { hasText: 'Vue' }).click();
   check(await page.locator('.sh-code__variant[data-variant="vue"]').isVisible(), 'the Vue variant does not show');
   await page.locator('.sh-code__variant[data-variant="vue"] [data-copy-code]').click();

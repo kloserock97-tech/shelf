@@ -832,12 +832,40 @@ function initItem(article: HTMLElement) {
 // A list page (All items, Favorites, a kind) writes itself down as you leave it: which list, its address with the
 // filters and sort, and how far you had scrolled. The item page reads that back: the inline script in Sidebar.astro
 // keeps that list selected, and here the matching breadcrumb returns to it exactly.
-interface ListVisit { nav: string; url: string; y: number }
+// `order` is the cards as you saw them (filters, sort, groups), so an item page can step to its neighbours.
+interface ListVisit { nav: string; url: string; y: number; order?: string[] }
 const LIST_NAV = /^(all|favorites|type:[\w-]+|collection:[\w-]+)$/;
 const readSession = <T>(k: string): T | null => { try { return JSON.parse(sessionStorage.getItem(k) || 'null') as T | null; } catch { return null; } };
 const writeSession = (k: string, v: unknown) => { try { sessionStorage.setItem(k, JSON.stringify(v)); } catch { /* storage may be blocked */ } };
 function rememberList() {
-  writeSession('shelf:list', { nav: html.dataset.nav, url: location.pathname + location.search, y: Math.round(scrollY) } satisfies ListVisit);
+  const order = (gridApi?.visible() ?? []).map((c) => c.dataset.slug!);
+  writeSession('shelf:list', { nav: html.dataset.nav, url: location.pathname + location.search, y: Math.round(scrollY), order } satisfies ListVisit);
+}
+// ‹ 12 of 37 › on an item page: the neighbours in the list you came from, in the order you saw it; opened directly
+// (or from a list this piece is not in), the neighbours in its kind, newest first as the kind's page lists them.
+let neighbours: { prev: string | null; next: string | null } = { prev: null, next: null };
+async function initNeighbours(slug: string) {
+  const box = $('[data-neighbours]');
+  if (!box) return;
+  const list = readSession<ListVisit>('shelf:list');
+  let order = html.dataset.from && list?.order?.includes(slug) ? list.order : null;
+  await indexReady; // the links need the index's URLs either way
+  if (!order) {
+    const type = BY_SLUG.get(slug)?.type;
+    order = INDEX.filter((e) => e.type === type).map((e) => e.slug);
+  }
+  const i = order.indexOf(slug);
+  if (i < 0 || order.length < 2) return;
+  const urlOf = (s: string | undefined) => (s ? BY_SLUG.get(s)?.url ?? null : null);
+  neighbours = { prev: urlOf(order[i - 1]), next: urlOf(order[i + 1]) };
+  for (const a of $$<HTMLAnchorElement>('[data-nbr]', box)) {
+    const href = a.dataset.nbr === '1' ? neighbours.next : neighbours.prev;
+    if (href) { a.href = href; a.removeAttribute('aria-disabled'); }
+    else { a.removeAttribute('href'); a.setAttribute('aria-disabled', 'true'); }
+  }
+  const pos = $('[data-nbr-pos]', box);
+  if (pos) pos.textContent = tr('itemPos', { i: i + 1, n: order.length });
+  box.hidden = false;
 }
 // The previous entry in this tab's history, when the browser can tell.
 function previousUrl() {
@@ -931,7 +959,7 @@ if (grid && LIST_NAV.test(html.dataset.nav ?? '')) {
 }
 const article = $('[data-item]');
 const itemCtl = article ? initItem(article) : null;
-if (article) initCrumbs();
+if (article) { initCrumbs(); void initNeighbours(article.dataset.item!); }
 renderFavs();
 requestAnimationFrame(() => requestAnimationFrame(() => html.classList.remove('sb-noanim')));
 
@@ -1014,6 +1042,8 @@ document.addEventListener('keydown', (e) => {
     if (k === 'c') { e.preventDefault(); itemApi.copyCode(); }
     else if (k === 'p') { e.preventDefault(); itemApi.copyPrompt(); }
     else if (k === 'f') { e.preventDefault(); toggleFav(itemApi.slug); }
+    // J and K, as in Gmail and Refero: ← and → stay with the code's caret
+    else if ((k === 'j' || k === 'k') && neighbours[k === 'j' ? 'next' : 'prev']) { e.preventDefault(); location.href = neighbours[k === 'j' ? 'next' : 'prev']!; }
     else if (/^[1-9]$/.test(e.key) && itemCtl?.variantSeg) {
       const n = Number(e.key) - 1;
       if (n < itemCtl.ids.length) { e.preventDefault(); itemCtl.variantSeg.select(n); }
