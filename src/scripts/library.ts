@@ -6,8 +6,9 @@ import { FACETS, SORTS, GROUPINGS, VIEWS, STACK_GROUPS, defaultSort, defaultGrou
 import { GROUPS, TYPES, typeLabel, typeAbout, typeOf } from '../lib/taxonomy';
 import { JOBS, jobOf, nameOf, aboutOf } from '../lib/curation';
 import { itemsWord, type Key, type Lang } from '../lib/i18n';
+import { likeness, MIN_SCORE } from '../lib/similar';
 
-export interface LibEntry { slug: string; title: string; type: string; jobs: string[]; platform: string[]; tech: string[]; tags: string[]; added: string; updated: string; poster: string | null }
+export interface LibEntry { slug: string; title: string; type: string; jobs: string[]; collections: string[]; platform: string[]; tech: string[]; tags: string[]; added: string; updated: string; poster: string | null }
 export interface LibDeps {
   lang: Lang;
   tr: (k: Key, vars?: Record<string, string | number>) => string;
@@ -177,6 +178,7 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
     const own = entries.filter(inMode).length;
     if (input) input.placeholder = tr('searchHere', { n: own, items: itemsWord(lang, own) });
     renderEmpty(found.length, filtered);
+    if (mode === 'favorites') renderFavorites();
     syncControls();
     if (status) status.textContent = filtered ? tr('resultsCount', { n: found.length, items: itemsWord(lang, found.length) }) : '';
     if (pop && !pop.hidden && openFacet) renderPop(openFacet, false);
@@ -360,6 +362,32 @@ export function initLibrary(grid: HTMLElement, d: LibDeps): LibApi {
     }
     fixes.innerHTML = chips.slice(0, 6).map((c) => c.html).join('');
     fixes.hidden = chips.length === 0;
+  }
+
+  // Favorites: empty, the search field and the platform switch step aside (the empty state offers collections
+  // instead). With stars, a shelf under the grid: unstarred pieces most like the starred ones, each one's likeness
+  // (src/lib/similar.ts) summed over every starred piece it is close to. Copies of the grid's own cards.
+  const favMore = $('[data-fav-more]');
+  const favMoreRow = $('[data-fav-more-row]');
+  const filtersRow = $('.sh-filters');
+  function renderFavorites() {
+    const starred = entries.filter((e) => d.favs.has(e.slug));
+    if (filtersRow) filtersRow.hidden = starred.length === 0 && !state.q;
+    if (platformSwitch) platformSwitch.hidden = starred.length === 0;
+    if (!favMore || !favMoreRow) return;
+    const scored = entries
+      .filter((e) => !d.favs.has(e.slug))
+      .map((e) => ({ e, score: starred.reduce((sum, f) => { const s = likeness(f, e); return s >= MIN_SCORE ? sum + s : sum; }, 0) }))
+      .filter((x) => x.score > 0)
+      .sort((a, b) => b.score - a.score || collator.compare(a.e.title, b.e.title))
+      .slice(0, 6);
+    favMore.hidden = scored.length === 0;
+    favMoreRow.replaceChildren(...scored.map(({ e }) => {
+      const card = cardOf.get(e.slug)!.cloneNode(true) as HTMLElement;
+      card.hidden = false;
+      card.removeAttribute('data-selected');
+      return card;
+    }));
   }
 
   function syncControls() {

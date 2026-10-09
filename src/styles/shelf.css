@@ -610,6 +610,24 @@ button.sh-menu__item { appearance: none; margin: 0; border: 0; width: 100%; back
 /* zero results: each filter that caused it, with what comes back without it */
 .sh-empty__fixes { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-2); max-width: 520px; }
 .sh-empty__fixes[hidden], .sh-empty__fixes:empty { display: none; }
+/* empty Favorites: three collections to start from, tiles as on All items, then the way to the shelf */
+.sh-empty__cols {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-6);
+  width: min(840px, 100%); margin: var(--space-4) 0 var(--space-2); padding: 6px 0 0; list-style: none; text-align: left;
+}
+@media (max-width: 600px) {
+  .sh-empty__cols {
+    grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 78%; gap: var(--space-4);
+    width: calc(100% + 2 * var(--space-6)); margin-inline: calc(var(--space-6) * -1); padding-inline: var(--space-6);
+    overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: var(--space-6); scrollbar-width: none;
+  }
+  .sh-empty__cols::-webkit-scrollbar { display: none; }
+  .sh-empty__cols > li { scroll-snap-align: start; }
+}
+/* the filter row and the platform switch step aside while Favorites is empty: nothing to search or split */
+.sh-filters[hidden], .sh-platform[hidden] { display: none; }
+.sh-favmore { margin: 0 var(--space-8) var(--space-10); }
+@media (max-width: 900px) { .sh-favmore { margin: 0 var(--space-4) var(--space-10); } }
 
 /* ---------- Grid and item card ---------- */
 .sh-grid {

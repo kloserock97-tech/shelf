@@ -2,7 +2,8 @@
 import Icon from './Icon.astro';
 import ItemCard from './ItemCard.astro';
 import ShelfArt from './ShelfArt.astro';
-import { type Item, itemUrl, collectionUrl, posterUrl, subtitle } from '../lib/items';
+import CollTile from './CollTile.astro';
+import { type Item, itemUrl, posterUrl, subtitle } from '../lib/items';
 import { GROUPS, TYPES, typeOf, typeAbout, typeLabel, groupLabel, type TypeDef } from '../lib/taxonomy';
 import { t, itemsWord, type Lang } from '../lib/i18n';
 import { lurl } from '../lib/url';
@@ -49,7 +50,7 @@ const hero = mode === 'all'
   : undefined;
 // Collections on All items: a shelf of tiles under the featured piece, each a mosaic of three covers. The collection's
 // own `cover` picks come first; if one is missing, members of other kinds fill in, then any member.
-const rail = mode === 'all'
+const collTiles = mode === 'all' || mode === 'favorites'
   ? COLLECTIONS.map((c) => {
       const members = items.filter((i) => i.data.collections.includes(c.id) && posterUrl(i));
       const art: Item[] = c.cover.map((s) => members.find((i) => i.id === s)).filter((i): i is Item => Boolean(i));
@@ -58,6 +59,10 @@ const rail = mode === 'all'
       return { c, n: items.filter((i) => i.data.collections.includes(c.id)).length, art: art.map((i) => posterUrl(i)!) };
     }).filter((x) => x.n)
   : [];
+const rail = mode === 'all' ? collTiles : [];
+// Empty Favorites is a place to start, as Mobbin's empty Saved: the three biggest collections as tiles, and the way
+// to the shelf.
+const starters = mode === 'favorites' ? [...collTiles].sort((a, b) => b.n - a.n).slice(0, 3) : [];
 // A kind or a collection opens with a fan of its own covers: the colour comes from the content, not from the chrome.
 const covers = mode === 'type' || mode === 'collection' ? items.map((i) => posterUrl(i)).filter((u): u is string => Boolean(u)).slice(0, 3) : [];
 // Summaries and notes are written in Russian; say so to screen readers on English pages.
@@ -188,21 +193,7 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
       </div>
     </div>
     <ul class="sh-rail__list" id="rail-list" data-rail-list>
-      {rail.map(({ c, n, art }) => (
-        <li class="sh-rail__item">
-          <a class="sh-coltile" href={collectionUrl(c.id, lang)}>
-            <span class:list={['sh-coltile__art', `sh-coltile__art--${Math.max(1, art.length)}`]} aria-hidden="true">
-              {art.length
-                ? art.map((src) => <img src={src} alt="" loading="lazy" decoding="async">)
-                : <span class="sh-typehead__glyph"><Icon name={c.icon} stroke={1.5} /></span>}
-            </span>
-            <span class="sh-coltile__text">
-              <span class="sh-coltile__name">{nameOf(c, lang)}</span>
-              <span class="sh-coltile__meta"><span class="sh-coltile__n">{n} {itemsWord(lang, n)}</span> · {aboutOf(c, lang)}</span>
-            </span>
-          </a>
-        </li>
-      ))}
+      {rail.map((tile) => <li class="sh-rail__item"><CollTile {...tile} lang={lang} /></li>)}
     </ul>
   </section>
 )}
@@ -247,7 +238,21 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
   <ShelfArt kind="favorites" />
   <p class="sh-empty__title">{t(lang, 'noFavTitle')}</p>
   <p class="sh-empty__text">{t(lang, 'noFavText')}</p>
+  {starters.length > 0 && (
+    <ul class="sh-empty__cols" aria-label={t(lang, 'collections')}>
+      {starters.map((tile) => <li><CollTile {...tile} lang={lang} /></li>)}
+    </ul>
+  )}
+  <a class="sh-btn sh-btn--primary" href={lurl(lang, '')}>{t(lang, 'toShelf')}<Icon name="ChevronRight" /></a>
 </div>
+{/* Under the starred grid, what goes with it: unstarred pieces most like the starred ones, their likeness summed
+    over all of them (library.ts), as Pinterest's "More ideas" under a board. */}
+{mode === 'favorites' && (
+  <section class="sh-more sh-favmore" data-fav-more hidden aria-labelledby="fav-more-title">
+    <h2 class="sh-grid__title" id="fav-more-title">{t(lang, 'moreLikeFavs')}</h2>
+    <div class="sh-more__row" data-fav-more-row></div>
+  </section>
+)}
 <div class="sh-empty" data-empty="search" hidden>
   <ShelfArt kind="search" />
   <p class="sh-empty__title" data-empty-title={t(lang, 'noResultsTitle', { q: '{q}' })} data-empty-title-filters={t(lang, 'noMatchTitle')}></p>

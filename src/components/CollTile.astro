@@ -1,0 +1,27 @@
+---
+// A collection as a tile: a mosaic of three covers, its name, how many and what it is about (STYLE-GUIDE 8.22).
+// On the collections shelf of All items and in empty Favorites.
+import Icon from './Icon.astro';
+import { collectionUrl } from '../lib/items';
+import { itemsWord, type Lang } from '../lib/i18n';
+import { nameOf, aboutOf, type CollectionDef } from '../lib/curation';
+
+interface Props {
+  c: CollectionDef;
+  n: number;
+  art: string[];
+  lang: Lang;
+}
+const { c, n, art, lang } = Astro.props;
+---
+<a class="sh-coltile" href={collectionUrl(c.id, lang)}>
+  <span class:list={['sh-coltile__art', `sh-coltile__art--${Math.max(1, art.length)}`]} aria-hidden="true">
+    {art.length
+      ? art.map((src) => <img src={src} alt="" loading="lazy" decoding="async">)
+      : <span class="sh-typehead__glyph"><Icon name={c.icon} stroke={1.5} /></span>}
+  </span>
+  <span class="sh-coltile__text">
+    <span class="sh-coltile__name">{nameOf(c, lang)}</span>
+    <span class="sh-coltile__meta"><span class="sh-coltile__n">{n} {itemsWord(lang, n)}</span> · {aboutOf(c, lang)}</span>
+  </span>
+</a>
