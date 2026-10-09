@@ -9,6 +9,7 @@ import { GROUPS, TYPES, typeLabel, groupLabel } from '../lib/taxonomy';
 import { JOBS, COLLECTIONS, nameOf } from '../lib/curation';
 import { STACK_GROUPS, stackGroupOf, tagInLang, type FacetId } from '../lib/facets';
 import type { Key, Lang } from '../lib/i18n';
+import { labelHit } from '../lib/synonyms';
 
 export interface FinderEntry {
   slug: string; title: string; type: string; typeLabel: string; tech: string[]; tags: string[];
@@ -231,12 +232,14 @@ export function initFinder(root: HTMLElement, d: FinderDeps): FinderApi {
   function matches(q: string) {
     const n = norm(q);
     const hit = (s: string) => norm(s).includes(n);
+    // kinds, tasks and collections answer to synonyms too: "модалка" → Overlays, "онбординг" → Onboarding
+    const named = (s: string) => hit(s) || labelHit(s, q);
     const items = d.find(q).map((s) => bySlug.get(s)).filter((e): e is FinderEntry => Boolean(e));
     return {
       items,
-      kinds: kinds.filter((g) => hit(g.label) || hit(g.id)),
-      tasks: tasks.filter((g) => hit(g.label)),
-      colls: colls.filter((g) => hit(g.label)),
+      kinds: kinds.filter((g) => named(g.label) || hit(g.id)),
+      tasks: tasks.filter((g) => named(g.label)),
+      colls: colls.filter((g) => named(g.label)),
       techs: techs.filter((g) => hit(g.label)),
       tags: tags.filter((t) => hit(t)),
       places: d.places().filter((p) => hit(p.label)),

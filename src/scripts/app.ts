@@ -6,6 +6,9 @@ import { t, langOf, type Key } from '../lib/i18n';
 import { initLibrary, type LibApi } from './library';
 import { initFinder, type FinderAction, type FinderApi, type FinderIcon } from './finder';
 import { initFace } from './face';
+import { expandQuery, processTerm } from '../lib/synonyms';
+import { JOBS, COLLECTIONS } from '../lib/curation';
+import { typeOf } from '../lib/taxonomy';
 
 interface Entry {
   slug: string; title: string; type: string; typeLabel: string; tech: string[]; tags: string[]; jobs: string[]; platform?: string[]; collections: string[]; status: string;
@@ -391,23 +394,32 @@ function toggleFav(slug: string) {
 }
 
 /* ---------- search ---------- */
+// One searcher for the list search and ⌘K. Besides the item's own words it knows the names of its kind, tasks and
+// collections in both languages ("Первые шаги", "Onboarding"), synonyms (src/lib/synonyms.ts: "модалка" finds the
+// overlays) and Russian endings ("шторки" finds "шторка").
 let search: MiniSearch<Entry> | null = null;
+const names = (list: readonly { id: string; label: string; ru: string }[], ids: string[]) =>
+  ids.map((id) => list.find((x) => x.id === id)).map((x) => (x ? `${x.label} ${x.ru}` : '')).join(' ');
 function searcher() {
   if (search) return search;
   search = new MiniSearch<Entry>({
     idField: 'slug',
-    fields: ['title', 'tags', 'tech', 'typeLabel', 'summary', 'notes'],
+    fields: ['title', 'tags', 'tech', 'typeLabel', 'typeNames', 'jobNames', 'collectionNames', 'summary', 'notes'],
     storeFields: ['slug'],
+    processTerm,
     extractField: (doc, field) => {
+      if (field === 'typeNames') { const ty = typeOf(doc.type); return `${ty.label} ${ty.one} ${ty.ru} ${ty.oneRu}`; }
+      if (field === 'jobNames') return names(JOBS, doc.jobs);
+      if (field === 'collectionNames') return names(COLLECTIONS, doc.collections);
       const v = (doc as unknown as Record<string, unknown>)[field];
       return Array.isArray(v) ? v.join(' ') : String(v ?? '');
     },
-    searchOptions: { prefix: true, fuzzy: 0.2, boost: { title: 4, tags: 2.5, tech: 2, typeLabel: 1.5 }, combineWith: 'AND' }
+    searchOptions: { prefix: true, fuzzy: 0.2, boost: { title: 4, tags: 2.5, tech: 2, typeLabel: 1.5, typeNames: 1.5, jobNames: 1.5, collectionNames: 1.5 }, combineWith: 'AND' }
   });
   search.addAll(INDEX);
   return search;
 }
-const find = (q: string) => searcher().search(q).map((r) => String(r.id));
+const find = (q: string) => (q.trim() ? searcher().search(expandQuery(q) as Parameters<MiniSearch<Entry>['search']>[0]).map((r) => String(r.id)) : []);
 
 /* ---------- hover loops on posters ---------- */
 function wireLoop(thumb: HTMLElement) {
