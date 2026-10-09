@@ -60,7 +60,7 @@ const check = (ok, what) => { if (!ok) problems.push(`flow: ${what}`); return ok
   await page.fill('#search', 'spring toggle');
   await page.waitForTimeout(150);
   const found = await page.locator('.sh-card:not([hidden])').count();
-  check(found >= 1 && found <= 3 && (await page.locator('.sh-card:not([hidden])[data-slug="spring-toggle"]').count()) === 1, `searching "spring toggle" should find Spring Toggle among a few cards (got ${found})`);
+  check(found >= 1 && found <= 10 && (await page.locator('.sh-card:not([hidden])').first().getAttribute('data-slug')) === 'spring-toggle', `searching "spring toggle" should put Spring Toggle first among a few cards (got ${found})`);
   await page.fill('#search', '');
   await page.waitForTimeout(150);
   await page.locator('.sh-card__thumb[data-loop]').first().hover();
