@@ -21,7 +21,12 @@ interface Props {
 const { title, items, lang, mode = 'all', type, collection } = Astro.props;
 const techCount = new Map<string, number>();
 for (const it of items) for (const tech of it.data.tech) techCount.set(tech, (techCount.get(tech) ?? 0) + 1);
-const techs = [...techCount.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 8);
+// Quick chips only for a stack that cuts the list: on 40% of the items or fewer (three.js, GLSL, React), not CSS on
+// two thirds of them. Those stay in the Stack popover. One item alone is not worth a chip either.
+const CHIP_SHARE = 0.4;
+const techs = [...techCount.entries()]
+  .filter(([, n]) => n >= 2 && n <= items.length * CHIP_SHARE)
+  .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 8);
 const filterable = mode !== 'favorites';
 // Web / Mobile only where there is something for a phone to show
 const hasMobile = items.some((i) => i.data.platform.includes('mobile'));

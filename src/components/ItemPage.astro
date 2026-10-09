@@ -224,7 +224,8 @@ const contentLang = lang === 'ru' ? undefined : 'ru';
           </dl>
           {d.tags.length > 0 && (
             <div class="sh-tags">
-              {d.tags.map((tag) => <a class="sh-badge sh-badge--tech" href={lurl(lang, `?q=${encodeURIComponent(tag)}`)}>{tag}</a>)}
+              {/* a tag opens All items filtered by it (the Tags pill lit), not a text search for the word */}
+              {d.tags.map((tag) => <a class="sh-badge sh-badge--tech" href={lurl(lang, `?tag=${encodeURIComponent(tag)}`)}>{tag}</a>)}
             </div>
           )}
         </section>
