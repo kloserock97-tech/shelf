@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Datamosh Transition</title>
+<link rel="stylesheet" href="../variants/html/datamosh.css">
+<style>
+  html, body { height: 100%; margin: 0; background: transparent; overflow: hidden; }
+  body {
+    display: grid; place-content: center; justify-items: center; gap: 16px; padding: 16px; box-sizing: border-box;
+    font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; color: #22201d;
+  }
+  .datamosh { width: min(600px, calc(100vw - 32px), calc((100vh - 120px) * 4 / 3)); aspect-ratio: 4 / 3; }
+  .bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 16px; }
+  .hint { margin: 0; opacity: .62; }
+  button {
+    font: inherit; font-weight: 600; padding: 10px 18px; border-radius: 999px; border: 0; cursor: pointer;
+    background: #22201d; color: #f8f5ef;
+  }
+  button:focus-visible { outline: 2px solid #3b5a8c; outline-offset: 3px; }
+  button:disabled { opacity: .5; cursor: default; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  @media (prefers-color-scheme: dark) {
+    body { color: #ece7de; }
+    button { background: #ece7de; color: #1a1917; }
+    button:focus-visible { outline-color: #9db6dd; }
+  }
+  .shot .bar { visibility: hidden; }
+</style>
+</head>
+<body>
+<div class="datamosh" role="img" aria-label="Screen 1 of 2: Library">
+  <canvas aria-hidden="true"></canvas>
+</div>
+<div class="bar">
+  <p class="hint">Drag across the screen: it flows while you hold, the keyframe lands on release.</p>
+  <button type="button" id="next">Next screen</button>
+</div>
+<p class="sr" aria-live="polite" id="status"></p>
+<script type="module">
+  import { createDatamosh } from "../variants/html/datamosh.js";
+
+  const shot = new URLSearchParams(location.search).has("shot");
+  if (shot) document.documentElement.classList.add("shot");
+  const UI = 'system-ui, -apple-system, "Segoe UI", sans-serif';
+
+  /* screen 1: a light library grid */
+  function library(g, w, h) {
+    const s = Math.min(w / 600, h / 450);
+    g.fillStyle = "#f3eee6"; g.fillRect(0, 0, w, h);
+    const pad = 26 * s;
+    g.fillStyle = "#1f1c19"; g.font = `800 ${30 * s}px ${UI}`; g.textBaseline = "alphabetic";
+    g.fillText("Library", pad, pad + 30 * s);
+    g.fillStyle = "#1f1c1999"; g.font = `500 ${12.5 * s}px ${UI}`;
+    g.fillText("6 albums · updated today", pad, pad + 50 * s);
+    g.fillStyle = "#d9cfc1"; g.beginPath(); g.arc(w - pad - 16 * s, pad + 20 * s, 16 * s, 0, Math.PI * 2); g.fill();
+    g.fillStyle = "#e7dfd3"; g.beginPath(); g.roundRect(w - pad - 190 * s, pad + 6 * s, 150 * s, 30 * s, 15 * s); g.fill();
+    g.fillStyle = "#1f1c1966"; g.font = `500 ${12 * s}px ${UI}`; g.fillText("Search", w - pad - 172 * s, pad + 25 * s);
+    const tiles = [["#d4643f", "Coast"], ["#6f9a7a", "Ferns"], ["#2f4c7c", "Night"], ["#e2b23c", "Wheat"], ["#8a4f7d", "Plum"], ["#4f9fc6", "Lagoon"]];
+    const top = pad + 74 * s, gap = 14 * s, cw = (w - pad * 2 - gap * 2) / 3, chh = (h - top - pad - gap) / 2;
+    tiles.forEach(([c, name], i) => {
+      const x = pad + (i % 3) * (cw + gap), y = top + Math.floor(i / 3) * (chh + gap);
+      g.fillStyle = c; g.beginPath(); g.roundRect(x, y, cw, chh, 12 * s); g.fill();
+      g.fillStyle = "#ffffff33"; g.beginPath(); g.arc(x + cw * 0.72, y + chh * 0.36, chh * 0.22, 0, Math.PI * 2); g.fill();
+      g.fillStyle = "#fffaf2"; g.font = `700 ${14 * s}px ${UI}`; g.fillText(name, x + 12 * s, y + chh - 14 * s);
+    });
+  }
+  /* screen 2: a dark trip page with a sun over ridges */
+  function trip(g, w, h) {
+    const s = Math.min(w / 600, h / 450);
+    const sky = g.createLinearGradient(0, 0, 0, h);
+    sky.addColorStop(0, "#141a2c"); sky.addColorStop(1, "#2a3864");
+    g.fillStyle = sky; g.fillRect(0, 0, w, h);
+    g.fillStyle = "#f08a4b"; g.beginPath(); g.arc(w * 0.68, h * 0.4, h * 0.2, 0, Math.PI * 2); g.fill();
+    const ridge = (base, amp, color, phase) => {
+      g.fillStyle = color; g.beginPath(); g.moveTo(0, h);
+      for (let x = 0; x <= w; x += 8 * s) g.lineTo(x, h * base - Math.abs(Math.sin(x / (w * 0.21) + phase)) * h * amp);
+      g.lineTo(w, h); g.fill();
+    };
+    ridge(0.66, 0.16, "#1d2745", 0.6);
+    ridge(0.78, 0.12, "#121a31", 2.1);
+    const pad = 26 * s;
+    g.fillStyle = "#f6efe4b3"; g.font = `600 ${11.5 * s}px ${UI}`;
+    if ("letterSpacing" in g) g.letterSpacing = `${1.6 * s}px`;
+    g.fillText("TRIP · 4 DAYS", pad, pad + 14 * s);
+    if ("letterSpacing" in g) g.letterSpacing = "0px";
+    g.fillStyle = "#f6efe4"; g.font = `800 ${34 * s}px ${UI}`;
+    g.fillText("Northern Ridge", pad, h - pad - 52 * s);
+    g.fillStyle = "#f6efe4a6"; g.font = `500 ${13 * s}px ${UI}`;
+    g.fillText("38 photos · 2 videos", pad, h - pad - 28 * s);
+    g.fillStyle = "#f08a4b"; g.beginPath(); g.roundRect(w - pad - 124 * s, h - pad - 50 * s, 124 * s, 36 * s, 18 * s); g.fill();
+    g.fillStyle = "#1a1410"; g.font = `700 ${13 * s}px ${UI}`; g.fillText("Open album", w - pad - 103 * s, h - pad - 27 * s);
+  }
+
+  const names = ["Library", "Northern Ridge"];
+  const stage = document.querySelector(".datamosh");
+  const status = document.querySelector("#status");
+  const next = document.querySelector("#next");
+  const mosh = createDatamosh(stage.querySelector("canvas"), [library, trip], {
+    onChange(i) {
+      stage.setAttribute("aria-label", `Screen ${i + 1} of 2: ${names[i]}`);
+      status.textContent = names[i];
+      next.disabled = false;
+    }
+  });
+  if (!mosh) {
+    // no WebGL2: plain screens on a 2D canvas, the button swaps them
+    const c = stage.querySelector("canvas"), g = c.getContext("2d");
+    let i = 0;
+    const draw = () => {
+      const dpr = Math.min(devicePixelRatio || 1, 2), r = c.getBoundingClientRect();
+      c.width = r.width * dpr; c.height = r.height * dpr; g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      (i ? trip : library)(g, r.width, r.height);
+    };
+    draw(); addEventListener("resize", draw);
+    next.addEventListener("click", () => { i = 1 - i; draw(); status.textContent = names[i]; });
+    document.querySelector(".hint").hidden = true;
+  } else {
+    next.addEventListener("click", () => { next.disabled = true; mosh.play(undefined, mosh.index ? [-1, -0.2] : [1, 0.25]); });
+    if (shot) mosh.freeze(Number(new URLSearchParams(location.search).get("n") ?? 18), [7, 2.5]);
+  }
+</script>
+</body>
+</html>

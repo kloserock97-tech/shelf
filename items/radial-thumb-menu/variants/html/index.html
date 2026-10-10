@@ -1,0 +1,27 @@
+<!-- Radial Thumb Menu. The root is the positioned screen area: the button sits in its bottom corner on the
+     data-hand side ("right" or "left"), the arc opens toward the middle. data-radius (136) and data-span (100°)
+     shape the arc. A short tap opens the same items as a sheet, built by the script.
+     Listen for "rtm:select" (detail: { action, label, via: "arc" | "tap" | "sheet" }). data-sound="off" mutes it. -->
+<div class="rtm" data-radial-menu data-hand="right" style="height: 100vh">
+  <button class="rtm__fab" type="button" aria-label="New item">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+  <div class="rtm__arc">
+    <svg class="rtm__band" width="1" height="1" aria-hidden="true"></svg>
+    <ul class="rtm__items" aria-label="Create">
+      <li role="none"><button class="rtm__item" type="button" data-action="note" aria-label="Note"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 5.5H7a2 2 0 0 0-2 2V17a2 2 0 0 0 2 2h9.5a2 2 0 0 0 2-2v-6.5"/><path d="M17.8 3.7a1.6 1.6 0 0 1 2.3 2.3L12.5 13.6 9.5 14.5l.9-3z"/></svg></button></li>
+      <li role="none"><button class="rtm__item" type="button" data-action="checklist" aria-label="Checklist"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5l1.6 1.6L8.5 5M4 12.5l1.6 1.6L8.5 11M4 18.5l1.6 1.6L8.5 17M11.5 7h8.5M11.5 13h8.5M11.5 19h8.5"/></svg></button></li>
+      <li role="none"><button class="rtm__item" type="button" data-action="scan" aria-label="Scan document"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M4 12h16"/></svg></button></li>
+      <li role="none"><button class="rtm__item" type="button" data-action="voice" aria-label="Voice memo"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg></button></li>
+      <li role="none"><button class="rtm__item" type="button" data-action="photo" aria-label="Photo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2.2l1.5-2h5.6l1.5 2h2.2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="12.5" r="3.3"/></svg></button></li>
+    </ul>
+    <p class="rtm__label" aria-hidden="true"></p>
+    <span class="rtm__ghost" aria-hidden="true"></span>
+  </div>
+</div>
+
+<link rel="stylesheet" href="radial-menu.css">
+<script src="radial-menu.js" defer></script>
+<script>
+  document.addEventListener('rtm:select', (e) => console.log(e.detail.action, e.detail.via));
+</script>

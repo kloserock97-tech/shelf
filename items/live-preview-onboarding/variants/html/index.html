@@ -1,0 +1,71 @@
+<!-- Live-Preview Interest Picker. Every chip is a real checkbox; give it a colour in --c.
+     template.lpo-cards holds every card the preview can show: data-topic matches a chip value, data-shape picks the
+     drawing (bowl, peak, blocks, bars, orbit, stripes, leaf, frame, arch), --v shifts it a little.
+     data-min sets the minimum the script checks (the CSS counter is written for 3), data-max the number of cards.
+     Listen for "lpo:continue" (detail: { topics }) to move on. -->
+<form class="lpo" data-live-preview data-min="3" data-max="4" aria-labelledby="lpo-title">
+  <header class="lpo__head">
+    <p class="lpo__step"><i class="is-done" aria-hidden="true"></i><i class="is-done" aria-hidden="true"></i><i aria-hidden="true"></i><span>Step 2 of 3</span></p>
+    <h1 id="lpo-title">What are you into?</h1>
+    <p>Pick at least 3. Your feed below changes as you choose.</p>
+  </header>
+  <section class="lpo__preview" aria-label="Feed preview">
+    <div class="lpo__bar" aria-hidden="true"><span class="lpo__dot"></span><b>For you</b><span class="lpo__tuned"></span></div>
+    <ol class="lpo__feed" aria-label="Preview cards"></ol>
+    <p class="lpo__empty">Your feed builds here</p>
+  </section>
+  <fieldset class="lpo__chips">
+    <legend class="lpo-sr">Topics</legend>
+    <input class="lpo-chip__in" type="checkbox" id="lpo-t-cooking" name="topic" value="cooking"><label class="lpo-chip" for="lpo-t-cooking" style="--c: #d4572a"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"/></svg>Cooking</label>
+    <input class="lpo-chip__in" type="checkbox" id="lpo-t-travel" name="topic" value="travel"><label class="lpo-chip" for="lpo-t-travel" style="--c: #16808f"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"/></svg>Travel</label>
+    <input class="lpo-chip__in" type="checkbox" id="lpo-t-design" name="topic" value="design"><label class="lpo-chip" for="lpo-t-design" style="--c: #7457e8"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"/></svg>Design</label>
+    <input class="lpo-chip__in" type="checkbox" id="lpo-t-music" name="topic" value="music"><label class="lpo-chip" for="lpo-t-music" style="--c: #cc3b74"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"/></svg>Music</label>
+    <input class="lpo-chip__in" type="checkbox" id="lpo-t-science" name="topic" value="science"><label class="lpo-chip" for="lpo-t-science" style="--c: #2c67d6"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"/></svg>Science</label>
+    <input class="lpo-chip__in" type="checkbox" id="lpo-t-running" name="topic" value="running"><label class="lpo-chip" for="lpo-t-running" style="--c: #b9650b"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"/></svg>Running</label>
+    <input class="lpo-chip__in" type="checkbox" id="lpo-t-gardening" name="topic" value="gardening"><label class="lpo-chip" for="lpo-t-gardening" style="--c: #2f8a4c"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"/></svg>Gardening</label>
+    <input class="lpo-chip__in" type="checkbox" id="lpo-t-film" name="topic" value="film"><label class="lpo-chip" for="lpo-t-film" style="--c: #5c6170"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"/></svg>Film</label>
+    <input class="lpo-chip__in" type="checkbox" id="lpo-t-history" name="topic" value="history"><label class="lpo-chip" for="lpo-t-history" style="--c: #9a5a2e"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5"/></svg>History</label>
+  </fieldset>
+  <footer class="lpo__foot">
+    <p class="lpo__count" aria-hidden="true">
+      <span class="lpo__pips"><i></i><i></i><i></i></span>
+      <span data-left="3">Pick 3 topics</span><span data-left="2">Pick 2 more</span><span data-left="1">Pick 1 more</span><span data-left="0">Looks good</span>
+    </p>
+    <button class="lpo__go" type="submit">Continue</button>
+    <p class="lpo__status lpo-sr" role="status"></p>
+  </footer>
+  <template class="lpo-cards">
+    <li class="lpo-card" data-topic="cooking" data-shape="bowl" style="--v: 0"><span class="lpo-card__art" aria-hidden="true"></span><span class="lpo-card__text"><strong>Fifteen-minute weeknight dal</strong><small>Cooking · 6 min read</small></span></li>
+    <li class="lpo-card" data-topic="cooking" data-shape="bowl" style="--v: 1"><span class="lpo-card__art" aria-hidden="true"></span><span class="lpo-card__text"><strong>Why your rice goes gluey</strong><small>Cooking · Video · 4:12</small></span></li>
+    <li class="lpo-card" data-topic="cooking" data-shape="bowl" style="--v: 2"><span class="lpo-card__art" aria-hidden="true"></span><span class="lpo-card__text"><strong>One-pan lemon chicken</strong><small>Cooking · Recipe · 35 min</small></span></li>
+    <li class="lpo-card" data-topic="travel" data-shape="peak" style="--v: 0"><span class="lpo-card__art" aria-hidden="true"></span><span class="lpo-card__text"><strong>Three quiet days in the Dolomites</strong><small>Travel · 9 min read</small></span></li>
+    <li class="lpo-card" data-topic="travel" data-shape="peak" style="--v: 1"><span class="lpo-card__art" aria-hidden="true"></span><span class="lpo-card__text"><strong>Packing light for a long weekend</strong><small>Travel · Checklist</small></span></li>
+    <li class="lpo-card" data-topic="travel" data-shape="peak" style="--v: 2"><span class="lpo-card__art" aria-hidden="true"></span><span class="lpo-card__text"><strong>Night trains worth booking</strong><small>Travel · Guide · 12 stops</small></span></li>
+    <li class="lpo-card" data-topic="design" data-shape="blocks" style="--v: 0"><span class="lpo-card__art" aria-hidden="true"></span><span class="lpo-card__text"><strong>Grids that bend without breaking</strong><small>Design · 7 min read</small></span></li>
+    <li class="lpo-card" data-topic="design" data-shape="blocks" style="--v: 1"><span class="lpo-card__art" aria-hidden="true"></span><span class="lpo-card__text"><strong>Colour pairs for dark mode</strong><small>Design · Video · 6:40</small></span></li>
+    <li class="lpo-card" data-topic="design" data-shape="blocks" style="--v: 2"><span class="lpo-card__art" aria-hidden="true"></span><span class="lpo-card__text"><strong>Critique a poster in five minutes</strong><small>Design · Exercise</small></span></li>
+    <li class="lpo-card" data-topic="music" data-shape="bars" style="--v: 0"><span class="lpo-card__art" aria-hidden="true"></span><span class="lpo-card__text"><strong>Albums that grew on us slowly</strong><small>Music · Playlist · 48 min</small></span></li>
+    <li class="lpo-card" data-topic="music" data-shape="bars" style="--v: 1"><span class="lpo-card__art" aria-hidden="true"></span><span class="lpo-card__text"><strong>How a drummer counts in</strong><small>Music · Video · 3:05</small></span></li>
+    <li class="lpo-card" data-topic="music" data-shape="bars" style="--v: 2"><span class="lpo-card__art" aria-hidden="true"></span><span class="lpo-card__text"><strong>Learning chords by ear</strong><small>Music · 8 min read</small></span></li>
+    <li class="lpo-card" data-topic="science" data-shape="orbit" style="--v: 0"><span class="lpo-card__art" aria-hidden="true"></span><span class="lpo-card__text"><strong>What a moon is made of</strong><small>Science · 10 min read</small></span></li>
+    <li class="lpo-card" data-topic="science" data-shape="orbit" style="--v: 1"><span class="lpo-card__art" aria-hidden="true"></span><span class="lpo-card__text"><strong>Kitchen experiments for kids</strong><small>Science · Video · 5:30</small></span></li>
+    <li class="lpo-card" data-topic="science" data-shape="orbit" style="--v: 2"><span class="lpo-card__art" aria-hidden="true"></span><span class="lpo-card__text"><strong>The year in small discoveries</strong><small>Science · Round-up</small></span></li>
+    <li class="lpo-card" data-topic="running" data-shape="stripes" style="--v: 0"><span class="lpo-card__art" aria-hidden="true"></span><span class="lpo-card__text"><strong>Your first 10 km plan</strong><small>Running · Plan · 8 weeks</small></span></li>
+    <li class="lpo-card" data-topic="running" data-shape="stripes" style="--v: 1"><span class="lpo-card__art" aria-hidden="true"></span><span class="lpo-card__text"><strong>Easy runs, really easy</strong><small>Running · 5 min read</small></span></li>
+    <li class="lpo-card" data-topic="running" data-shape="stripes" style="--v: 2"><span class="lpo-card__art" aria-hidden="true"></span><span class="lpo-card__text"><strong>Shoes: what actually matters</strong><small>Running · Video · 7:15</small></span></li>
+    <li class="lpo-card" data-topic="gardening" data-shape="leaf" style="--v: 0"><span class="lpo-card__art" aria-hidden="true"></span><span class="lpo-card__text"><strong>Herbs that survive a windowsill</strong><small>Gardening · 4 min read</small></span></li>
+    <li class="lpo-card" data-topic="gardening" data-shape="leaf" style="--v: 1"><span class="lpo-card__art" aria-hidden="true"></span><span class="lpo-card__text"><strong>Compost without the smell</strong><small>Gardening · Guide</small></span></li>
+    <li class="lpo-card" data-topic="gardening" data-shape="leaf" style="--v: 2"><span class="lpo-card__art" aria-hidden="true"></span><span class="lpo-card__text"><strong>What to sow in autumn</strong><small>Gardening · Calendar</small></span></li>
+    <li class="lpo-card" data-topic="film" data-shape="frame" style="--v: 0"><span class="lpo-card__art" aria-hidden="true"></span><span class="lpo-card__text"><strong>Slow cinema for busy evenings</strong><small>Film · List · 12 films</small></span></li>
+    <li class="lpo-card" data-topic="film" data-shape="frame" style="--v: 1"><span class="lpo-card__art" aria-hidden="true"></span><span class="lpo-card__text"><strong>How a long take is planned</strong><small>Film · Video · 9:02</small></span></li>
+    <li class="lpo-card" data-topic="film" data-shape="frame" style="--v: 2"><span class="lpo-card__art" aria-hidden="true"></span><span class="lpo-card__text"><strong>Soundtracks that carry a scene</strong><small>Film · 6 min read</small></span></li>
+    <li class="lpo-card" data-topic="history" data-shape="arch" style="--v: 0"><span class="lpo-card__art" aria-hidden="true"></span><span class="lpo-card__text"><strong>Roads the Romans left behind</strong><small>History · 11 min read</small></span></li>
+    <li class="lpo-card" data-topic="history" data-shape="arch" style="--v: 1"><span class="lpo-card__art" aria-hidden="true"></span><span class="lpo-card__text"><strong>A day in a medieval market</strong><small>History · Audio · 18 min</small></span></li>
+    <li class="lpo-card" data-topic="history" data-shape="arch" style="--v: 2"><span class="lpo-card__art" aria-hidden="true"></span><span class="lpo-card__text"><strong>Maps that got it wrong</strong><small>History · Gallery</small></span></li>
+  </template>
+</form>
+<link rel="stylesheet" href="live-preview.css">
+<script src="live-preview.js" defer></script>
+<script>
+  document.addEventListener('lpo:continue', (e) => console.log('topics', e.detail.topics));
+</script>

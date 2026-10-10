@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gem Icons</title>
+<link rel="stylesheet" href="gem-icons.css">
+</head>
+<body>
+<!-- data-gem names the shape (gem-shapes.js), --gem sets the colour, aria-pressed="true" colours the gem.
+     Without WebGL2 the buttons show flat silhouettes. -->
+<div class="gem" data-gem-root role="group" aria-label="Shortcuts" style="width: 300px; --gem-cols: 3">
+  <canvas aria-hidden="true"></canvas>
+  <ul class="gem__grid" role="list">
+    <li><button class="gem__icon" type="button" data-gem="heart" aria-pressed="true" aria-label="Favorites"></button></li>
+    <li><button class="gem__icon" type="button" data-gem="mail" aria-pressed="false" aria-label="Inbox"></button></li>
+    <li><button class="gem__icon" type="button" data-gem="star" aria-pressed="true" aria-label="Starred" style="--gem: #8ee3a0"></button></li>
+  </ul>
+</div>
+<script type="module">
+  import { createGemIcons } from './gem-icons.js';
+  const root = document.querySelector('[data-gem-root]');
+  root.querySelectorAll('[data-gem]').forEach((b) =>
+    b.addEventListener('click', () => b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true'))));
+  const gems = createGemIcons(root);
+  // gems?.flash(0) plays the caustic flash from code; gems?.refresh() after changing --gem or --gem-* at runtime
+</script>
+</body>
+</html>

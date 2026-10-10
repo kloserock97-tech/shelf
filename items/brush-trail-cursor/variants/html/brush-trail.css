@@ -1,0 +1,11 @@
+/* Brush Trail Cursor. The container is the paper: it needs a size and position: relative (or fixed for a whole page). */
+.brush-trail {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  border-radius: inherit;
+}
+/* with touch drawing on, a finger paints instead of scrolling the area */
+.brush-trail-touch { touch-action: none; }

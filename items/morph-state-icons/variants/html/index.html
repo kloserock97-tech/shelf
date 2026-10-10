@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Morph State Icons</title>
+<link rel="stylesheet" href="morph-icons.css">
+</head>
+<body>
+<!-- The icon goes inside a native button; bindToggle keeps aria-pressed / aria-expanded / the name in step with it. -->
+<button class="msi-btn" type="button" id="play"></button>
+<button class="msi-btn" type="button" id="like" aria-label="Like"></button>
+<script type="module">
+  import { createMorphIcon, bindToggle } from './morph-icons.js';
+
+  // the name changes with the shape: Play ↔ Pause (no aria-pressed)
+  const play = document.getElementById('play');
+  bindToggle(play, createMorphIcon(play, 'play-pause'), {
+    states: ['play', 'pause'], mode: 'label', labels: { play: 'Play', pause: 'Pause' }
+  });
+
+  // the name stays, aria-pressed carries the state
+  const like = document.getElementById('like');
+  bindToggle(like, createMorphIcon(like, 'heart', { state: 'off' }), { states: ['off', 'on'] });
+
+  // any icon can also be driven directly: icon.set('done'), icon.set('progress', { param: 0.4 }), icon.param(0.8)
+</script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Offline Outbox Queue</title>
+<link rel="stylesheet" href="outbox.css">
+</head>
+<body style="max-width: 420px; margin: 40px auto; padding: 0 16px; font-family: system-ui, sans-serif;">
+<header style="display: flex; justify-content: space-between; align-items: center;">
+  <h1 style="font-size: 22px;">Notes</h1>
+  <button id="chip"></button>
+</header>
+<div id="outbox" style="margin-bottom: 12px;"></div>
+<form id="add"><input name="note" placeholder="New note" aria-label="New note"> <button>Save</button></form>
+<ul id="notes"></ul>
+<p role="status" id="status" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%);"></p>
+
+<script src="outbox.js"></script>
+<script>
+  const outbox = new Outbox({
+    // your request; reject to retry later, honour the signal to stop when the network drops
+    send: (item, signal) => fetch('/api/notes', { method: 'POST', body: JSON.stringify(item.data), signal })
+      .then((r) => { if (!r.ok) throw new Error(`Server said ${r.status}`); return r.json(); }),
+    storageKey: 'notes-outbox' // survives a reload
+  });
+  Outbox.view(outbox, {
+    chip: document.getElementById('chip'),
+    panel: document.getElementById('outbox'),
+    status: document.getElementById('status'),
+    land(item) {
+      const li = document.createElement('li');
+      li.textContent = item.data.text;
+      document.getElementById('notes').appendChild(li);
+      return li; // the row flies from the outbox to here
+    }
+  });
+  document.getElementById('add').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const text = e.target.elements.note.value.trim();
+    if (!text) return;
+    e.target.reset();
+    outbox.enqueue('add', `Save “${text}”`, { ref: crypto.randomUUID(), text });
+  });
+</script>
+</body>
+</html>

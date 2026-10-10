@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Text to Dust</title>
+<link rel="stylesheet" href="../variants/html/text-dust.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: grid;
+    grid-template-columns: minmax(0, 460px);
+    justify-content: center;
+    align-content: center;
+    padding: 32px 16px;
+    box-sizing: border-box;
+  }
+  html.is-shot body { padding: 6px 16px; }
+  .card { box-sizing: border-box; min-width: 0; padding: 20px 16px 14px; border-radius: 22px; background: var(--tdd-surface); }
+  .card__head { display: flex; align-items: baseline; justify-content: space-between; margin: 0 6px 8px; }
+  .card__title { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .card__hint { font-size: 13px; color: var(--tdd-label-3); }
+  @media (max-width: 520px) {
+    body { align-content: start; padding: 54px 10px 16px; }
+    .card { padding: 18px 10px 12px; border-radius: 18px; }
+    .tdd-row__time { display: none; }
+  }
+</style>
+</head>
+<body>
+<section class="tdd card" aria-labelledby="notes-title">
+  <div class="card__head">
+    <h1 class="card__title" id="notes-title">Notes</h1>
+    <span class="card__hint">Delete one</span>
+  </div>
+  <div class="tdd-stage">
+  <ul class="tdd-list" aria-label="Notes">
+    <li class="tdd-row">
+      <span class="tdd-row__dot" data-dust-shape style="--tdd-c: #ff9500"></span>
+      <span class="tdd-row__text"><span class="tdd-row__title" data-dust-title>Flight check-in opens at 18:00</span><span class="tdd-row__meta">Travel · reminder</span></span>
+      <span class="tdd-row__time">08:12</span>
+      <button type="button" class="tdd-del" aria-label="Delete “Flight check-in opens at 18:00”"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12M10.5 10.5v5M13.5 10.5v5"/></svg></button>
+    </li>
+    <li class="tdd-row">
+      <span class="tdd-row__dot" data-dust-shape style="--tdd-c: #0a84ff"></span>
+      <span class="tdd-row__text"><span class="tdd-row__title" data-dust-title>Ask Mira for the venue floor plan</span><span class="tdd-row__meta">Work · offsite</span></span>
+      <span class="tdd-row__time">09:40</span>
+      <button type="button" class="tdd-del" aria-label="Delete “Ask Mira for the venue floor plan”"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12M10.5 10.5v5M13.5 10.5v5"/></svg></button>
+    </li>
+    <li class="tdd-row">
+      <span class="tdd-row__dot" data-dust-shape style="--tdd-c: #34c759"></span>
+      <span class="tdd-row__text"><span class="tdd-row__title" data-dust-title>Water the fern on the balcony</span><span class="tdd-row__meta">Home</span></span>
+      <span class="tdd-row__time">11:05</span>
+      <button type="button" class="tdd-del" aria-label="Delete “Water the fern on the balcony”"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12M10.5 10.5v5M13.5 10.5v5"/></svg></button>
+    </li>
+    <li class="tdd-row">
+      <span class="tdd-row__dot" data-dust-shape style="--tdd-c: #0a84ff"></span>
+      <span class="tdd-row__text"><span class="tdd-row__title" data-dust-title>Draft the quarterly budget notes</span><span class="tdd-row__meta">Work · due Friday</span></span>
+      <span class="tdd-row__time">13:30</span>
+      <button type="button" class="tdd-del" aria-label="Delete “Draft the quarterly budget notes”"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12M10.5 10.5v5M13.5 10.5v5"/></svg></button>
+    </li>
+    <li class="tdd-row">
+      <span class="tdd-row__dot" data-dust-shape style="--tdd-c: #af52de"></span>
+      <span class="tdd-row__text"><span class="tdd-row__title" data-dust-title>Pick a frame for the print</span><span class="tdd-row__meta">Home · weekend</span></span>
+      <span class="tdd-row__time">16:45</span>
+      <button type="button" class="tdd-del" aria-label="Delete “Pick a frame for the print”"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12M10.5 10.5v5M13.5 10.5v5"/></svg></button>
+    </li>
+  </ul>
+  <div class="tdd-empty" hidden>
+    <p class="tdd-empty__title">Nothing left</p>
+    <p class="tdd-empty__text">Only the dust remembers.</p>
+    <button type="button" class="tdd-restore">Restore all</button>
+  </div>
+  </div>
+  <div class="tdd-toast-slot">
+    <div class="tdd-toast" hidden>
+      <span class="tdd-toast__text"></span>
+      <button type="button" class="tdd-undo">Undo</button>
+    </div>
+  </div>
+  <p class="tdd-status tdd-sr" role="status"></p>
+</section>
+<script src="../variants/html/text-dust.js"></script>
+<script>
+  const dust = TextDust.mount(document.querySelector('.tdd'));
+  // ?shot=1: two notes already lie on the floor as dust, a third is halfway gone
+  if (new URLSearchParams(location.search).has('shot')) {
+    document.documentElement.classList.add('is-shot');
+    const rows = [...document.querySelectorAll('.tdd-row')];
+    document.fonts.ready.then(() => dust.pose([[rows[4], dust.TAIL], [rows[3], dust.TAIL], [rows[1], 0.6]]));
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!-- No backend in the piece: set root.st.send = async (data) => fetch(...) to send for real.
+     data-prefix starts the ticket number, data-reply-days counts working days to the promised reply,
+     data-replier="Anna" turns "I'll reply" into "Anna will reply". -->
+<section class="st" aria-label="Contact" data-prefix="NG" data-reply-days="3">
+  <form class="st-form" action="#" method="post">
+    <h2 class="st-form__title">Write to me</h2>
+    <p class="st-form__sub">A role, a project or a question about a case. You get a ticket number and a date for the reply.</p>
+    <div class="st-form__grid">
+      <label class="st-field"><span>Name</span><input name="name" autocomplete="name" required></label>
+      <label class="st-field"><span>Email</span><input name="email" type="email" autocomplete="email" required></label>
+      <label class="st-field st-field--wide"><span>Message</span><textarea name="message" rows="3" required></textarea></label>
+    </div>
+    <div class="st-form__foot">
+      <span class="st-form__note">No newsletters, only a reply.</span>
+      <button class="st-send" type="submit"><span class="st-send__label">Send</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12h14"/><path d="M13 6.5l5.5 5.5-5.5 5.5"/></svg></button>
+    </div>
+  </form>
+  <div class="st-done-view" hidden>
+    <div class="st-ticket">
+      <div class="st-main">
+        <div class="st-main__top"><h2 class="st-title" tabindex="-1">Message received</h2><span class="st-stamp" aria-hidden="true">Sent</span></div>
+        <p class="st-no"><span class="st-label">Ticket</span><span class="st-no__value" data-st="no"></span></p>
+        <dl class="st-fields">
+          <div><dt>From</dt><dd data-st="from"></dd></div>
+          <div><dt>Sent</dt><dd data-st="sent"></dd></div>
+          <div><dt>Reply by</dt><dd data-st="due"></dd></div>
+        </dl>
+        <p class="st-promise" data-st="promise"></p>
+      </div>
+      <div class="st-stub">
+        <svg class="st-barcode" data-st="barcode" aria-hidden="true"></svg>
+        <fieldset class="st-choice">
+          <legend class="st-sr">The stub</legend>
+          <label><input type="radio" value="copy" checked><span>Copy number</span></label>
+          <label><input type="radio" value="ics"><span>Reminder .ics</span></label>
+        </fieldset>
+        <p class="st-done" data-st="done"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span></span></p>
+        <button class="st-tear" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.5v15"/><path d="M11 12h8"/><path d="M15.5 8.5L19 12l-3.5 3.5"/></svg><span data-st="tear">Tear to save</span></button>
+      </div>
+    </div>
+    <div class="st-after"><button class="st-again" type="button">Write another</button></div>
+  </div>
+  <p class="st-sr" role="status" data-st="status"></p>
+</section>
+
+<link rel="stylesheet" href="sent-ticket.css">
+<script src="sent-ticket.js" defer></script>

@@ -1,0 +1,110 @@
+/* Boot Sequence Loader. Put .bsl over the content it loads (position: absolute; inset: 0 inside a positioned box,
+   or position: fixed for a whole page). The screen is always a dark tube; its colours are the tokens below. */
+.bsl {
+  --bsl-bg: #070a08;
+  --bsl-text: #b9c4b8;
+  --bsl-dim: #6b7a6c;
+  --bsl-head: #e8eee6;
+  --bsl-ok: #4fe08a;
+  --bsl-fail: #ff5f56;
+  --bsl-hint: #ffc65c;
+  --bsl-glow: 0 0 6px rgb(120 255 170 / 0.18);
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  container-type: inline-size;
+  background: var(--bsl-bg);
+}
+.bsl[hidden] { display: none; }
+.bsl__screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: clamp(12px, 4cqi, 26px) clamp(14px, 4.5cqi, 30px);
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(to bottom, rgb(0 0 0 / 0) 0 2px, rgb(0 0 0 / 0.22) 2px 3px),
+    radial-gradient(120% 90% at 50% 45%, #10170f 0%, var(--bsl-bg) 70%);
+  color: var(--bsl-text);
+  font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", "DejaVu Sans Mono", monospace;
+  font-size: min(15px, calc((100cqi - 30px) / 25.5));
+  line-height: 1.45;
+  text-shadow: var(--bsl-glow);
+  cursor: default;
+  transform-origin: 50% 50%;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.bsl__log {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  white-space: pre;
+}
+.bsl__line { min-height: 1.45em; }
+.bsl__line--head { color: var(--bsl-head); }
+.bsl__line--head:first-child { font-weight: 700; }
+.bsl__line--err { color: var(--bsl-fail); }
+.bsl__line--hint { color: var(--bsl-hint); }
+.bsl__line--ready { color: var(--bsl-ok); }
+.bsl__st--run { color: var(--bsl-dim); }
+.bsl__st--ok { color: var(--bsl-ok); text-shadow: 0 0 8px rgb(79 224 138 / 0.55); }
+.bsl__st--fail { color: #1a0605; background: var(--bsl-fail); text-shadow: none; }
+.bsl__cur {
+  display: inline-block;
+  width: 0.6em;
+  height: 1.05em;
+  margin-left: 1px;
+  vertical-align: -0.16em;
+  background: currentColor;
+  animation: bsl-blink 1.06s steps(1) infinite;
+}
+@keyframes bsl-blink { 50% { opacity: 0; } }
+.bsl__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 14px;
+  padding-top: 0.6em;
+  border-top: 1px dashed rgb(185 196 184 / 0.22);
+  white-space: pre;
+}
+.bsl__bar { color: var(--bsl-ok); }
+.bsl__rest { opacity: 0.28; }
+.bsl__btn {
+  font: inherit;
+  color: var(--bsl-dim);
+  background: none;
+  border: 0;
+  padding: 2px 0;
+  cursor: pointer;
+  text-shadow: inherit;
+}
+.bsl__btn:hover { color: var(--bsl-text); }
+.bsl__btn:focus-visible { outline: 1px solid var(--bsl-ok); outline-offset: 3px; color: var(--bsl-text); }
+.bsl.is-failed .bsl__btn { color: var(--bsl-hint); }
+.bsl.is-failed .bsl__bar { color: var(--bsl-fail); }
+.bsl__btn[hidden] { display: none; }
+.bsl__sr {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+/* the afterglow dot at the centre of the tube */
+.bsl__dot {
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 14px; height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffffff 0 22%, rgb(200 255 220 / 0.7) 40%, rgb(120 255 170 / 0) 72%);
+  opacity: 0;
+  pointer-events: none;
+}
+.bsl.is-folding { pointer-events: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bsl__cur { animation: none; }
+}

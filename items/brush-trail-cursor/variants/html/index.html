@@ -1,0 +1,15 @@
+<!-- The container is the paper: give it a size and position: relative. Content inside stays clickable. -->
+<div class="paper" style="position: relative; height: 420px; border-radius: 16px; background: #fbf8f1;">
+  <h1 style="position: relative; margin: 0; padding: 32px;">Move here to paint</h1>
+</div>
+<button type="button" id="clear">Clear</button>
+
+<link rel="stylesheet" href="brush-trail.css">
+<script type="module">
+  import { createBrushTrail } from './brush-trail.js';
+
+  const trail = createBrushTrail(document.querySelector('.paper'), { brush: 'bristle', size: 22 });
+  // trail is null without WebGL2: the paper simply stays clean
+  document.getElementById('clear').addEventListener('click', () => trail?.clear());
+  // trail.setBrush('flat' | 'bristle' | 'stamp')
+</script>

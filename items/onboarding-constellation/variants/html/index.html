@@ -1,0 +1,25 @@
+<!-- The graph is JSON: positions are 0…1 of the sky, "after" lists the steps that unlock a step. -->
+<section id="onboarding" aria-label="Onboarding" style="max-width: 720px"></section>
+
+<script type="application/json" id="graph">
+{
+  "title": "Get set up",
+  "name": "Arrow",
+  "steps": [
+    { "id": "account", "label": "Create account", "x": 0.15, "y": 0.5, "after": [], "text": "Name, email, password." },
+    { "id": "profile", "label": "Set up profile", "x": 0.45, "y": 0.3, "after": ["account"], "text": "Photo and role." },
+    { "id": "team",    "label": "Invite team",    "x": 0.45, "y": 0.7, "after": ["account"], "text": "Send a join link." },
+    { "id": "launch",  "label": "First project",  "x": 0.85, "y": 0.5, "after": ["profile", "team"], "text": "Name it and add a task.", "action": "Start" }
+  ]
+}
+</script>
+
+<link rel="stylesheet" href="constellation.css">
+<script type="module">
+  import { createConstellation } from './constellation.js';
+
+  const root = document.getElementById('onboarding');
+  const graph = JSON.parse(document.getElementById('graph').textContent);
+  const oc = createConstellation(root, graph, { done: JSON.parse(localStorage.getItem('onboarding') || '["account"]') });
+  root.addEventListener('constellationchange', (e) => localStorage.setItem('onboarding', JSON.stringify(e.detail.done)));
+</script>

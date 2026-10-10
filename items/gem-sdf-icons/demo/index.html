@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Gem Icons</title>
+<link rel="stylesheet" href="../variants/html/gem-icons.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  body {
+    min-height: 100vh; min-height: 100dvh;
+    display: grid; place-content: center; justify-items: center; gap: 18px;
+    padding: 24px 16px; box-sizing: border-box;
+    font: 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: #5f5d58;
+  }
+  @media (prefers-color-scheme: dark) { body { color: #a3a09a; } }
+  .gem { width: min(500px, calc(100vw - 32px)); }
+  @media (max-width: 440px) { .gem { --gem-cols: 3; } }
+  .caption { margin: 0; max-width: 34em; text-align: center; }
+  .coarse { display: none; }
+  @media (hover: none) { .fine { display: none; } .coarse { display: inline; } }
+  .is-shot .caption { display: none; }
+  @media (min-width: 800px) { .is-shot .gem { width: 720px; } }
+</style>
+</head>
+<body>
+<div class="gem" data-gem-root role="group" aria-label="Pinned shortcuts">
+  <canvas aria-hidden="true"></canvas>
+  <ul class="gem__grid" role="list">
+    <li><button class="gem__icon" type="button" data-gem="home" aria-pressed="true" aria-label="Home"></button></li>
+    <li><button class="gem__icon" type="button" data-gem="mail" aria-pressed="true" aria-label="Inbox"></button></li>
+    <li><button class="gem__icon" type="button" data-gem="star" aria-pressed="false" aria-label="Starred"></button></li>
+    <li><button class="gem__icon" type="button" data-gem="heart" aria-pressed="true" aria-label="Favorites"></button></li>
+    <li><button class="gem__icon" type="button" data-gem="lock" aria-pressed="false" aria-label="Vault"></button></li>
+    <li><button class="gem__icon" type="button" data-gem="bell" aria-pressed="true" aria-label="Alerts"></button></li>
+    <li><button class="gem__icon" type="button" data-gem="bolt" aria-pressed="false" aria-label="Quick actions"></button></li>
+    <li><button class="gem__icon" type="button" data-gem="drop" aria-pressed="true" aria-label="Water log"></button></li>
+    <li><button class="gem__icon" type="button" data-gem="chat" aria-pressed="false" aria-label="Messages"></button></li>
+    <li><button class="gem__icon" type="button" data-gem="moon" aria-pressed="true" aria-label="Night mode"></button></li>
+    <li><button class="gem__icon" type="button" data-gem="pin" aria-pressed="false" aria-label="Places"></button></li>
+    <li><button class="gem__icon" type="button" data-gem="sparkle" aria-pressed="false" aria-label="Highlights"></button></li>
+  </ul>
+</div>
+<p class="caption"><span class="fine">Hover turns a gem toward the pointer. A click flashes it and pins it: pinned gems take their colour, the rest stay clear glass.</span><span class="coarse">Drag a finger over a gem to turn it. A tap flashes it and pins it in colour.</span></p>
+<script type="module">
+  import { createGemIcons } from '../variants/html/gem-icons.js';
+  const shot = new URLSearchParams(location.search).has('shot');
+  if (shot) document.documentElement.classList.add('is-shot');
+  const root = document.querySelector('[data-gem-root]');
+  const icons = [...root.querySelectorAll('[data-gem]')];
+  icons.forEach((b) => b.addEventListener('click', () => b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true'))));
+  if (shot) {
+    icons[2].setAttribute('aria-pressed', 'true');
+    icons[11].setAttribute('aria-pressed', 'true');
+  }
+  createGemIcons(root, shot ? { shot: { 3: [0.42, -0.36], 0: [-0.3, -0.2], 9: [0.3, -0.42], flash: [3, 0.36] } } : {});
+</script>
+</body>
+</html>

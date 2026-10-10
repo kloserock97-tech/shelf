@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Earcon Kit</title>
+<link rel="stylesheet" href="../variants/html/earcon-kit.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  body {
+    min-height: 100vh; min-height: 100dvh;
+    display: grid; place-content: center; justify-items: center; gap: 14px;
+    padding: 24px 16px; box-sizing: border-box;
+    font: 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif; color: #6e6e73;
+  }
+  @media (prefers-color-scheme: dark) { body { color: #a1a1a6; } }
+  .kit { width: min(680px, calc(100vw - 32px)); }
+  .hint { margin: 0; max-width: 34em; text-align: center; }
+  .is-shot .hint { display: none; }
+  @media (min-width: 800px) { .is-shot .kit { zoom: 1.12; } }
+</style>
+</head>
+<body>
+<section class="kit" aria-label="Interface sounds"></section>
+<p class="hint">Press a card to hear it. Timbre, key and character rebuild the whole set together; nothing plays on its own.</p>
+<script type="module">
+  import { createEarconPanel } from '../variants/html/earcon-panel.js';
+  const q = new URLSearchParams(location.search);
+  const shot = q.has('shot');
+  if (shot) document.documentElement.classList.add('is-shot');
+  const panel = createEarconPanel(document.querySelector('.kit'), shot
+    ? { timbre: 'glass', key: 'D major', character: 0.68 }
+    : { timbre: 'soft', key: 'D major', character: 0.3 });
+  if (shot) {
+    // a still frame: the Success card as if it were halfway through
+    setTimeout(() => {
+      const card = document.querySelector('[data-sound="success"]');
+      card.classList.add('is-playing');
+      card.querySelector('.ek__head').style.transform = `translateX(${card.querySelector('.ek__scope').clientWidth * 0.38}px)`;
+    }, 300);
+  }
+</script>
+</body>
+</html>

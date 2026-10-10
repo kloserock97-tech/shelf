@@ -1,0 +1,20 @@
+<!-- An empty state with a hanging cloth banner. The banner's text is also in the DOM for screen readers. -->
+<section class="empty" style="display: grid; justify-items: center; gap: 12px; text-align: center">
+  <div class="cloth-banner" role="img" aria-label="A cloth banner hanging from a rod: Nothing here yet." style="height: 60vh; max-width: 520px">
+    <canvas aria-hidden="true"></canvas>
+  </div>
+  <p>Saved items will hang here.</p>
+  <button type="button" class="add">Add your first item</button>
+</section>
+
+<link rel="stylesheet" href="cloth-banner.css">
+<script type="module">
+  import { createClothBanner } from './cloth-banner.js';
+
+  const banner = createClothBanner(document.querySelector('.cloth-banner canvas'), {
+    eyebrow: 'SAVED ITEMS',
+    lines: ['Nothing', 'here', 'yet.']
+  });
+  // a puff of wind as a reply to the button
+  document.querySelector('.add').addEventListener('click', () => banner?.gust(1));
+</script>

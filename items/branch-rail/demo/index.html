@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Conversation Branch Rail</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="../variants/html/branch-rail.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  body { min-height: 100vh; min-height: 100dvh; box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 640px); justify-content: center; align-content: center; padding: 28px 16px; }
+  .card { box-sizing: border-box; min-width: 0; padding: 18px 18px 20px; border-radius: 22px; background: #ffffff; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 10px 30px rgba(0, 0, 0, 0.07); }
+  @media (prefers-color-scheme: dark) { .card { background: #1c1c1e; box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.08); } }
+  .hint { margin: 12px 4px 0; font: 12.5px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; color: #8e8e93; text-align: center; }
+  .br { --br-log-h: 400px; }
+  @media (max-width: 520px) { body { padding: 20px 10px; align-content: start; } .card { padding: 14px 12px 16px; border-radius: 18px; } .br { --br-log-h: 460px; } }
+  @media (min-width: 760px) { html.is-shot body { zoom: 1.12; } }
+</style>
+</head>
+<body>
+<div class="card">
+<section class="br" aria-label="Chat: Offline mode release note">
+  <header class="br-head">
+    <div class="br-head__text"><h2 class="br-title">Offline mode release note</h2><p class="br-where"></p></div>
+    <button class="br-detach" type="button" aria-label="Open this branch as a new chat"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3.5" width="11.5" height="11.5" rx="2.5"/><path d="M15 15v3a2.5 2.5 0 0 1-2.5 2.5h-6A2.5 2.5 0 0 1 4 18v-6a2.5 2.5 0 0 1 2.5-2.5H9"/><path d="M13 7.5h4v4"/><path d="M17 7.5l-4.5 4.5"/></svg><span>New chat from branch</span></button>
+  </header>
+  <div class="br-body">
+    <ol class="br-log" aria-label="Messages in the shown branch"></ol>
+    <nav class="br-rail" aria-label="Branches of this chat">
+      <span class="br-rail__label" aria-hidden="true">Tree</span>
+      <div class="br-tree" role="group" aria-label="Messages. Arrows move along the tree, Enter shows a branch."></div>
+      <span class="br-rail__count" aria-hidden="true"></span>
+      <div class="br-tip" aria-hidden="true"><span class="br-tip__kind"></span><span class="br-tip__text"></span><span class="br-tip__meta"></span></div>
+    </nav>
+  </div>
+  <p class="br-sr" role="status" data-br="status"></p>
+  <script type="application/json" class="br-data">{
+  "active": "m6e",
+  "messages": [
+    {
+      "id": "m1",
+      "role": "user",
+      "text": "Write a short release note for our offline mode."
+    },
+    {
+      "id": "m2",
+      "parent": "m1",
+      "role": "assistant",
+      "text": "Offline mode is here. Edit files on a plane, in a tunnel or anywhere the signal drops; your changes sync the moment you are back online."
+    },
+    {
+      "id": "m2b",
+      "parent": "m1",
+      "role": "assistant",
+      "text": "You can now keep working without a connection. Everything you change offline is saved on your device and synced when the network returns."
+    },
+    {
+      "id": "m3",
+      "parent": "m2",
+      "role": "user",
+      "text": "Good. Now a version for the in-app banner, under 60 characters."
+    },
+    {
+      "id": "m4",
+      "parent": "m3",
+      "role": "assistant",
+      "text": "Work offline: your edits sync when you’re back."
+    },
+    {
+      "id": "m4b",
+      "parent": "m3",
+      "role": "assistant",
+      "text": "No signal? Keep editing. It all syncs when you’re back."
+    },
+    {
+      "id": "m3e",
+      "parent": "m2",
+      "role": "user",
+      "text": "Good. Now a post-length version with a bit of humour."
+    },
+    {
+      "id": "m4e",
+      "parent": "m3e",
+      "role": "assistant",
+      "text": "Lost signal? Keep editing anyway. We’ll sync everything the moment the Wi‑Fi remembers you exist."
+    },
+    {
+      "id": "m5e",
+      "parent": "m4e",
+      "role": "user",
+      "text": "Less sarcastic, please."
+    },
+    {
+      "id": "m6e",
+      "parent": "m5e",
+      "role": "assistant",
+      "text": "No signal, no problem: keep editing, and everything syncs once you’re back online."
+    },
+    {
+      "id": "m3c",
+      "parent": "m2b",
+      "role": "user",
+      "text": "Shorter, for the changelog."
+    },
+    {
+      "id": "m4c",
+      "parent": "m3c",
+      "role": "assistant",
+      "text": "Added offline editing with automatic sync."
+    }
+  ]
+}</script>
+</section>
+</div>
+<p class="hint">Hover or tab to a dot on the rail to peek at a branch, click to switch. Arrow keys walk the tree.</p>
+<script src="../variants/html/branch-rail.js"></script>
+<script>
+  // ?shot=1: poster state, the joke branch shown, a peek at the regenerated first answer
+  (() => {
+    if (!new URLSearchParams(location.search).has('shot')) return;
+    document.documentElement.classList.add('is-shot');
+    document.querySelector('.hint').hidden = true;
+    const br = BranchRail.init(document.querySelector('.br'));
+    requestAnimationFrame(() => br.peek('m2b'));
+  })();
+</script>
+</body>
+</html>

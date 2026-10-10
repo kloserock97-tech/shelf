@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Text to Dust</title>
+<link rel="stylesheet" href="text-dust.css">
+</head>
+<body style="max-width: 440px; margin: 40px auto; padding: 0 16px;">
+<!-- data-floor: room under the rows where the dust settles, css px -->
+<section class="tdd" data-floor="44">
+  <div class="tdd-stage">
+    <ul class="tdd-list" aria-label="Notes">
+      <li class="tdd-row">
+        <span class="tdd-row__dot" data-dust-shape></span>
+        <span class="tdd-row__text"><span class="tdd-row__title" data-dust-title>Call the plumber</span><span class="tdd-row__meta">Home</span></span>
+        <button type="button" class="tdd-del" aria-label="Delete “Call the plumber”">✕</button>
+      </li>
+      <li class="tdd-row">
+        <span class="tdd-row__dot" data-dust-shape></span>
+        <span class="tdd-row__text"><span class="tdd-row__title" data-dust-title>Send the invoice</span><span class="tdd-row__meta">Work</span></span>
+        <button type="button" class="tdd-del" aria-label="Delete “Send the invoice”">✕</button>
+      </li>
+    </ul>
+    <div class="tdd-empty" hidden>
+      <p class="tdd-empty__title">Nothing left</p>
+      <button type="button" class="tdd-restore">Restore all</button>
+    </div>
+  </div>
+  <div class="tdd-toast-slot">
+    <div class="tdd-toast" hidden><span class="tdd-toast__text"></span><button type="button" class="tdd-undo">Undo</button></div>
+  </div>
+  <p class="tdd-status tdd-sr" role="status"></p>
+</section>
+<script src="text-dust.js"></script>
+<script>
+  const dust = TextDust.mount(document.querySelector('.tdd'));
+  // dust.remove(rowElement) deletes from code; dust.undo() brings the last one back
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+/* Cloth Banner: the canvas takes its box; the cloth is drawn on a transparent background. */
+.cloth-banner {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 240px;
+}
+.cloth-banner canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;          /* a finger on the canvas pulls the cloth instead of scrolling */
+  cursor: default;
+  filter: drop-shadow(0 18px 22px rgb(40 20 10 / 0.16));
+}
+.cloth-banner canvas.is-over { cursor: grab; }
+.cloth-banner canvas.is-grabbing { cursor: grabbing; }
+@media (prefers-color-scheme: dark) {
+  .cloth-banner canvas { filter: drop-shadow(0 18px 24px rgb(0 0 0 / 0.45)); }
+}

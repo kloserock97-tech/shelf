@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Morph State Icons</title>
+<link rel="stylesheet" href="../variants/html/morph-icons.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  body {
+    min-height: 100vh; min-height: 100dvh;
+    display: grid; place-content: center; justify-items: center; gap: 22px;
+    padding: 24px 16px; box-sizing: border-box;
+    font: 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+    --ink: #1d1d1f; --soft: #6e6e73; --on: #23a455; --love: #f0365a; --rec: #e5383b;
+    color: var(--ink);
+  }
+  @media (prefers-color-scheme: dark) {
+    body { --ink: #f5f5f7; --soft: #a1a1a6; --on: #4fd47f; --love: #ff5c7a; --rec: #ff6363; }
+  }
+  .grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 72px); gap: 20px 14px; }
+  .tile { position: relative; display: grid; justify-items: center; gap: 8px; }
+  .msi-btn { --msi-btn: 60px; --msi-size: 28px; }
+  .cap { font-size: 12px; color: var(--soft); font-variant-numeric: tabular-nums; min-height: 1.4em; transition: color 0.2s ease; }
+  /* states with a colour */
+  [data-state="pause"], [data-state="close"] { --msi-ink: var(--ink); }
+  [data-state="check"], [data-state="copied"], [data-state="done"] { --msi-ink: var(--on); }
+  [data-state="on"][data-msi="heart"] { --msi-ink: var(--love); }
+  [data-state="stop"] { --msi-ink: var(--rec); }
+  [data-state="off"][data-msi="bell"] { --msi-ink: var(--soft); }
+  .menu {
+    position: absolute; top: 66px; left: 50%; translate: -50% 0; z-index: 2; min-width: 132px;
+    margin: 0; padding: 6px; list-style: none; border-radius: 14px;
+    background: #fff; box-shadow: 0 12px 32px -8px rgb(0 0 0 / 0.28), 0 0 0 1px rgb(0 0 0 / 0.06);
+  }
+  @media (prefers-color-scheme: dark) { .menu { background: #2c2c2e; box-shadow: 0 12px 32px -8px rgb(0 0 0 / 0.6), 0 0 0 1px rgb(255 255 255 / 0.08); } }
+  .menu a { display: block; padding: 7px 10px; border-radius: 9px; color: inherit; text-decoration: none; }
+  .menu a:hover, .menu a:focus-visible { background: rgb(118 118 128 / 0.16); outline: none; }
+  .hint { margin: 0; max-width: 32em; text-align: center; color: var(--soft); }
+  .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  @media (max-width: 359px) { .grid { grid-template-columns: repeat(4, 64px); gap: 18px 8px; } .msi-btn { --msi-btn: 54px; } }
+  .is-shot .hint { display: none; }
+  @media (min-width: 800px) { .is-shot main { zoom: 1.9; } }
+</style>
+</head>
+<body>
+<main>
+<ul class="grid" role="list">
+  <li class="tile" data-msi-tile><button class="msi-btn" type="button" data-msi="play-pause"></button><span class="cap" data-msi-caption aria-hidden="true"></span></li>
+  <li class="tile" data-msi-tile>
+    <button class="msi-btn" type="button" data-msi="menu-close" aria-label="Menu" aria-controls="demo-menu"></button><span class="cap" data-msi-caption aria-hidden="true"></span>
+    <ul class="menu" id="demo-menu" hidden><li><a href="#">Profile</a></li><li><a href="#">Settings</a></li><li><a href="#">Sign out</a></li></ul>
+  </li>
+  <li class="tile" data-msi-tile><button class="msi-btn" type="button" data-msi="plus-check" aria-label="Add to list"></button><span class="cap" data-msi-caption aria-hidden="true"></span></li>
+  <li class="tile" data-msi-tile><button class="msi-btn" type="button" data-msi="bell" aria-label="Mute notifications"></button><span class="cap" data-msi-caption aria-hidden="true"></span></li>
+  <li class="tile" data-msi-tile><button class="msi-btn" type="button" data-msi="copy" aria-label="Copy link"></button><span class="cap" data-msi-caption aria-hidden="true"></span></li>
+  <li class="tile" data-msi-tile><button class="msi-btn" type="button" data-msi="mic-stop"></button><span class="cap" data-msi-caption aria-hidden="true"></span></li>
+  <li class="tile" data-msi-tile><button class="msi-btn" type="button" data-msi="heart" aria-label="Like"></button><span class="cap" data-msi-caption aria-hidden="true"></span></li>
+  <li class="tile" data-msi-tile><button class="msi-btn" type="button" data-msi="download"></button><span class="cap" data-msi-caption aria-hidden="true"></span></li>
+</ul>
+</main>
+<p class="hint">Each icon flows into its next state. The download runs a short fake transfer; a click while it runs cancels it.</p>
+<p class="sr-only" role="status" data-status></p>
+<script type="module">
+  import { createMorphIcon, bindToggle } from '../variants/html/morph-icons.js';
+  const shot = new URLSearchParams(location.search).has('shot');
+  if (shot) document.documentElement.classList.add('is-shot');
+  const btn = (n) => document.querySelector(`[data-msi="${n}"]`);
+  const status = document.querySelector('[data-status]');
+  const say = (t) => { status.textContent = ''; requestAnimationFrame(() => (status.textContent = t)); };
+  const icon = (n, state) => createMorphIcon(btn(n), n, { state });
+
+  const play = bindToggle(btn('play-pause'), icon('play-pause'), { states: ['play', 'pause'], mode: 'label',
+    labels: { play: 'Play', pause: 'Pause' }, captions: { play: 'Play', pause: 'Pause' } });
+
+  const menuEl = document.getElementById('demo-menu');
+  const menu = bindToggle(btn('menu-close'), icon('menu-close'), { states: ['menu', 'close'], mode: 'expanded',
+    captions: { menu: 'Menu', close: 'Close' }, onChange: (s) => { menuEl.hidden = s !== 'close'; } });
+  const closeMenu = () => { if (!menuEl.hidden) btn('menu-close').click(); };
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !menuEl.hidden) { closeMenu(); btn('menu-close').focus(); } });
+  document.addEventListener('click', (e) => { if (!e.target.closest('[data-msi="menu-close"], #demo-menu')) closeMenu(); });
+  menuEl.addEventListener('click', (e) => { e.preventDefault(); closeMenu(); btn('menu-close').focus(); });
+
+  const plus = bindToggle(btn('plus-check'), icon('plus-check'), { states: ['plus', 'check'],
+    captions: { plus: 'Add', check: 'Added' }, onChange: (s) => say(s === 'check' ? 'Added to list' : 'Removed from list') });
+  const bell = bindToggle(btn('bell'), icon('bell'), { states: ['on', 'off'],
+    captions: { on: 'Alerts', off: 'Muted' } });
+  const mic = bindToggle(btn('mic-stop'), icon('mic-stop'), { states: ['mic', 'stop'], mode: 'label',
+    labels: { mic: 'Start recording', stop: 'Stop recording' }, captions: { mic: 'Record', stop: 'Stop' },
+    onChange: (s) => say(s === 'stop' ? 'Recording' : 'Recording stopped') });
+  const heart = bindToggle(btn('heart'), icon('heart'), { states: ['off', 'on'], captions: { off: 'Like', on: 'Liked' } });
+
+  // copy: a moment of "copied", then back
+  const copyBtn = btn('copy'), copyIcon = icon('copy');
+  const copyCap = copyBtn.parentElement.querySelector('[data-msi-caption]');
+  let copyTimer = 0;
+  const showCopy = (s) => { copyIcon.set(s); copyBtn.dataset.state = s; copyCap.textContent = s === 'copied' ? 'Copied' : 'Copy'; };
+  showCopy('copy');
+  copyBtn.addEventListener('click', async () => {
+    try { await navigator.clipboard?.writeText('https://example.com/s/7f3k2q'); } catch { /* the look still answers */ }
+    showCopy('copied');
+    say('Link copied');
+    clearTimeout(copyTimer);
+    copyTimer = setTimeout(() => showCopy('copy'), 1800);
+  });
+
+  // download → progress → done: a short fake transfer
+  const dlBtn = btn('download'), dl = icon('download');
+  const dlCap = dlBtn.parentElement.querySelector('[data-msi-caption]');
+  let run = 0, t0 = 0;
+  const dlShow = (s, p = 0) => {
+    dlBtn.dataset.state = s;
+    dlCap.textContent = s === 'progress' ? `${Math.round(p * 100)}%` : s === 'done' ? 'Saved' : 'Download';
+    dlBtn.setAttribute('aria-label', s === 'progress' ? 'Cancel download' : s === 'done' ? 'Download report again' : 'Download report');
+  };
+  const tick = (now) => {
+    const p = Math.min(1, (now - t0) / 2600);
+    const eased = 1 - Math.pow(1 - p, 1.6);
+    dl.param(eased);
+    dlCap.textContent = `${Math.round(eased * 100)}%`;
+    if (p < 1) run = requestAnimationFrame(tick);
+    else { run = 0; dl.set('done'); dlShow('done'); say('Report downloaded'); }
+  };
+  dlShow('download');
+  dlBtn.addEventListener('click', () => {
+    if (dl.state === 'progress') { cancelAnimationFrame(run); run = 0; dl.set('download'); dlShow('download'); say('Download canceled'); return; }
+    if (dl.state === 'done') { dl.set('download'); dlShow('download'); return; }
+    dl.set('progress', { param: 0 }); dlShow('progress'); say('Downloading report');
+    t0 = performance.now(); run = requestAnimationFrame(tick);
+  });
+
+  if (shot) {
+    play.set('pause', { at: 0.55 });
+    menu.set('close');
+    plus.set('check');
+    bell.set('off');
+    heart.set('on');
+    showCopy('copied');
+    dl.set('progress', { param: 0.62 }); dlShow('progress', 0.62);
+  }
+</script>
+</body>
+</html>

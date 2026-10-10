@@ -1,0 +1,18 @@
+<!-- A hero with a living ASCII background. The field dims around the content box given as `quiet`. -->
+<section class="hero" style="position: relative; min-height: 70vh; display: grid; place-items: center; overflow: hidden">
+  <canvas class="ascii-field" aria-hidden="true"></canvas>
+  <div class="hero-copy" style="position: relative; text-align: center; padding: 24px">
+    <h1>Quiet signals</h1>
+    <p>Move the pointer to part the characters.</p>
+  </div>
+</section>
+
+<link rel="stylesheet" href="ascii-field.css">
+<script type="module">
+  import { createAsciiField } from './ascii-field.js';
+
+  createAsciiField(document.querySelector('.ascii-field'), {
+    fontSize: 13,
+    quiet: document.querySelector('.hero-copy')
+  });
+</script>

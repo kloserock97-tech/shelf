@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Earcon Kit</title>
+<link rel="stylesheet" href="earcon-kit.css">
+</head>
+<body>
+<!-- The full panel: settings, waveforms, volume, mute, export -->
+<section id="kit" aria-label="Interface sounds" style="max-width: 680px"></section>
+
+<!-- Or the engine alone, wired to your own interface -->
+<button type="button" id="save">Save</button>
+
+<script type="module">
+  import { createEarconPanel } from './earcon-panel.js';
+  import { createEarconKit } from './earcon-kit.js';
+
+  createEarconPanel(document.getElementById('kit'), { timbre: 'wood', key: 'F major', character: 0.4 });
+
+  // the settings a designer exported from the panel are all it takes to get the same set
+  const sounds = createEarconKit({ timbre: 'glass', key: 'D major', character: 0.3, volume: 0.6 });
+  // the first play() creates the AudioContext, so call it from a click or key handler
+  document.getElementById('save').addEventListener('click', () => sounds.play('success'));
+  // sounds.play('error'), sounds.setMuted(true), sounds.setVolume(0.4), sounds.exportSettings()
+</script>
+</body>
+</html>

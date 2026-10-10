@@ -1,0 +1,9 @@
+/* ASCII Field: a canvas behind the content; it does not take pointer events, the module listens on the window. */
+.ascii-field {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}

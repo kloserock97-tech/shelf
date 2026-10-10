@@ -1,0 +1,301 @@
+/* Sent Ticket: a contact form folds into a ticket with a stub you tear off to copy the number or save a reminder. */
+.st {
+  --st-font: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --st-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  --st-ink: #1d1d1f;
+  --st-ink-2: #625e57;
+  --st-ink-3: #8f8a82;
+  --st-card: #ffffff;
+  --st-paper: #fffaf0;
+  --st-field: rgba(118, 112, 100, 0.1);
+  --st-field-focus: rgba(118, 112, 100, 0.04);
+  --st-hair: rgba(60, 50, 30, 0.12);
+  --st-stub: #1d1d1f;
+  --st-on-stub: #fffaf0;
+  --st-on-stub-2: rgba(255, 250, 240, 0.62);
+  --st-pill: rgba(255, 250, 240, 0.12);
+  --st-pill-on: #fffaf0;
+  --st-on-pill-on: #1d1d1f;
+  --st-hot: #e5531f;
+  --st-ok: #1f9d48;
+  --st-focus: #0066d6;
+  --st-shadow: drop-shadow(0 1px 1px rgba(40, 30, 10, 0.08)) drop-shadow(0 12px 22px rgba(40, 30, 10, 0.12));
+  --st-ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --st-r: 18px;   /* outer corners */
+  --st-cut: 14px; /* the scoops at the tear line */
+  container: st / inline-size;
+  contain: layout; /* an element-scoped view transition aborts without it ("Prepaint layout check failed") */
+  font-family: var(--st-font);
+  color: var(--st-ink);
+  -webkit-font-smoothing: antialiased;
+}
+@media (prefers-color-scheme: dark) {
+  .st {
+    --st-ink: #f5f2ec;
+    --st-ink-2: #b4ada2;
+    --st-ink-3: #847e74;
+    --st-card: #1c1c1e;
+    --st-paper: #2a2826;
+    --st-field: rgba(160, 150, 135, 0.16);
+    --st-field-focus: rgba(160, 150, 135, 0.08);
+    --st-hair: rgba(255, 245, 225, 0.12);
+    --st-stub: #f5efe3;
+    --st-on-stub: #1d1b18;
+    --st-on-stub-2: rgba(29, 27, 24, 0.6);
+    --st-pill: rgba(29, 27, 24, 0.08);
+    --st-pill-on: #1d1b18;
+    --st-on-pill-on: #f5efe3;
+    --st-hot: #ff7a45;
+    --st-ok: #3fd06f;
+    --st-focus: #3b9bff;
+    --st-shadow: drop-shadow(0 0 0.5px rgba(255, 255, 255, 0.25)) drop-shadow(0 14px 26px rgba(0, 0, 0, 0.5));
+  }
+}
+.st-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.st [hidden] { display: none !important; }
+
+/* ---------- the form ---------- */
+.st-form {
+  box-sizing: border-box;
+  padding: 24px 24px 20px;
+  border-radius: 22px;
+  background: var(--st-card);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 10px 30px rgba(0, 0, 0, 0.07);
+}
+@media (prefers-color-scheme: dark) { .st-form { box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.08); } }
+.st-form__title { margin: 0; font-size: 22px; line-height: 1.15; font-weight: 700; letter-spacing: -0.02em; }
+.st-form__sub { margin: 6px 0 0; font-size: 14px; line-height: 1.45; color: var(--st-ink-2); }
+.st-form__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }
+.st-field { display: grid; gap: 6px; min-width: 0; font-size: 13px; font-weight: 600; color: var(--st-ink-2); }
+.st-field--wide { grid-column: 1 / -1; }
+.st-field input, .st-field textarea {
+  box-sizing: border-box; width: 100%; min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid transparent; border-radius: 12px;
+  background: var(--st-field);
+  color: var(--st-ink);
+  font: 400 15px/1.4 var(--st-font);
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+.st-field textarea { resize: vertical; min-height: 84px; field-sizing: content; max-height: 200px; }
+.st-field input:focus-visible, .st-field textarea:focus-visible { outline: none; border-color: var(--st-focus); background: var(--st-field-focus); }
+.st-form__foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; }
+.st-form__note { font-size: 13px; color: var(--st-ink-3); }
+.st-send {
+  flex: none;
+  height: 44px; padding: 0 20px 0 22px;
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 0; border-radius: 999px;
+  background: var(--st-stub); color: var(--st-on-stub);
+  font: 650 15px/1 var(--st-font);
+  cursor: pointer;
+  transition: scale 160ms var(--st-ease), opacity 160ms ease;
+}
+.st-send svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.st-send:active { scale: 0.97; }
+.st-send:focus-visible { outline: 2px solid var(--st-focus); outline-offset: 3px; }
+.st-send[aria-disabled="true"] { cursor: progress; opacity: 0.8; }
+.st-send[aria-disabled="true"] svg { animation: st-spin 0.9s linear infinite; }
+@keyframes st-spin { to { rotate: 1turn; } }
+
+/* ---------- the ticket ---------- */
+.st-ticket {
+  display: flex;
+  filter: var(--st-shadow);
+  touch-action: pan-y;
+}
+.st-main, .st-stub { box-sizing: border-box; position: relative; }
+.st-main {
+  flex: 1 1 auto; min-width: 0;
+  padding: 20px 22px 18px 24px;
+  background: var(--st-paper);
+  border-radius: var(--st-r) var(--st-cut) var(--st-cut) var(--st-r);
+  corner-shape: round scoop scoop round;
+}
+.st-stub {
+  --st-axis: x;
+  flex: 0 0 168px;
+  padding: 18px 16px 16px 18px;
+  display: flex; flex-direction: column; gap: 12px;
+  background: var(--st-stub); color: var(--st-on-stub);
+  border-radius: var(--st-cut) var(--st-r) var(--st-r) var(--st-cut);
+  corner-shape: scoop round round scoop;
+  transform-origin: 0 100%;
+  touch-action: none;
+  cursor: grab;
+  user-select: none; -webkit-user-select: none;
+}
+.st-stub.is-dragging { cursor: grabbing; }
+/* the perforation: a dashed line on the stub's edge, between the two scoops */
+.st-stub::before {
+  content: "";
+  position: absolute;
+  left: 0; top: calc(var(--st-cut) + 6px); bottom: calc(var(--st-cut) + 6px);
+  width: 2px; margin-left: -1px;
+  background: repeating-linear-gradient(to bottom, var(--st-ink-3) 0 6px, transparent 6px 12px);
+  opacity: 0.55;
+  transition: opacity 200ms ease;
+}
+.st-stub.is-torn::before, .st-stub.is-loose::before { opacity: 0; }
+
+/* no corner-shape: square inner corners cut by a radial-gradient mask */
+@supports not (corner-shape: scoop) {
+  .st-main {
+    border-radius: var(--st-r) 0 0 var(--st-r);
+    mask:
+      radial-gradient(circle var(--st-cut) at 100% 0, #0000 calc(100% - 0.5px), #000) top / 100% 51% no-repeat,
+      radial-gradient(circle var(--st-cut) at 100% 100%, #0000 calc(100% - 0.5px), #000) bottom / 100% 51% no-repeat;
+  }
+  .st-stub {
+    border-radius: 0 var(--st-r) var(--st-r) 0;
+    mask:
+      radial-gradient(circle var(--st-cut) at 0 0, #0000 calc(100% - 0.5px), #000) top / 100% 51% no-repeat,
+      radial-gradient(circle var(--st-cut) at 0 100%, #0000 calc(100% - 0.5px), #000) bottom / 100% 51% no-repeat;
+  }
+}
+
+.st-main__top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.st-title { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--st-ink-2); }
+.st-title:focus { outline: none; }
+.st-title:focus-visible { outline: 2px solid var(--st-focus); outline-offset: 3px; border-radius: 4px; }
+.st-stamp {
+  flex: none;
+  padding: 3px 8px 3px;
+  border: 1.5px solid var(--st-hot); border-radius: 6px;
+  color: var(--st-hot);
+  font: 700 11px/1.2 var(--st-font); letter-spacing: 0.1em; text-transform: uppercase;
+  rotate: -6deg;
+}
+.st-no { margin: 10px 0 0; display: grid; gap: 2px; }
+.st-label, .st-fields dt { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--st-ink-3); }
+.st-no__value { font: 700 38px/1 var(--st-mono); letter-spacing: 0.02em; font-variant-numeric: tabular-nums; }
+.st-fields { display: grid; grid-template-columns: repeat(3, minmax(0, auto)); justify-content: start; gap: 4px 22px; margin: 16px 0 0; }
+.st-fields div { min-width: 0; }
+.st-fields dd { margin: 3px 0 0; font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.st-promise { margin: 14px 0 0; padding-top: 12px; border-top: 1px dashed var(--st-hair); font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+.st-promise b { color: var(--st-hot); font-weight: 700; }
+
+.st-barcode { display: block; width: 100%; height: 34px; color: var(--st-on-stub); }
+.st-choice { margin: 0; padding: 0; border: 0; min-width: 0; display: grid; gap: 6px; }
+.st-choice label { position: relative; display: block; cursor: pointer; }
+.st-choice input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.st-choice span {
+  display: flex; align-items: center; gap: 7px;
+  height: 30px; padding: 0 10px;
+  border-radius: 9px;
+  background: var(--st-pill);
+  font-size: 13px; font-weight: 600;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+.st-choice span::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px currentColor; }
+.st-choice input:checked + span { background: var(--st-pill-on); color: var(--st-on-pill-on); }
+.st-choice input:checked + span::before { box-shadow: inset 0 0 0 4px currentColor; }
+.st-choice input:focus-visible + span { outline: 2px solid var(--st-focus); outline-offset: 2px; }
+.st-tear {
+  margin-top: auto;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: 30px; padding: 0 8px;
+  border: 0; border-radius: 9px;
+  background: transparent; color: var(--st-on-stub-2);
+  font: 600 12px/1 var(--st-font); letter-spacing: 0.02em;
+  cursor: pointer;
+}
+.st-tear svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.st-tear:hover { color: var(--st-on-stub); }
+.st-tear:focus-visible { outline: 2px solid var(--st-focus); outline-offset: 2px; }
+.st-stub.is-loose .st-tear { color: var(--st-hot); }
+.st-done {
+  display: none;
+  margin: 0;
+  align-items: center; gap: 7px;
+  min-height: 30px;
+  font-size: 13px; font-weight: 650;
+}
+.st-done svg { flex: none; width: 18px; height: 18px; fill: none; stroke: var(--st-ok); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.st-stub.is-torn .st-choice { display: none; }
+.st-stub.is-torn .st-done { display: flex; }
+
+.st-after { display: flex; justify-content: center; margin-top: 18px; transition: margin-top 300ms var(--st-ease); }
+.st-again {
+  height: 36px; padding: 0 16px;
+  border: 0; border-radius: 999px;
+  background: var(--st-field); color: var(--st-ink);
+  font: 600 14px/1 var(--st-font);
+  cursor: pointer;
+}
+.st-again:focus-visible { outline: 2px solid var(--st-focus); outline-offset: 2px; }
+
+/* ---------- narrow: the stub goes under the ticket and tears downwards ---------- */
+@container st (max-width: 540px) {
+  .st-form { padding: 20px 18px 18px; }
+  .st-form__grid { grid-template-columns: 1fr; }
+  .st-form__note { display: none; }
+  .st-form__foot { justify-content: flex-end; }
+  .st-ticket { flex-direction: column; }
+  .st-main {
+    padding: 18px 18px 16px;
+    border-radius: var(--st-r) var(--st-r) var(--st-cut) var(--st-cut);
+    corner-shape: round round scoop scoop;
+  }
+  .st-no__value { font-size: 32px; }
+  .st-fields { grid-template-columns: repeat(2, minmax(0, auto)); }
+  .st-fields div:last-child { grid-column: 1 / -1; }
+  .st-stub {
+    --st-axis: y;
+    flex: none;
+    padding: 14px 16px;
+    display: grid; grid-template-columns: 96px minmax(0, 1fr); grid-template-rows: auto auto; gap: 8px 14px; align-items: center;
+    border-radius: var(--st-cut) var(--st-cut) var(--st-r) var(--st-r);
+    corner-shape: scoop scoop round round;
+    transform-origin: 100% 0;
+  }
+  .st-barcode { grid-row: 1 / span 2; height: 52px; }
+  .st-tear { margin-top: 0; justify-content: flex-start; height: 26px; padding: 0 2px; }
+  .st-choice { grid-template-columns: 1fr 1fr; }
+  .st-choice span { padding: 0 8px; font-size: 12.5px; }
+  .st-stub::before {
+    left: calc(var(--st-cut) + 6px); right: calc(var(--st-cut) + 6px); top: 0; bottom: auto;
+    width: auto; height: 2px; margin: -1px 0 0;
+    background: repeating-linear-gradient(to right, var(--st-ink-3) 0 6px, transparent 6px 12px);
+  }
+  @supports not (corner-shape: scoop) {
+    .st-main {
+      border-radius: var(--st-r) var(--st-r) 0 0;
+      mask:
+        radial-gradient(circle var(--st-cut) at 0 100%, #0000 calc(100% - 0.5px), #000) left / 51% 100% no-repeat,
+        radial-gradient(circle var(--st-cut) at 100% 100%, #0000 calc(100% - 0.5px), #000) right / 51% 100% no-repeat;
+    }
+    .st-stub {
+      border-radius: 0 0 var(--st-r) var(--st-r);
+      mask:
+        radial-gradient(circle var(--st-cut) at 0 0, #0000 calc(100% - 0.5px), #000) left / 51% 100% no-repeat,
+        radial-gradient(circle var(--st-cut) at 100% 0, #0000 calc(100% - 0.5px), #000) right / 51% 100% no-repeat;
+    }
+  }
+}
+
+/* ---------- the morph (view transition classes; names are set only while it runs) ---------- */
+::view-transition-group(.st-card),
+::view-transition-group(.st-stub) { animation-duration: 560ms; animation-timing-function: cubic-bezier(0.3, 1.1, 0.4, 1); }
+::view-transition-old(.st-card),
+::view-transition-new(.st-card),
+::view-transition-old(.st-stub),
+::view-transition-new(.st-stub) { height: 100%; object-fit: none; object-position: left top; overflow: clip; }
+::view-transition-old(.st-card), ::view-transition-old(.st-stub) { animation: st-out 200ms ease both; }
+::view-transition-new(.st-card), ::view-transition-new(.st-stub) { animation: st-in 260ms ease 140ms both; }
+@keyframes st-out { to { opacity: 0; } }
+@keyframes st-in { from { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .st-send:active { scale: none; }
+  .st-send[aria-disabled="true"] svg { animation: none; }
+}
+/* a stub torn downwards needs room above the button */
+@container st (max-width: 540px) {
+  .st-done-view:has(.st-stub.is-torn) .st-after { margin-top: 52px; }
+}
+.st-stub.is-torn .st-tear svg { scale: -1 1; }
+@container st (max-width: 540px) {
+  .st-tear svg { rotate: 90deg; }
+  .st-stub.is-torn .st-tear svg { scale: 1 -1; }
+}

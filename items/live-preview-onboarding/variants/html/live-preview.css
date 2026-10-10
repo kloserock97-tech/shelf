@@ -1,0 +1,228 @@
+/* Live-Preview Interest Picker.
+   The counter, the progress dots and the Continue button read the chips through :has() — no script needed for them.
+   The minimum is 3 here: the three selectors below count "one / two / three checked chips". */
+
+.lpo {
+  --lpo-ink: #1d1d1f;
+  --lpo-ink-2: #6e6e73;
+  --lpo-bg: #ffffff;
+  --lpo-panel: #f2f2f6;
+  --lpo-line: rgba(60, 60, 67, 0.14);
+  --lpo-fill: rgba(118, 118, 128, 0.12);
+  --lpo-ghost: rgba(118, 118, 128, 0.14);
+  --lpo-accent: #6b6b73;
+  --lpo-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--lpo-ink);
+  -webkit-font-smoothing: antialiased;
+}
+@media (prefers-color-scheme: dark) {
+  .lpo {
+    --lpo-ink: #f5f5f7;
+    --lpo-ink-2: #a1a1a6;
+    --lpo-bg: #1c1c1e;
+    --lpo-panel: #2a2a2d;
+    --lpo-line: rgba(255, 255, 255, 0.1);
+    --lpo-fill: rgba(118, 118, 128, 0.24);
+    --lpo-ghost: rgba(118, 118, 128, 0.22);
+    --lpo-accent: #8e8e93;
+  }
+}
+.lpo *, .lpo *::before, .lpo *::after { box-sizing: border-box; }
+.lpo-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+
+/* ---- head ---- */
+.lpo__head h1 { margin: 6px 0 0; font-size: 28px; line-height: 1.1; font-weight: 700; letter-spacing: -0.02em; text-wrap: balance; }
+.lpo__head p { margin: 6px 0 0; font-size: 14px; line-height: 1.35; color: var(--lpo-ink-2); }
+.lpo__step { display: flex; align-items: center; gap: 5px; margin: 0 !important; font-size: 12px !important; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.lpo__step i { width: 18px; height: 4px; border-radius: 2px; background: var(--lpo-fill); }
+.lpo__step i.is-done { background: var(--lpo-ink); }
+.lpo__step span { margin-left: 4px; }
+
+/* ---- preview: a small copy of the screen the person gets after onboarding ---- */
+.lpo__preview {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 22px;
+  background: var(--lpo-panel);
+  box-shadow: inset 0 0 0 1px var(--lpo-line);
+  overflow: hidden;
+}
+.lpo__bar { display: flex; align-items: center; gap: 8px; padding: 12px 14px 10px; font-size: 13px; }
+.lpo__bar b { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+.lpo__dot { width: 10px; height: 10px; border-radius: 50%; background: var(--lpo-accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--lpo-accent) 22%, transparent); transition: background-color 0.42s var(--lpo-ease), box-shadow 0.42s var(--lpo-ease); }
+.lpo__tuned { margin-left: auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--lpo-ink-2); font-size: 12px; }
+.lpo__tuned em { font-style: normal; font-weight: 600; color: var(--c); }
+.lpo__feed {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0 10px 10px;
+  list-style: none;
+  overflow: hidden;
+}
+.lpo__empty {
+  position: absolute; inset: 44px 0 0; display: grid; place-items: center; margin: 0; padding: 0 24px;
+  font-size: 13px; text-align: center; color: var(--lpo-ink-2); pointer-events: none;
+  transition: opacity 0.3s;
+}
+.lpo:has(.lpo-chip__in:checked) .lpo__empty { opacity: 0; }
+
+/* ---- a feed card: drawn art + title + meta ---- */
+.lpo-card {
+  --c: var(--lpo-accent);
+  display: flex; flex-direction: column; gap: 6px;
+  min-width: 0; padding: 6px 6px 9px;
+  border-radius: 14px;
+  background: var(--lpo-bg);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  view-transition-class: lpo-card;
+}
+.lpo-card.is-lead { box-shadow: 0 0 0 2px var(--c), 0 6px 18px color-mix(in srgb, var(--c) 22%, transparent); }
+.lpo-card__text { flex: none; display: flex; flex-direction: column; gap: 3px; padding: 0 4px; min-width: 0; }
+.lpo-card__text strong { min-height: 2.44em; font-size: 12.5px; line-height: 1.22; font-weight: 600; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.lpo-card__text small { font-size: 11px; color: var(--lpo-ink-2); }
+.lpo-card__text small::before { content: ""; display: inline-block; width: 6px; height: 6px; margin-right: 5px; border-radius: 50%; background: var(--c); vertical-align: 1px; }
+.lpo-card--ghost .lpo-card__art { background: var(--lpo-ghost); }
+.lpo-card--ghost .lpo-card__text { padding-bottom: 6px; }
+.lpo-card--ghost .lpo-card__text i { display: block; height: 9px; border-radius: 5px; background: var(--lpo-ghost); }
+.lpo-card--ghost .lpo-card__text i + i { width: 55%; }
+
+/* the art: two pseudo-elements in the topic colour on a tint of it; data-shape picks the drawing, --v shifts it */
+.lpo-card__art {
+  position: relative; display: block; flex: 1 1 auto; min-height: 56px; border-radius: 10px; overflow: hidden;
+  background: color-mix(in srgb, var(--c) 16%, var(--lpo-bg));
+}
+.lpo-card__art::before, .lpo-card__art::after { content: ""; position: absolute; }
+.lpo-card__art::before { rotate: calc(var(--v, 0) * 9deg); }
+
+/* bowl + steam */
+[data-shape="bowl"] .lpo-card__art::before { left: 26%; right: 26%; bottom: 18%; height: 34%; border-radius: 0 0 999px 999px; background: var(--c); rotate: 0deg; translate: calc(var(--v, 0) * 10%) 0; }
+[data-shape="bowl"] .lpo-card__art::after { left: 38%; width: 24%; top: 16%; height: 26%; border-radius: 3px; background: repeating-linear-gradient(90deg, color-mix(in srgb, var(--c) 55%, transparent) 0 3px, transparent 3px 8px); translate: calc(var(--v, 0) * 10%) 0; }
+/* two peaks */
+[data-shape="peak"] .lpo-card__art::before { left: 6%; bottom: -2%; width: 62%; height: 84%; background: var(--c); clip-path: polygon(50% 0, 100% 100%, 0 100%); rotate: 0deg; translate: calc(var(--v, 0) * 14%) 0; }
+[data-shape="peak"] .lpo-card__art::after { right: 2%; bottom: -2%; width: 52%; height: 60%; background: color-mix(in srgb, var(--c) 55%, var(--lpo-bg)); clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+/* square over circle */
+[data-shape="blocks"] .lpo-card__art::before { left: 24%; top: 18%; width: 34%; aspect-ratio: 1; height: auto; border-radius: 6px; background: var(--c); }
+[data-shape="blocks"] .lpo-card__art::after { right: 22%; bottom: 12%; width: 34%; aspect-ratio: 1; border-radius: 50%; background: color-mix(in srgb, var(--c) 50%, transparent); translate: calc(var(--v, 0) * -12%) 0; }
+/* level bars */
+[data-shape="bars"] .lpo-card__art::before {
+  left: 18%; right: 18%; bottom: 16%; height: 64%; rotate: 0deg;
+  background:
+    linear-gradient(var(--c) 0 0) 0% 100% / 12% 40% no-repeat,
+    linear-gradient(var(--c) 0 0) 25% 100% / 12% 85% no-repeat,
+    linear-gradient(var(--c) 0 0) 50% 100% / 12% 60% no-repeat,
+    linear-gradient(var(--c) 0 0) 75% 100% / 12% 100% no-repeat,
+    linear-gradient(var(--c) 0 0) 100% 100% / 12% 30% no-repeat;
+  scale: 1 calc(1 - var(--v, 0) * 0.18);
+  transform-origin: bottom;
+}
+/* orbit */
+[data-shape="orbit"] .lpo-card__art::before { left: 18%; right: 18%; top: 30%; bottom: 30%; border: 3px solid var(--c); border-radius: 50%; rotate: calc(-18deg + var(--v, 0) * 30deg); }
+[data-shape="orbit"] .lpo-card__art::after { left: calc(50% - 11px); top: calc(50% - 11px); width: 22px; height: 22px; border-radius: 50%; background: var(--c); box-shadow: 34px -12px 0 -6px var(--c); }
+/* track stripes */
+[data-shape="stripes"] .lpo-card__art::before { inset: -20% -10%; background: repeating-linear-gradient(-28deg, transparent 0 14px, var(--c) 14px 20px); opacity: 0.85; rotate: calc(var(--v, 0) * 6deg); }
+[data-shape="stripes"] .lpo-card__art::after { left: 12%; bottom: 14%; width: 30%; height: 14%; border-radius: 99px; background: var(--c); }
+/* leaf */
+[data-shape="leaf"] .lpo-card__art::before { left: calc(50% - 22px); top: 14%; width: 44px; height: 44px; border-radius: 0 100% 0 100%; background: var(--c); rotate: calc(var(--v, 0) * 22deg - 8deg); }
+[data-shape="leaf"] .lpo-card__art::after { left: 50%; top: 58%; width: 3px; height: 30%; border-radius: 2px; background: color-mix(in srgb, var(--c) 70%, var(--lpo-ink)); }
+/* film frame */
+[data-shape="frame"] .lpo-card__art::before {
+  left: 20%; right: 20%; top: 14%; bottom: 14%; border-radius: 4px; background: var(--c);
+  -webkit-mask: radial-gradient(circle 3px, transparent 96%, #000) 0 3px / 10px 100% space, linear-gradient(#000 0 0) 50% 50% / 100% 62% no-repeat;
+  mask: radial-gradient(circle 3px, transparent 96%, #000) 0 3px / 10px 100% space, linear-gradient(#000 0 0) 50% 50% / 100% 62% no-repeat;
+}
+[data-shape="frame"] .lpo-card__art::after { left: calc(50% - 7px); top: calc(50% - 8px); border-left: 14px solid var(--lpo-bg); border-block: 8px solid transparent; }
+/* arch with columns */
+[data-shape="arch"] .lpo-card__art::before { left: 28%; right: 28%; top: 16%; bottom: 0; border-radius: 999px 999px 0 0; background: repeating-linear-gradient(90deg, var(--c) 0 6px, transparent 6px 11px); rotate: 0deg; }
+[data-shape="arch"] .lpo-card__art::after { left: 24%; right: 24%; top: 12%; height: 9%; border-radius: 999px 999px 2px 2px; background: var(--c); }
+
+/* ---- chips: real checkboxes, each input right before its label (sibling inputs let :has() count them) ---- */
+.lpo-chip__in { position: absolute; left: 0; top: 0; width: 1px; height: 1px; margin: 0; opacity: 0; pointer-events: none; }
+.lpo__chips { position: relative; display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; border: 0; min-width: 0; }
+.lpo-chip {
+  --c: #6b6b73;
+  position: relative;
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 38px; padding: 0 14px;
+  border-radius: 999px;
+  background: var(--lpo-fill);
+  font-size: 14px; font-weight: 550;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.24s var(--lpo-ease), color 0.24s var(--lpo-ease), scale 0.18s var(--lpo-ease);
+}
+.lpo-chip svg { width: 0; height: 14px; margin-right: -6px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; transition: width 0.24s var(--lpo-ease), margin 0.24s var(--lpo-ease); }
+.lpo-chip__in:checked + .lpo-chip { background: var(--c); color: #fff; }
+.lpo-chip__in:checked + .lpo-chip svg { width: 14px; margin-right: 0; }
+.lpo-chip:active { scale: 0.96; }
+.lpo-chip__in:focus-visible + .lpo-chip { outline: 2px solid var(--c); outline-offset: 2px; }
+@media (hover: hover) { .lpo-chip__in:not(:checked) + .lpo-chip:hover { background: color-mix(in srgb, var(--c) 14%, var(--lpo-fill)); } }
+
+/* ---- foot: counter + Continue, both from :has() ---- */
+.lpo__foot { display: flex; flex-direction: column; gap: 10px; }
+.lpo__count { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0; font-size: 13px; font-weight: 600; color: var(--lpo-ink-2); }
+.lpo__pips { display: inline-flex; gap: 4px; }
+.lpo__pips i { width: 7px; height: 7px; border-radius: 50%; background: var(--lpo-fill); box-shadow: inset 0 0 0 1px var(--lpo-line); transition: background-color 0.24s; }
+.lpo__count [data-left] { display: none; }
+.lpo__go {
+  height: 52px; border: 0; border-radius: 16px;
+  background: var(--lpo-ink); color: var(--lpo-bg);
+  font: inherit; font-size: 16px; font-weight: 650;
+  cursor: pointer;
+  transition: opacity 0.24s, background-color 0.42s var(--lpo-ease), scale 0.18s var(--lpo-ease);
+}
+.lpo__go:focus-visible { outline: 2px solid var(--lpo-accent); outline-offset: 3px; }
+.lpo__go:active { scale: 0.98; }
+.lpo__go.is-nudge { animation: lpo-nudge 0.36s var(--lpo-ease); }
+@keyframes lpo-nudge { 25% { translate: -6px 0; } 60% { translate: 5px 0; } }
+
+/* 0 picked */
+.lpo:not(:has(.lpo-chip__in:checked)) [data-left="3"] { display: inline; }
+/* exactly 1 */
+.lpo:has(.lpo-chip__in:checked):not(:has(.lpo-chip__in:checked ~ .lpo-chip__in:checked)) [data-left="2"] { display: inline; }
+/* exactly 2 */
+.lpo:has(.lpo-chip__in:checked ~ .lpo-chip__in:checked):not(:has(.lpo-chip__in:checked ~ .lpo-chip__in:checked ~ .lpo-chip__in:checked)) [data-left="1"] { display: inline; }
+/* 3 or more */
+.lpo:has(.lpo-chip__in:checked ~ .lpo-chip__in:checked ~ .lpo-chip__in:checked) [data-left="0"] { display: inline; color: var(--lpo-ink); }
+
+.lpo:has(.lpo-chip__in:checked) .lpo__pips i:nth-child(1),
+.lpo:has(.lpo-chip__in:checked ~ .lpo-chip__in:checked) .lpo__pips i:nth-child(2),
+.lpo:has(.lpo-chip__in:checked ~ .lpo-chip__in:checked ~ .lpo-chip__in:checked) .lpo__pips i:nth-child(3) { background: var(--lpo-accent); box-shadow: none; }
+
+.lpo:not(:has(.lpo-chip__in:checked ~ .lpo-chip__in:checked ~ .lpo-chip__in:checked)) .lpo__go { opacity: 0.35; cursor: default; }
+.lpo:has(.lpo-chip__in:checked ~ .lpo-chip__in:checked ~ .lpo-chip__in:checked) .lpo__go { background: var(--lpo-accent); color: #fff; }
+
+/* ---- feed reshuffle: View Transitions (the script names each card) ---- */
+::view-transition-group(.lpo-card) { animation-duration: 0.46s; animation-timing-function: var(--lpo-vt-ease, cubic-bezier(0.32, 0.72, 0, 1)); }
+::view-transition-new(.lpo-card):only-child { animation: lpo-card-in 0.46s cubic-bezier(0.32, 0.72, 0, 1) both; }
+::view-transition-old(.lpo-card):only-child { animation: lpo-card-out 0.26s ease-in both; }
+@keyframes lpo-card-in { from { opacity: 0; translate: 0 -18px; scale: 0.86; } }
+@keyframes lpo-card-out { to { opacity: 0; scale: 0.8; } }
+/* while a document-level transition runs: the rest of the page does not cross-fade and stays clickable */
+html.lpo-vt::view-transition-old(root), html.lpo-vt::view-transition-new(root) { animation: none; }
+html.lpo-vt::view-transition { pointer-events: none; }
+
+/* browsers without View Transitions: new cards still arrive */
+@supports not (view-transition-name: a) {
+  .lpo-card { transition: opacity 0.4s, translate 0.4s var(--lpo-ease); }
+  @starting-style { .lpo-card { opacity: 0; translate: 0 -12px; } }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lpo-chip, .lpo-chip svg, .lpo__go, .lpo__dot { transition: none; }
+  .lpo__go.is-nudge { animation: none; }
+  .lpo-card { transition: none; }
+}

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Empty Search Recovery</title>
+<link rel="stylesheet" href="empty-search.css">
+</head>
+<body style="max-width: 720px; margin: 40px auto; padding: 0 16px;">
+<div id="search"></div>
+
+<!-- catalog.js only builds the made-up shop; pass your own products instead -->
+<script src="catalog.js"></script>
+<script src="empty-search.js"></script>
+<script>
+  EmptySearchRecovery.mount(document.getElementById('search'), {
+    products: esrCatalog.makeCatalog(7), // [{ id, name, price, words, waterproof, … }]
+    filters: [
+      { id: 'price', type: 'max', field: 'price', steps: [40, 60, 80, 120],
+        label: (v) => `Under €${v}`, widen: (v) => `Up to €${v}`, clear: 'Any price', miss: (p, v) => `€${p.price - v} over` },
+      { id: 'waterproof', type: 'flag', label: 'Waterproof', miss: 'Not waterproof' },
+      { id: 'hooded', type: 'flag', label: 'Hooded', miss: 'No hood' }
+    ],
+    swapWords: ['jacket', 'poncho', 'boots', 'pants'],
+    query: 'rain jacket',
+    active: { price: 40, waterproof: true }
+  });
+</script>
+</body>
+</html>

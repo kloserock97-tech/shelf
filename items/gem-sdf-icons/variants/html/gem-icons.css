@@ -1,0 +1,72 @@
+/* Gem Icons. Before WebGL starts and without WebGL2 each button shows a flat silhouette of its shape (a CSS mask
+   in the gem's colour); with it (.is-gem) the canvas behind draws the gems and the buttons keep layout, hit areas
+   and focus. */
+.gem {
+  --gem-wall: #a9abb2;     /* the studio around the gems: wall and floor, seen in reflections and through the body */
+  --gem-floor: #3a3c42;
+  --gem-exposure: 1.2;
+  --gem-shadow: 0.26;      /* shadow and caustic on the page under each gem */
+  --gem-caustic: 0.85;
+  --gem-ring: #3b4cca;
+  position: relative;
+  isolation: isolate;
+}
+@media (prefers-color-scheme: dark) {
+  .gem {
+    --gem-wall: #6d7079;
+    --gem-floor: #1c1d22;
+    --gem-exposure: 1.35;
+    --gem-shadow: 0.5;
+    --gem-caustic: 1.1;
+    --gem-ring: #9fb0ff;
+  }
+}
+.gem > canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.gem__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--gem-cols, 4), 1fr);
+  gap: var(--gem-gap, 6px);
+}
+.gem__icon {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  border-radius: 24%;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+/* the flat look: the shape's silhouette in its colour, pale while not pressed */
+.gem__icon::before {
+  content: '';
+  position: absolute;
+  inset: 14%;
+  background: var(--gem, #dff1ff);
+  -webkit-mask: var(--gem-mask) center / contain no-repeat;
+  mask: var(--gem-mask) center / contain no-repeat;
+  opacity: 0.45;
+  transition: opacity 0.3s ease, transform 0.2s ease;
+}
+.gem__icon[aria-pressed='true']::before { opacity: 1; }
+.gem__icon:active::before { transform: scale(0.94); }
+.gem.is-gem .gem__icon::before { opacity: 0; transition: none; }
+.gem__icon:focus-visible { outline: 2px solid var(--gem-ring); outline-offset: -2px; }
+@media (prefers-reduced-motion: reduce) {
+  .gem__icon::before { transition: none; }
+}

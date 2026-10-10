@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Sent Ticket Confirmation</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="../variants/html/sent-ticket.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  body { min-height: 100vh; min-height: 100dvh; box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 620px); justify-content: center; align-content: center; padding: 32px 16px 48px; }
+  .hint { margin: 14px 4px 0; font: 13px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; color: #8e8e93; text-align: center; }
+  @media (max-width: 520px) { body { padding: 24px 12px 40px; align-content: start; } }
+  @media (min-width: 760px) { html.is-shot body { zoom: 1.14; padding-right: 64px; } }
+</style>
+</head>
+<body>
+<section class="st" aria-label="Contact" data-prefix="NG" data-reply-days="3">
+  <form class="st-form" action="#" method="post">
+    <h2 class="st-form__title">Write to me</h2>
+    <p class="st-form__sub">A role, a project or a question about a case. You get a ticket number and a date for the reply.</p>
+    <div class="st-form__grid">
+      <label class="st-field"><span>Name</span><input name="name" autocomplete="name" required value="Jordan Lee"></label>
+      <label class="st-field"><span>Email</span><input name="email" type="email" autocomplete="email" required value="jordan.lee@example.com"></label>
+      <label class="st-field st-field--wide"><span>Message</span><textarea name="message" rows="3" required>Hi! We are hiring a product designer for our payments team and your checkout case caught our eye. Could we talk next week?</textarea></label>
+    </div>
+    <div class="st-form__foot">
+      <span class="st-form__note">No newsletters, only a reply.</span>
+      <button class="st-send" type="submit"><span class="st-send__label">Send</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12h14"/><path d="M13 6.5l5.5 5.5-5.5 5.5"/></svg></button>
+    </div>
+  </form>
+  <div class="st-done-view" hidden>
+    <div class="st-ticket">
+      <div class="st-main">
+        <div class="st-main__top"><h2 class="st-title" tabindex="-1">Message received</h2><span class="st-stamp" aria-hidden="true">Sent</span></div>
+        <p class="st-no"><span class="st-label">Ticket</span><span class="st-no__value" data-st="no"></span></p>
+        <dl class="st-fields">
+          <div><dt>From</dt><dd data-st="from"></dd></div>
+          <div><dt>Sent</dt><dd data-st="sent"></dd></div>
+          <div><dt>Reply by</dt><dd data-st="due"></dd></div>
+        </dl>
+        <p class="st-promise" data-st="promise"></p>
+      </div>
+      <div class="st-stub">
+        <svg class="st-barcode" data-st="barcode" aria-hidden="true"></svg>
+        <fieldset class="st-choice">
+          <legend class="st-sr">The stub</legend>
+          <label><input type="radio" value="copy" checked><span>Copy number</span></label>
+          <label><input type="radio" value="ics"><span>Reminder .ics</span></label>
+        </fieldset>
+        <p class="st-done" data-st="done"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span></span></p>
+        <button class="st-tear" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.5v15"/><path d="M11 12h8"/><path d="M15.5 8.5L19 12l-3.5 3.5"/></svg><span data-st="tear">Tear to save</span></button>
+      </div>
+    </div>
+    <div class="st-after"><button class="st-again" type="button">Write another</button></div>
+  </div>
+  <p class="st-sr" role="status" data-st="status"></p>
+</section>
+<p class="hint">Send the form, then drag the dark stub off the ticket. The stub copies the number or saves a calendar reminder.</p>
+<script src="../variants/html/sent-ticket.js"></script>
+<script>
+  // ?now=2026-10-12T11:32 pins the clock. ?shot=1: the ticket with the stub pulled past the tear line; ?shot=2: stub torn off.
+  (() => {
+    const q = new URLSearchParams(location.search);
+    const root = document.querySelector('.st');
+    const st = SentTicket.init(root);
+    if (q.get('now')) st.now = () => new Date(q.get('now'));
+    if (q.get('sound') === 'off') root.dataset.sound = 'off';
+    const shot = q.get('shot');
+    if (!shot) return;
+    document.documentElement.classList.add('is-shot');
+    root.dataset.sound = 'off';
+    st.show({ name: 'Jordan Lee', email: 'jordan.lee@example.com', message: 'Hi!' }, new Date(q.get('now') || '2026-10-12T11:32:00'));
+    document.querySelector('.hint').hidden = true;
+    if (shot === '2') st.tear(); else st.pull(100);
+  })();
+</script>
+</body>
+</html>

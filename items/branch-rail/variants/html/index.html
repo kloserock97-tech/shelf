@@ -1,0 +1,43 @@
+<!-- Messages are a flat list with parent ids. Two children under one parent are two branches:
+     a second user message is an edit, a second answer a regeneration. "active" picks the shown branch. -->
+<section class="br" aria-label="Chat: Plant app name">
+  <header class="br-head">
+    <div class="br-head__text"><h2 class="br-title">Plant app name</h2><p class="br-where"></p></div>
+    <button class="br-detach" type="button" aria-label="Open this branch as a new chat"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3.5" width="11.5" height="11.5" rx="2.5"/><path d="M15 15v3a2.5 2.5 0 0 1-2.5 2.5h-6A2.5 2.5 0 0 1 4 18v-6a2.5 2.5 0 0 1 2.5-2.5H9"/><path d="M13 7.5h4v4"/><path d="M17 7.5l-4.5 4.5"/></svg><span>New chat from branch</span></button>
+  </header>
+  <div class="br-body">
+    <ol class="br-log" aria-label="Messages in the shown branch"></ol>
+    <nav class="br-rail" aria-label="Branches of this chat">
+      <span class="br-rail__label" aria-hidden="true">Tree</span>
+      <div class="br-tree" role="group" aria-label="Messages. Arrows move along the tree, Enter shows a branch."></div>
+      <span class="br-rail__count" aria-hidden="true"></span>
+      <div class="br-tip" aria-hidden="true"><span class="br-tip__kind"></span><span class="br-tip__text"></span><span class="br-tip__meta"></span></div>
+    </nav>
+  </div>
+  <p class="br-sr" role="status" data-br="status"></p>
+  <script type="application/json" class="br-data">{
+  "active": "b2",
+  "messages": [
+    {
+      "id": "a1",
+      "role": "user",
+      "text": "Suggest a name for a plant-watering app."
+    },
+    {
+      "id": "a2",
+      "parent": "a1",
+      "role": "assistant",
+      "text": "Sipling: short, friendly and easy to say."
+    },
+    {
+      "id": "b2",
+      "parent": "a1",
+      "role": "assistant",
+      "text": "Dewdrop: it sounds calm and hints at water."
+    }
+  ]
+}</script>
+</section>
+
+<link rel="stylesheet" href="branch-rail.css">
+<script src="branch-rail.js" defer></script>

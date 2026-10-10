@@ -1,0 +1,18 @@
+/* Datamosh Transition: the stage is a rounded window; the canvas inside takes its whole box. */
+.datamosh {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.04), 0 18px 40px rgb(30 20 10 / 0.16);
+}
+.datamosh canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;          /* a drag on the stage drives the transition instead of scrolling */
+  cursor: grab;
+}
+.datamosh canvas.is-dragging { cursor: grabbing; }
+@media (prefers-color-scheme: dark) {
+  .datamosh { box-shadow: 0 0 0 1px rgb(255 255 255 / 0.07), 0 18px 40px rgb(0 0 0 / 0.5); }
+}

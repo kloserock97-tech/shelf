@@ -1,0 +1,43 @@
+/* Morph State Icons. The svg takes the text colour; size with --msi-size. */
+.msi {
+  display: block;
+  width: var(--msi-size, 24px);
+  height: var(--msi-size, 24px);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  overflow: visible;
+}
+/* the gap a knocking stroke (the bell's slash) cuts out of the others */
+.msi__knock { fill: none; stroke: #000; stroke-width: 4.5; stroke-linecap: round; }
+
+.msi-btn {
+  --msi-bg: rgb(118 118 128 / 0.12);
+  --msi-bg-hover: rgb(118 118 128 / 0.2);
+  --msi-ring: #2f6fe4;
+  display: grid;
+  place-items: center;
+  width: var(--msi-btn, 56px);
+  height: var(--msi-btn, 56px);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--msi-bg);
+  color: var(--msi-ink, inherit);
+  cursor: pointer;
+  transition: background-color 0.16s ease, color 0.2s ease, scale 0.12s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+@media (prefers-color-scheme: dark) {
+  .msi-btn { --msi-bg: rgb(118 118 128 / 0.24); --msi-bg-hover: rgb(118 118 128 / 0.34); --msi-ring: #7aa7ff; }
+}
+@media (hover: hover) { .msi-btn:hover { background: var(--msi-bg-hover); } }
+.msi-btn:active { scale: 0.95; }
+.msi-btn:focus-visible { outline: 2px solid var(--msi-ring); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  .msi-btn { transition: background-color 0.16s ease, color 0.2s ease; }
+  .msi-btn:active { scale: none; }
+}

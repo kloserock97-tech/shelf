@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Onboarding Constellation</title>
+<link rel="stylesheet" href="../variants/html/constellation.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  body {
+    min-height: 100vh; min-height: 100dvh; box-sizing: border-box;
+    display: grid; place-content: center; grid-template-columns: minmax(0, 720px);
+    padding: 24px 16px; gap: 12px;
+    font: 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .demo-bar { display: flex; justify-content: center; gap: 8px; }
+  .demo-bar button {
+    font: inherit; font-weight: 600; padding: 7px 14px; border-radius: 999px; cursor: pointer;
+    color: #16171c; background: #ffffff; border: 1px solid #10123024;
+  }
+  .demo-bar button:focus-visible { outline: 2px solid #3d63d8; outline-offset: 2px; }
+  @media (prefers-color-scheme: dark) { .demo-bar button { color: #eceef6; background: #1d1e24; border-color: #ffffff24; } }
+  .shot .demo-bar { visibility: hidden; }
+  @media (max-width: 520px) { body { padding: 16px 12px; } }
+</style>
+</head>
+<body>
+<section id="onboarding" aria-label="Onboarding"></section>
+<div class="demo-bar">
+  <button type="button" data-reset>Start over</button>
+  <button type="button" data-finish>Finish all</button>
+</div>
+
+<script type="application/json" id="graph">
+{
+  "title": "Get your workspace going",
+  "doneTitle": "All set",
+  "name": "Paper Plane",
+  "steps": [
+    { "id": "account",   "label": "Create account",     "x": 0.12, "y": 0.50, "after": [], "labelSide": "below",
+      "text": "Your name, email and a password. Takes a minute." },
+    { "id": "profile",   "label": "Set up profile",     "x": 0.29, "y": 0.57, "after": ["account"], "labelSide": "below",
+      "text": "Add a photo and your role so teammates know who is who.", "action": "Save profile" },
+    { "id": "template",  "label": "Pick a template",    "x": 0.50, "y": 0.33, "after": ["account"], "labelSide": "above",
+      "text": "Start from a planning board, a content calendar or a blank page.", "action": "Use this template" },
+    { "id": "workspace", "label": "Create workspace",   "x": 0.45, "y": 0.64, "after": ["profile"], "labelSide": "below",
+      "text": "One place for your team's boards, files and people.", "action": "Create workspace" },
+    { "id": "invite",    "label": "Invite your team",   "x": 0.57, "y": 0.86, "after": ["workspace"], "labelSide": "left",
+      "text": "Send invites by email or share a join link. Up to 10 people on the free plan.", "action": "Send invites" },
+    { "id": "project",   "label": "Start a project",    "x": 0.67, "y": 0.40, "after": ["workspace"], "labelSide": "above",
+      "text": "Name it, set a due date, add the first three tasks.", "action": "Start project" },
+    { "id": "calendar",  "label": "Connect calendar",   "x": 0.73, "y": 0.51, "after": ["invite"], "labelSide": "right",
+      "text": "Due dates show up next to your meetings. Read-only access.", "action": "Connect" },
+    { "id": "share",     "label": "Share first board",  "x": 0.88, "y": 0.16, "after": ["template", "project", "calendar"], "labelSide": "above",
+      "text": "Send the board to a teammate and get the first comment.", "action": "Share board" }
+  ]
+}
+</script>
+<script type="module">
+  import { createConstellation } from '../variants/html/constellation.js';
+
+  const q = new URLSearchParams(location.search);
+  const graph = JSON.parse(document.getElementById('graph').textContent);
+  const shot = q.get('shot');
+  const start = ['account', 'profile', 'template'];
+  const states = {
+    '1': ['account', 'profile', 'template', 'workspace', 'project'],
+    done: graph.steps.map((s) => s.id)
+  };
+  if (shot) document.documentElement.classList.add('shot');
+
+  const root = document.getElementById('onboarding');
+  const oc = createConstellation(root, graph, { done: states[shot] ?? start });
+  if (shot === '1') oc.open('invite');
+
+  document.querySelector('[data-reset]').addEventListener('click', () => oc.reset(start));
+  document.querySelector('[data-finish]').addEventListener('click', () => {
+    // completes whatever is open, one star after another
+    const next = () => {
+      const s = graph.steps.find((t) => !oc.done.includes(t.id) && t.after.every((a) => oc.done.includes(a)));
+      if (!s) return;
+      oc.complete(s.id);
+      setTimeout(next, matchMedia('(prefers-reduced-motion: reduce)').matches ? 60 : 520);
+    };
+    oc.close();
+    next();
+  });
+</script>
+</body>
+</html>

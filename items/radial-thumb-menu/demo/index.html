@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Radial Thumb Menu</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="../variants/html/radial-menu.css">
+<style>
+  :root { --ink: #1d1d1f; --ink-2: #6e6e73; --fill: rgba(118, 118, 128, 0.12); --card: #ffffff; --line: rgba(60, 60, 67, 0.12); --seg: #ffffff; }
+  @media (prefers-color-scheme: dark) { :root { --ink: #f5f5f7; --ink-2: #a1a1a6; --fill: rgba(118, 118, 128, 0.24); --card: #1c1c1e; --line: rgba(255, 255, 255, 0.08); --seg: #636366; } }
+  html, body { height: 100%; margin: 0; background: transparent; }
+  body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; overflow: hidden; }
+  .rtm.screen { box-sizing: border-box; height: 100%; max-width: 430px; max-height: 900px; margin: 0 auto; padding: 54px 16px 0; overflow: clip; }
+  .head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0 12px; }
+  .head h1 { margin: 0; font-size: 32px; line-height: 1.05; font-weight: 700; letter-spacing: -0.02em; }
+  .seg { display: inline-grid; grid-auto-flow: column; grid-auto-columns: 1fr; padding: 2px; border-radius: 9px; background: var(--fill); }
+  .seg button { height: 28px; min-width: 50px; padding: 0 10px; border: 0; border-radius: 7px; background: transparent; color: inherit; font: inherit; font-size: 13px; font-weight: 550; cursor: pointer; }
+  .seg button[aria-checked="true"] { background: var(--seg); box-shadow: 0 0 0 0.5px var(--line), 0 1px 2px rgb(0 0 0 / 0.08); }
+  .seg button:focus-visible { outline: 2px solid #ff6b2c; outline-offset: 1px; }
+  .search { display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px; border-radius: 12px; background: var(--fill); color: var(--ink-2); font-size: 15px; }
+  .search svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+  .notes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0 0; padding: 0; list-style: none; }
+  .note { display: flex; flex-direction: column; gap: 6px; min-height: 128px; padding: 12px; border-radius: 16px; background: var(--card); box-shadow: 0 0 0 0.5px var(--line), 0 1px 3px rgb(0 0 0 / 0.05); }
+  .note.tall { grid-row: span 2; }
+  .note b { font-size: 15px; font-weight: 650; line-height: 1.2; }
+  .note p { margin: 0; font-size: 13px; line-height: 1.35; color: var(--ink-2); }
+  .note small { margin-top: auto; font-size: 11px; font-weight: 600; color: var(--c, var(--ink-2)); }
+  .note .ck { display: flex; flex-direction: column; gap: 5px; margin: 2px 0 0; padding: 0; list-style: none; font-size: 13px; color: var(--ink-2); }
+  .note .ck li::before { content: ""; display: inline-block; width: 11px; height: 11px; margin-right: 7px; border-radius: 3px; box-shadow: inset 0 0 0 1.5px currentColor; vertical-align: -1px; }
+  .note .ck li.done { text-decoration: line-through; }
+  .note .ck li.done::before { background: #ff6b2c; box-shadow: none; }
+  .note .shape { position: relative; height: 52px; border-radius: 10px; overflow: hidden; background: color-mix(in srgb, #4c9fb0 18%, var(--card)); }
+  .note .shape::before { content: ""; position: absolute; left: 14%; bottom: -30%; width: 56%; height: 110%; background: #4c9fb0; clip-path: polygon(50% 0, 100% 100%, 0 100%); opacity: 0.85; }
+  .note .shape::after { content: ""; position: absolute; right: 16%; top: 18%; width: 14px; height: 14px; border-radius: 50%; background: #e9b44c; }
+  .hint { position: absolute; left: 16px; right: 100px; bottom: 34px; margin: 0; font-size: 12.5px; line-height: 1.35; color: var(--ink-2); }
+  .rtm[data-hand="left"] .hint { left: 100px; right: 16px; text-align: right; }
+  .hint { transition: opacity 0.2s; }
+  .rtm[data-open] .hint { opacity: 0; }
+  .toast { position: absolute; z-index: 9; left: 50%; top: 64px; translate: -50% -8px; margin: 0; padding: 9px 16px; border-radius: 999px; background: var(--ink); color: var(--card); font-size: 14px; font-weight: 600; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s, translate 0.3s cubic-bezier(0.32, 0.72, 0, 1); }
+  .toast.is-on { opacity: 1; translate: -50% 0; }
+  @media (prefers-reduced-motion: reduce) { .toast { transition: opacity 0.2s; translate: -50% 0; } }
+</style>
+</head>
+<body>
+<main class="rtm screen" data-radial-menu data-hand="right">
+  <header class="head">
+    <h1>Notes</h1>
+    <span class="seg" role="radiogroup" aria-label="Hand">
+      <button type="button" role="radio" aria-checked="false" data-hand="left" tabindex="-1">Left</button>
+      <button type="button" role="radio" aria-checked="true" data-hand="right">Right</button>
+    </span>
+  </header>
+  <div class="search" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg>Search</div>
+  <ul class="notes" aria-label="Recent notes">
+    <li class="note tall" style="--c: #e2601f"><b>Weekend market</b><ul class="ck"><li class="done">Sourdough</li><li class="done">Pears</li><li>Goat cheese</li><li>Flowers for Ida</li><li>Coffee beans</li></ul><small>Checklist · 5</small></li>
+    <li class="note" style="--c: #3b8a9a"><div class="shape" aria-hidden="true"></div><b>Ridge trail</b><small>Photo · Sat</small></li>
+    <li class="note"><b>Workshop notes</b><p>Ask about the grid tokens and who owns the icon set.</p><small>Today</small></li>
+    <li class="note" style="--c: #7457e8"><b>Gift ideas</b><p>Ceramic cup, the map print, a long scarf.</p><small>Mon</small></li>
+    <li class="note" style="--c: #2f8a4c"><b>Plant care</b><p>Fern twice a week. Basil daily in summer.</p><small>Sep 28</small></li>
+  </ul>
+  <p class="hint">Hold <b>+</b> and slide along the arc. A short tap opens a list.</p>
+  <p class="toast" role="status"></p>
+  <button class="rtm__fab" type="button" aria-label="New item">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+  </button>
+  <div class="rtm__arc">
+    <svg class="rtm__band" width="1" height="1" aria-hidden="true"></svg>
+    <ul class="rtm__items" aria-label="Create">
+      <li role="none"><button class="rtm__item" type="button" data-action="note" aria-label="Note"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 5.5H7a2 2 0 0 0-2 2V17a2 2 0 0 0 2 2h9.5a2 2 0 0 0 2-2v-6.5"/><path d="M17.8 3.7a1.6 1.6 0 0 1 2.3 2.3L12.5 13.6 9.5 14.5l.9-3z"/></svg></button></li>
+      <li role="none"><button class="rtm__item" type="button" data-action="checklist" aria-label="Checklist"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5l1.6 1.6L8.5 5M4 12.5l1.6 1.6L8.5 11M4 18.5l1.6 1.6L8.5 17M11.5 7h8.5M11.5 13h8.5M11.5 19h8.5"/></svg></button></li>
+      <li role="none"><button class="rtm__item" type="button" data-action="scan" aria-label="Scan document"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M4 12h16"/></svg></button></li>
+      <li role="none"><button class="rtm__item" type="button" data-action="voice" aria-label="Voice memo"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg></button></li>
+      <li role="none"><button class="rtm__item" type="button" data-action="photo" aria-label="Photo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2.2l1.5-2h5.6l1.5 2h2.2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5z"/><circle cx="12" cy="12.5" r="3.3"/></svg></button></li>
+    </ul>
+    <p class="rtm__label" aria-hidden="true"></p>
+    <span class="rtm__ghost" aria-hidden="true"></span>
+  </div>
+</main>
+
+<script src="../variants/html/radial-menu.js"></script>
+<script>
+  const root = document.querySelector('.rtm');
+  const menu = RadialMenu.init(root);
+  const toast = document.querySelector('.toast');
+  let hide = 0;
+  const VIA = { arc: 'from the arc', tap: 'from the arc', sheet: 'from the list' };
+  root.addEventListener('rtm:select', (e) => {
+    toast.textContent = `${e.detail.label} · ${VIA[e.detail.via]}`;
+    toast.classList.add('is-on');
+    clearTimeout(hide);
+    hide = setTimeout(() => toast.classList.remove('is-on'), 1600);
+  });
+
+  // hand switch: a radio group, arrows move between Left and Right
+  const seg = document.querySelector('.seg');
+  const setHand = (h) => {
+    root.dataset.hand = h;
+    seg.querySelectorAll('button').forEach((b) => { const on = b.dataset.hand === h; b.setAttribute('aria-checked', String(on)); b.tabIndex = on ? 0 : -1; });
+  };
+  seg.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) setHand(b.dataset.hand); });
+  seg.addEventListener('keydown', (e) => {
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) return;
+    e.preventDefault();
+    const next = root.dataset.hand === 'left' ? 'right' : 'left';
+    setHand(next);
+    seg.querySelector(`[data-hand="${next}"]`).focus();
+  });
+
+  // ?shot=1: the arc open, the thumb on "Scan document"; ?hand=left mirrors it; ?item=0…4 picks another item
+  const q = new URLSearchParams(location.search);
+  if (q.get('hand') === 'left') setHand('left');
+  if (q.has('shot')) requestAnimationFrame(() => menu.preview(Number(q.get('item') ?? 2)));
+</script>
+</body>
+</html>

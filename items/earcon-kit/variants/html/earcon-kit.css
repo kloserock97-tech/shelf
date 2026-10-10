@@ -1,0 +1,112 @@
+/* Earcon Kit panel. The accent follows the timbre (data-timbre on the root). */
+.ek {
+  --ek-ink: #1d1d1f;
+  --ek-soft: #6e6e73;
+  --ek-surface: #ffffff;
+  --ek-line: rgb(0 0 0 / 0.08);
+  --ek-chip: rgb(118 118 128 / 0.1);
+  --ek-chip-hover: rgb(118 118 128 / 0.17);
+  --ek-ring: #2f6fe4;
+  --ek-accent: #dd6a48;
+  --ek-wave: #e08a70;
+  box-sizing: border-box;
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid var(--ek-line);
+  border-radius: 22px;
+  background: var(--ek-surface);
+  color: var(--ek-ink);
+  font: 13px/1.35 system-ui, -apple-system, "Segoe UI", sans-serif;
+  box-shadow: 0 18px 40px -26px rgb(0 0 0 / 0.35);
+}
+.ek[data-timbre='glass'] { --ek-accent: #2b86d8; --ek-wave: #5c9fdc; }
+.ek[data-timbre='wood'] { --ek-accent: #a8681f; --ek-wave: #bb8a52; }
+@media (prefers-color-scheme: dark) {
+  .ek {
+    --ek-ink: #f5f5f7;
+    --ek-soft: #a1a1a6;
+    --ek-surface: #1c1c1e;
+    --ek-line: rgb(255 255 255 / 0.09);
+    --ek-chip: rgb(118 118 128 / 0.2);
+    --ek-chip-hover: rgb(118 118 128 / 0.3);
+    --ek-ring: #7aa7ff;
+    --ek-accent: #f08767;
+    --ek-wave: #d9876d;
+    box-shadow: 0 18px 44px -24px rgb(0 0 0 / 0.8);
+  }
+  .ek[data-timbre='glass'] { --ek-accent: #5fb0ff; --ek-wave: #5c9fdc; }
+  .ek[data-timbre='wood'] { --ek-accent: #dd9a4a; --ek-wave: #c99558; }
+}
+.ek *, .ek *::before, .ek *::after { box-sizing: border-box; }
+.ek__sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* —— settings —— */
+.ek__controls { display: grid; grid-template-columns: auto auto 1fr; gap: 14px 18px; align-items: end; }
+.ek__field { display: grid; gap: 6px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.ek__lab { padding: 0; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ek-soft); }
+.ek__seg { display: flex; padding: 3px; border-radius: 11px; background: var(--ek-chip); }
+.ek__seg label { position: relative; }
+.ek__seg input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.ek__seg span { display: block; padding: 6px 12px; border-radius: 8px; font-weight: 500; transition: background-color 0.16s ease, box-shadow 0.16s ease; }
+.ek__seg input:checked + span { background: var(--ek-surface); box-shadow: 0 1px 3px rgb(0 0 0 / 0.16); color: var(--ek-accent); }
+.ek__seg input:focus-visible + span { outline: 2px solid var(--ek-ring); outline-offset: 1px; }
+.ek__key {
+  height: 34px; padding: 0 30px 0 10px; border: 0; border-radius: 10px; background: var(--ek-chip); color: inherit; font-size: 13px; font-weight: 500; line-height: 1;
+  font-family: inherit; appearance: none; cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 15px) 15px, calc(100% - 11px) 15px; background-size: 4px 4px; background-repeat: no-repeat;
+}
+.ek__key:focus-visible { outline: 2px solid var(--ek-ring); outline-offset: 2px; }
+.ek__range { width: 100%; margin: 6px 0 0; accent-color: var(--ek-accent); cursor: pointer; }
+.ek__range:focus-visible { outline: 2px solid var(--ek-ring); outline-offset: 3px; border-radius: 4px; }
+.ek__ends { display: flex; justify-content: space-between; font-size: 11px; color: var(--ek-soft); }
+
+/* —— sounds —— */
+.ek__grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(136px, 1fr)); gap: 8px; }
+.ek__sound {
+  position: relative; display: grid; grid-template-columns: 1fr auto; gap: 6px 8px; align-items: baseline;
+  width: 100%; padding: 10px 12px 11px; border: 0; border-radius: 13px; background: var(--ek-chip); color: inherit;
+  font: inherit; text-align: left; cursor: pointer; overflow: hidden;
+  transition: background-color 0.16s ease, scale 0.12s ease;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+@media (hover: hover) { .ek__sound:hover { background: var(--ek-chip-hover); } }
+.ek__sound:active { scale: 0.98; }
+.ek__sound:focus-visible { outline: 2px solid var(--ek-ring); outline-offset: 2px; }
+.ek__sound.is-playing { background: var(--ek-chip-hover); background: color-mix(in srgb, var(--ek-accent) 16%, transparent); }
+.ek__name { font-weight: 600; }
+.ek__dur { font-size: 11px; color: var(--ek-soft); font-variant-numeric: tabular-nums; }
+.ek__scope { position: relative; grid-column: 1 / -1; height: 34px; }
+.ek__scope canvas { display: block; width: 100%; max-width: 100%; height: 100%; }
+.ek__head { position: absolute; top: -2px; bottom: -2px; left: 0; width: 2px; border-radius: 1px; background: var(--ek-ink); opacity: 0; }
+.ek__sound.is-playing .ek__head { opacity: 0.8; }
+
+/* —— volume, mute, export —— */
+.ek__foot { display: flex; align-items: center; gap: 12px; }
+.ek__mute, .ek__export {
+  display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border: 0; border-radius: 999px;
+  background: var(--ek-chip); color: inherit; font-size: 13px; font-weight: 500; line-height: 1; font-family: inherit; cursor: pointer;
+}
+.ek__mute svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.ek__mute .ek__x { display: none; }
+.ek__mute[aria-pressed='true'] .ek__x { display: inline; }
+.ek__mute[aria-pressed='true'] .ek__wave1, .ek__mute[aria-pressed='true'] .ek__wave2 { display: none; }
+.ek__mute[aria-pressed='true'] { color: var(--ek-accent); }
+.ek__vol { flex: 1; min-width: 60px; }
+.ek__vol .ek__range { margin: 0; }
+.ek__export { margin-left: auto; background: var(--ek-ink); color: var(--ek-surface); }
+@media (hover: hover) { .ek__mute:hover { background: var(--ek-chip-hover); } .ek__export:hover { opacity: 0.88; } }
+.ek__mute:focus-visible, .ek__export:focus-visible { outline: 2px solid var(--ek-ring); outline-offset: 2px; }
+
+@media (max-width: 560px) {
+  .ek { padding: 14px; border-radius: 18px; }
+  .ek__controls { grid-template-columns: 1fr 1fr; }
+  .ek__char { grid-column: 1 / -1; }
+  .ek__grid { grid-template-columns: 1fr 1fr; }
+  .ek__seg span { padding: 6px 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ek__sound, .ek__seg span { transition: none; }
+  .ek__sound:active { scale: none; }
+}

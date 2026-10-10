@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light dark">
+<title>Empty Search Recovery</title>
+<link rel="stylesheet" href="../variants/html/empty-search.css">
+<style>
+  html, body { margin: 0; background: transparent; }
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: grid;
+    grid-template-columns: minmax(0, 720px);
+    justify-content: center;
+    align-content: start;
+    padding: clamp(20px, 6vh, 64px) 16px 32px;
+    box-sizing: border-box;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  html.is-shot body { align-content: center; padding-block: 24px; }
+  .shop {
+    box-sizing: border-box;
+    min-width: 0;
+    padding: 22px 22px 20px;
+    border-radius: 22px;
+    background: #ffffff;
+    color: #1d1d1f;
+  }
+  .shop__head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .shop__title { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+  .shop__sub { font-size: 13px; color: #636366; }
+  .hint { margin: 16px 2px 0; font-size: 12px; color: #8e8e93; }
+  @media (prefers-color-scheme: dark) {
+    .shop { background: #1c1c1e; color: #f5f5f7; }
+    .shop__sub { color: #aeaeb2; }
+    .hint { color: #7c7c80; }
+  }
+  @media (max-width: 520px) {
+    body { padding: 54px 10px 16px; }
+    .shop { padding: 18px 14px 16px; border-radius: 18px; }
+  }
+</style>
+</head>
+<body>
+<section class="shop" aria-labelledby="shop-title">
+  <div class="shop__head">
+    <h1 class="shop__title" id="shop-title">Rainwear</h1>
+    <span class="shop__sub">60 products</span>
+  </div>
+  <div id="search"></div>
+  <p class="hint">Try a typo like “rain jakcet”, or stack filters until nothing is left.</p>
+</section>
+<script src="../variants/html/catalog.js"></script>
+<script src="../variants/html/empty-search.js"></script>
+<script>
+  EmptySearchRecovery.mount(document.getElementById('search'), {
+    products: esrCatalog.makeCatalog(7),
+    filters: [
+      { id: 'price', type: 'max', field: 'price', steps: [40, 60, 80, 120], label: (v) => `Under €${v}`, widen: (v) => `Up to €${v}`,
+        clear: 'Any price', miss: (p, v) => `€${p.price - v} over` },
+      { id: 'waterproof', type: 'flag', label: 'Waterproof', miss: 'Not waterproof' },
+      { id: 'hooded', type: 'flag', label: 'Hooded', miss: 'No hood' },
+      { id: 'packable', type: 'flag', label: 'Packable', miss: 'Not packable' }
+    ],
+    swapWords: ['jacket', 'poncho', 'boots', 'pants', 'windbreaker', 'fleece'],
+    query: 'rain jacket',
+    active: { price: 40, waterproof: true },
+    searchLabel: 'Search rainwear',
+    noun: ['product', 'products']
+  });
+  if (new URLSearchParams(location.search).has('shot')) document.documentElement.classList.add('is-shot');
+</script>
+</body>
+</html>

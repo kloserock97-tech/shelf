@@ -1,0 +1,140 @@
+/* Text to Dust — list, row, toast and empty state around the dust canvas. */
+.tdd {
+  --tdd-font: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --tdd-label: #1d1d1f;
+  --tdd-label-2: #6e6e73;
+  --tdd-label-3: #8e8e93;
+  --tdd-surface: #ffffff;
+  --tdd-fill: rgba(118, 118, 128, 0.12);
+  --tdd-fill-hover: rgba(118, 118, 128, 0.2);
+  --tdd-hair: rgba(0, 0, 0, 0.08);
+  --tdd-accent: #0073e6;
+  --tdd-accent-text: #0066cc;
+  --tdd-toast: #1d1d1f;
+  --tdd-on-toast: #f5f5f7;
+  --tdd-undo: #6cb6ff;
+  position: relative;
+  font-family: var(--tdd-font);
+  color: var(--tdd-label);
+  -webkit-font-smoothing: antialiased;
+}
+@media (prefers-color-scheme: dark) {
+  .tdd {
+    --tdd-label: #f5f5f7;
+    --tdd-label-2: #a1a1a6;
+    --tdd-label-3: #7c7c80;
+    --tdd-surface: #1c1c1e;
+    --tdd-fill: rgba(118, 118, 128, 0.24);
+    --tdd-fill-hover: rgba(118, 118, 128, 0.34);
+    --tdd-hair: rgba(255, 255, 255, 0.09);
+    --tdd-accent: #0a84ff;
+    --tdd-accent-text: #2f9bff;
+    --tdd-toast: #3a3a3c;
+    --tdd-on-toast: #f5f5f7;
+    --tdd-undo: #64b5ff;
+  }
+}
+
+/* the dust is drawn over the whole block, under nothing that takes clicks */
+.tdd-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
+
+.tdd-stage { position: relative; }
+.tdd-list { position: relative; margin: 0; padding: 0; list-style: none; }
+.tdd-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 60px;
+  padding: 0 4px 0 6px;
+  box-sizing: border-box;
+  overflow: hidden;
+  position: relative;
+}
+.tdd-row + .tdd-row::before { content: ""; position: absolute; left: 28px; right: 0; top: 0; border-top: 0.5px solid var(--tdd-hair); }
+.tdd-row.is-dusting > * { visibility: hidden; }
+.tdd-row__dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--tdd-c, var(--tdd-accent)); }
+.tdd-row__text { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.tdd-row__title { font-size: 15px; font-weight: 500; line-height: 20px; white-space: nowrap; overflow: hidden; }
+.tdd-row__meta { font-size: 13px; line-height: 17px; color: var(--tdd-label-2); white-space: nowrap; overflow: hidden; }
+.tdd-row__time { flex: none; font-size: 13px; color: var(--tdd-label-3); font-variant-numeric: tabular-nums; }
+.tdd-del {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--tdd-label-3);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.tdd-del svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+@media (hover: hover) and (pointer: fine) { .tdd-del:hover { background: var(--tdd-fill); color: var(--tdd-label); } }
+.tdd-del:focus-visible { outline: 2px solid var(--tdd-accent); outline-offset: -2px; }
+
+/* empty state sits above the floor, where the dust lies */
+.tdd-empty {
+  position: absolute;
+  inset: 0 0 44px;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 6px;
+  text-align: center;
+}
+.tdd-empty[hidden] { display: none; }
+.tdd-empty__title { margin: 0; font-size: 17px; font-weight: 600; }
+.tdd-empty__text { margin: 0 0 8px; font-size: 14px; color: var(--tdd-label-2); }
+.tdd-restore {
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--tdd-fill);
+  color: var(--tdd-accent-text);
+  font: 500 14px/1 var(--tdd-font);
+  cursor: pointer;
+}
+@media (hover: hover) and (pointer: fine) { .tdd-restore:hover { background: var(--tdd-fill-hover); } }
+.tdd-restore:focus-visible { outline: 2px solid var(--tdd-accent); outline-offset: 2px; }
+
+/* toast slot keeps its height, so nothing jumps when it comes and goes */
+.tdd-toast-slot { min-height: 48px; display: grid; grid-template-columns: minmax(0, 1fr); align-items: end; }
+.tdd-toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 0 6px 0 14px;
+  border-radius: 12px;
+  background: var(--tdd-toast);
+  color: var(--tdd-on-toast);
+  font-size: 14px;
+  animation: tdd-toast-in 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+.tdd-toast[hidden] { display: none; }
+.tdd-toast.is-out { opacity: 0; transform: translateY(6px); }
+.tdd-toast__text { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tdd-undo {
+  flex: none;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--tdd-undo);
+  font: 600 14px/1 var(--tdd-font);
+  cursor: pointer;
+}
+.tdd-undo:focus-visible { outline: 2px solid var(--tdd-undo); outline-offset: 0; }
+@keyframes tdd-toast-in { from { opacity: 0; transform: translateY(8px); } }
+
+.tdd-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tdd-toast { animation: tdd-fade 200ms ease; }
+  .tdd-toast.is-out { transform: none; }
+}
+@keyframes tdd-fade { from { opacity: 0; } }

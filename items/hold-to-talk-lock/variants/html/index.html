@@ -1,0 +1,39 @@
+<!-- Hold-to-Talk composer. Hold the mic to record, release to send; slide left to cancel, up to lock.
+     Listen for "htt:send" (detail: { duration, levels, transcript, simulated, blob }) and "htt:cancel".
+     data-sound="off" mutes the cues; lang on the root sets the transcript language. -->
+<div class="htt" data-hold-to-talk lang="en-US">
+  <p class="htt__transcript" aria-hidden="true"><span class="htt__tlabel">Live transcript</span><span class="htt__words" data-placeholder="Listening…"></span></p>
+  <div class="htt__lock" aria-hidden="true">
+    <span class="htt__lock-fill"></span>
+    <svg viewBox="0 0 24 24"><path class="htt__shackle" d="M8 10.5V8a4 4 0 0 1 8 0v1"/><rect x="5.5" y="10.5" width="13" height="10" rx="2.5"/></svg>
+    <svg class="htt__chev" viewBox="0 0 24 24"><path d="M7 14l5-5 5 5"/></svg>
+  </div>
+  <p class="htt__hint" aria-hidden="true">Hold to record, release to send</p>
+  <div class="htt__bar">
+    <input class="htt__field" type="text" placeholder="Message" aria-label="Message">
+    <div class="htt__rec">
+      <button class="htt__del" type="button" aria-label="Delete recording"><svg viewBox="0 0 24 24"><path d="M4.5 7h15M10 4h4M6.5 7l1 12.5a1.5 1.5 0 0 0 1.5 1.4h6a1.5 1.5 0 0 0 1.5-1.4L17.5 7M10 11v6M14 11v6"/></svg></button>
+      <span class="htt__status" aria-hidden="true"><span class="htt__dot"></span><svg class="htt__bin" viewBox="0 0 24 24"><path d="M4.5 7h15M10 4h4M6.5 7l1 12.5a1.5 1.5 0 0 0 1.5 1.4h6a1.5 1.5 0 0 0 1.5-1.4L17.5 7"/></svg></span>
+      <span class="htt__time" aria-hidden="true">0:00</span>
+      <span class="htt__slide" aria-hidden="true"><span class="htt__go-on">‹ Slide to cancel</span><b class="htt__go-back">Release to cancel</b></span>
+      <canvas class="htt__wave" aria-hidden="true"></canvas>
+    </div>
+    <div class="htt__mic-slot">
+      <div class="htt__puck">
+        <canvas class="htt__ring" aria-hidden="true"></canvas>
+        <button class="htt__mic" type="button" aria-label="Record voice message" aria-describedby="htt-help">
+          <svg class="htt__mic-i" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>
+          <svg class="htt__send" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+  <p class="htt-sr" id="htt-help">Hold to record, release to send. Slide left to cancel, up to lock. Keyboard: hold Space, Arrow Up locks, Escape cancels.</p>
+  <p class="htt__live htt-sr" role="status"></p>
+</div>
+
+<link rel="stylesheet" href="hold-to-talk.css">
+<script src="hold-to-talk.js" defer></script>
+<script>
+  document.addEventListener('htt:send', (e) => console.log('voice message', e.detail));
+</script>
